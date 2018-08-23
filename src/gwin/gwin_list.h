@@ -16,10 +16,10 @@
  *
  * @details		Provides advanced features such as multi-selection, smooth scrolling and item icons.
  *
- * @pre			GFX_USE_GDISP must be set to GFXON in your gfxconf.h
- * @pre			GFX_USE_GWIN must be set to GFXON in your gfxconf.h
- * @pre			GDISP_NEED_TEXT must be set to GFXON in your gfxconf.h
- * @pre			GWIN_NEED_LIST must be set to GFXON in your gfxconf.h
+ * @pre			GFX_USE_GDISP must be set to TRUE in your gfxconf.h
+ * @pre			GFX_USE_GWIN must be set to TRUE in your gfxconf.h
+ * @pre			GDISP_NEED_TEXT must be set to TRUE in your gfxconf.h
+ * @pre			GWIN_NEED_LIST must be set to TRUE in your gfxconf.h
  * @pre			The font you want to use must be enabled in your gfxconf.h
  *
  * @{
@@ -52,9 +52,9 @@ typedef struct GListObject {
 	GWidgetObject	w;
 
     #if GINPUT_NEED_MOUSE
-        gCoord start_mouse_x;
-        gCoord start_mouse_y;
-        gCoord last_mouse_y;
+        coord_t start_mouse_x;
+        coord_t start_mouse_y;
+        coord_t last_mouse_y;
     #endif
 	#if GINPUT_NEED_TOGGLE
 		uint16_t	t_up;
@@ -104,11 +104,16 @@ typedef struct ListItem {
 	#endif
 } ListItem;
 
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
  * @brief				Create a list widget
  *
  * @note				The drawing color and the background color get set to the current defaults. If you haven't called
- *						@p gwinSetDefaultColor() or @p gwinSetDefaultBgColor() then these are GFX_WHITE and GFX_BLACK.
+ *						@p gwinSetDefaultColor() or @p gwinSetDefaultBgColor() then these are Black and White.
  * @note				The font gets set to the current default font. If you haven't called @p gwinSetDefaultFont() then
  *						there is no default font and text drawing operations will not display anything.
  * @note				A list remembers its normal drawing state. If there is a window manager then it is automatically
@@ -122,13 +127,13 @@ typedef struct ListItem {
  * @param[in] g			The GDisplay to display this window on
  * @param[in] widget	The GListObject structure to initialize. If this is NULL, the structure is dynamically allocated.
  * @param[in] pInit		The initialization parameters to use
- * @param[in] multiselect	If gTrue the list is multi-select instead of single-select.
+ * @param[in] multiselect	If TRUE the list is multi-select instead of single-select.
  *
  * @return				NULL if there is no resulting drawing area, otherwise a window handle.
  *
  * @api
  */
-GHandle gwinGListCreate(GDisplay *g, GListObject *widget, GWidgetInit *pInit, gBool multiselect);
+GHandle gwinGListCreate(GDisplay *g, GListObject *widget, GWidgetInit *pInit, bool_t multiselect);
 #define gwinListCreate(w, pInit, m)			gwinGListCreate(GDISP, w, pInit, m)
 
 /**
@@ -139,11 +144,11 @@ GHandle gwinGListCreate(GDisplay *g, GListObject *widget, GWidgetInit *pInit, gB
  *						by temporarely disabling the render using this function.
  *
  * @param[in] gh		The widget handle (must be a list handle)
- * @param[in] ena		gTrue or gFalse
+ * @param[in] ena		TRUE or FALSE
  *
  * @api
  */
-void gwinListEnableRender(GHandle gh, gBool ena);
+void gwinListEnableRender(GHandle gh, bool_t ena);
 
 /**
  * @brief				Change the behaviour of the scroll bar
@@ -164,26 +169,14 @@ void gwinListSetScroll(GHandle gh, scroll_t flag);
  * 						reordered.
  *
  * @param[in] gh		The widget handle (must be a list handle)
- * @param[in] text		The string which shall be displayed in the list afterwards
- * @param[in] useAlloc	If set to gTrue, the string will be dynamically allocated. A static buffer must be passed otherwise
+ * @param[in] item		The string which shall be displayed in the list afterwards
+ * @param[in] useAlloc	If set to TRUE, the string will be dynamically allocated. A static buffer must be passed otherwise
  *
  * @return				The current ID of the item. The ID might change if you remove items from the middle of the list
  *
  * @api
  */
-int gwinListAddItem(GHandle gh, const char* text, gBool useAlloc);
-
-/**
- * @brief				Set the custom parameter of an item with a given ID
- *
- * @param[in] gh		The widget handle (must be a list handle)
- * @param[in] item		The item ID
- * @param[in] text		The text to replace the existing text
- * @param[in] useAlloc	If set to gTrue, the string will be dynamically allocated. A static buffer must be passed otherwise
- *
- * @api
- */
-void gwinListItemSetText(GHandle gh, int item, const char* text, gBool useAlloc);
+int gwinListAddItem(GHandle gh, const char* item, bool_t useAlloc);
 
 /**
  * @brief				Get the name behind an item with a given ID
@@ -268,11 +261,11 @@ int gwinListItemCount(GHandle gh);
  * @param[in] gh		The widget handle (must be a list handle)
  * @param[in] item		The item ID
  *
- * @return				gTrue if the item is selected, gFalse otherwise
+ * @return				TRUE if the item is selected, FALSE otherwise
  *
  * @api
  */
-gBool gwinListItemIsSelected(GHandle gh, int item);
+bool_t gwinListItemIsSelected(GHandle gh, int item);
 
 /**
  * @brief				Get the ID of the selected item
@@ -307,7 +300,7 @@ const char* gwinListGetSelectedText(GHandle gh);
  *
  * @param[in] gh		The widget handle (must be a list handle)
  * @param[in] item		The item ID
- * @param[in] doSelect	gTrue to select the item or gFalse to deselect the item
+ * @param[in] doSelect	TRUE to select the item or FALSE to deselect the item
  *
  * @note				Changing the selection using this api call will NOT send the list selection
  * 						change event.
@@ -318,7 +311,7 @@ const char* gwinListGetSelectedText(GHandle gh);
  * 						are selected, even in single-select mode.
  * @api
  */
-void gwinListSetSelected(GHandle gh, int item, gBool doSelect);
+void gwinListSetSelected(GHandle gh, int item, bool_t doSelect);
 
 /**
  * @brief				Scroll the list so the specified item is in view
@@ -390,6 +383,10 @@ void gwinListViewItem(GHandle gh, int item);
 void gwinListDefaultDraw(GWidgetObject* gw, void* param);
 
 /** @} */
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // _GWIN_LIST_H
 /** @} */

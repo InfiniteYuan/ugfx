@@ -18,7 +18,7 @@
  * 				via an input device such as a mouse or toggle buttons. It is the
  * 				base class for widgets such as buttons and sliders.
  *
- * @pre		GFX_USE_GWIN and GWIN_NEED_WIDGET must be set to GFXON in your gfxconf.h
+ * @pre		GFX_USE_GWIN and GWIN_NEED_WIDGET must be set to TRUE in your gfxconf.h
  * @{
  */
 
@@ -35,10 +35,10 @@ struct GWidgetObject;
  * @{
  */
 typedef struct GColorSet {
-	gColor			text;				/**< The text color */
-	gColor			edge;				/**< The edge color */
-	gColor			fill;				/**< The fill color */
-	gColor			progress;			/**< The color of progress bars */
+	color_t			text;				/**< The text color */
+	color_t			edge;				/**< The edge color */
+	color_t			fill;				/**< The fill color */
+	color_t			progress;			/**< The color of progress bars */
 } GColorSet;
 /** @} */
 
@@ -50,8 +50,8 @@ typedef struct GColorSet {
  * @{
  */
 typedef struct GWidgetStyle {
-	gColor			background;			/**< The window background color */
-	gColor			focus;				/**< The color when a widget is focused */
+	color_t			background;			/**< The window background color */
+	color_t			focus;				/**< The color when a widget is focused */
 	GColorSet		enabled;			/**< The colors when enabled */
 	GColorSet		disabled;			/**< The colors when disabled */
 	GColorSet		pressed;			/**< The colors when pressed */
@@ -90,7 +90,7 @@ typedef uint16_t	WidgetTag;
  * 			to clear it.
  * @note	The text element must be static string (not stack allocated). If you want to use
  * 			a dynamic string (eg a stack allocated string) use NULL for this member and then call
- * 			@p gwinSetText() with useAlloc set to gTrue.
+ * 			@p gwinSetText() with useAlloc set to TRUE.
  *
  * @{
  */
@@ -168,6 +168,10 @@ typedef struct GEventGWin {
 #define GEVENT_GWIN_CTRL_FIRST	(GEVENT_GWIN_FIRST+0x40)
 /** @} */
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
  * @brief	Clear a GWidgetInit structure to all zero's
  * @note	This function is provided just to prevent problems
@@ -184,7 +188,7 @@ void gwinWidgetClearInit(GWidgetInit *pwi);
  * @brief   Set the default style for widgets created hereafter.
  *
  * @param[in] pstyle	The default style. Passing NULL uses the system compiled style.
- * @param[in] updateAll	If gTrue then all existing widgets that are using the current default style
+ * @param[in] updateAll	If TRUE then all existing widgets that are using the current default style
  * 						will be updated to use this new style. Widgets that have custom styles different
  * 						from the default style will not be updated.
  *
@@ -192,7 +196,7 @@ void gwinWidgetClearInit(GWidgetInit *pwi);
  *
  * @api
  */
-void gwinSetDefaultStyle(const GWidgetStyle *pstyle, gBool updateAll);
+void gwinSetDefaultStyle(const GWidgetStyle *pstyle, bool_t updateAll);
 
 /**
  * @brief   Get the current default style.
@@ -208,14 +212,14 @@ const GWidgetStyle *gwinGetDefaultStyle(void);
  *
  * @param[in] gh		The widget handle
  * @param[in] text		The text to set. This must be a constant string unless useAlloc is set.
- * @param[in] useAlloc	If gTrue the string specified will be copied into dynamically allocated memory.
+ * @param[in] useAlloc	If TRUE the string specified will be copied into dynamically allocated memory.
  *
  * @note				The widget is automatically redrawn
  * @note				Non-widgets will ignore this call.
  *
  * @api
  */
-void gwinSetText(GHandle gh, const char *text, gBool useAlloc);
+void gwinSetText(GHandle gh, const char *text, bool_t useAlloc);
 
 /**
  * @brief   Get the text of a widget.
@@ -230,7 +234,7 @@ const char *gwinGetText(GHandle gh);
 #if (GFX_USE_GFILE && GFILE_NEED_PRINTG && GFILE_NEED_STRINGS) || defined(__DOXYGEN__)
 	/**
 	 * @brief   Set the text of a widget using a printf style format.
-	 * @pre		GFX_USE_GFILE, GFILE_NEED_PRINTG and GFILE_NEED_STRINGS must all be GFXON
+	 * @pre		GFX_USE_GFILE, GFILE_NEED_PRINTG and GFILE_NEED_STRINGS must all be TRUE
 	 *
 	 * @param[in] gh		The widget handle
 	 * @param[in] fmt		The format string using a printf/g syntax. See @p vsnprintg()
@@ -250,11 +254,11 @@ const char *gwinGetText(GHandle gh);
  *
  * @param[in] gh		The handle to check.
  *
- * @return	gTrue if the passed handle is a widget handle. gFalse otherwise.
+ * @return	TRUE if the passed handle is a widget handle. FALSE otherwise.
  *
  * @api
  */
-gBool gwinIsWidget(GHandle gh);
+bool_t gwinIsWidget(GHandle gh);
 
 #if GWIN_WIDGET_TAGS || defined(__DOXYGEN__)
 	/**
@@ -265,7 +269,7 @@ gBool gwinIsWidget(GHandle gh);
 	 *
 	 * @note				Non-widgets will ignore this call.
 	 *
-	 * @pre					Requires GWIN_WIDGET_TAGS to be GFXON
+	 * @pre					Requires GWIN_WIDGET_TAGS to be TRUE
 	 *
 	 * @api
 	 */
@@ -277,7 +281,7 @@ gBool gwinIsWidget(GHandle gh);
 	 *
 	 * @param[in] gh		The widget handle
 	 *
-	 * @pre					Requires GWIN_WIDGET_TAGS to be GFXON
+	 * @pre					Requires GWIN_WIDGET_TAGS to be TRUE
 	 *
 	 * @api
 	 */
@@ -324,22 +328,22 @@ void gwinSetCustomDraw(GHandle gh, CustomWidgetDrawFunction fn, void *param);
 
 /**
  * @brief	Attach a Listener to listen for widget events
- * @return	gTrue on success
+ * @return	TRUE on success
  *
  * @param[in] pl		The listener
  *
  * @api
  */
-gBool gwinAttachListener(GListener *pl);
+bool_t gwinAttachListener(GListener *pl);
 
 #if (GFX_USE_GINPUT && GINPUT_NEED_MOUSE) || defined(__DOXYGEN__)
-	gBool DEPRECATED("This call can now be removed. Attaching the mouse to GWIN is now automatic.") gwinAttachMouse(uint16_t instance);
+	bool_t DEPRECATED("This call can now be removed. Attaching the mouse to GWIN is now automatic.") gwinAttachMouse(uint16_t instance);
 #endif
 
 #if (GFX_USE_GINPUT && GINPUT_NEED_TOGGLE) || defined(__DOXYGEN__)
 	/**
 	 * @brief	Attach a toggle to a widget
-	 * @return	gTrue on success
+	 * @return	TRUE on success
 	 *
 	 * @param[in] gh		The widget handle
 	 * @param[in] role		The function the toggle will perform for the widget
@@ -347,31 +351,17 @@ gBool gwinAttachListener(GListener *pl);
 	 *
 	 * @note		See the documentation on the specific widget to see the possible
 	 * 				values for the role parameter. If it is out of range, this function
-	 * 				will return gFalse
+	 * 				will return FALSE
 	 *
 	 * @api
 	 */
-	gBool gwinAttachToggle(GHandle gh, uint16_t role, uint16_t instance);
-	/**
-	 * @brief	Detach a toggle from a widget
-	 * @return	gTrue on success
-	 *
-	 * @param[in] gh		The widget handle
-	 * @param[in] role		The function the toggle will perform for the widget
-	 *
-	 * @note		See the documentation on the specific widget to see the possible
-	 * 				values for the role parameter. If it is out of range, this function
-	 * 				will return gFalse
-	 *
-	 * @api
-	 */
-	gBool gwinDetachToggle(GHandle gh, uint16_t role);
+	bool_t gwinAttachToggle(GHandle gh, uint16_t role, uint16_t instance);
 #endif
 
 #if (GFX_USE_GINPUT && GINPUT_NEED_DIAL) || defined(__DOXYGEN__)
 	/**
 	 * @brief	Attach a toggle to a widget
-	 * @return	gTrue on success
+	 * @return	TRUE on success
 	 *
 	 * @param[in] gh		The widget handle
 	 * @param[in] role		The function the dial will perform for the widget
@@ -379,17 +369,17 @@ gBool gwinAttachListener(GListener *pl);
 	 *
 	 * @note		See the documentation on the specific widget to see the possible
 	 * 				values for the role parameter. If it is out of range, this function
-	 * 				will return gFalse
+	 * 				will return FALSE
 	 *
 	 * @api
 	 */
-	gBool gwinAttachDial(GHandle gh, uint16_t role, uint16_t instance);
+	bool_t gwinAttachDial(GHandle gh, uint16_t role, uint16_t instance);
 #endif
 
 #if (GFX_USE_GINPUT && GINPUT_NEED_KEYBOARD) || GWIN_NEED_KEYBOARD || defined(__DOXYGEN__)
 	/**
 	 * @brief	Set the keyboard focus to a specific window
-	 * @return	Returns gTrue if the focus could be set to that window
+	 * @return	Returns TRUE if the focus could be set to that window
 	 *
 	 * @param[in] gh	The window
 	 *
@@ -398,7 +388,7 @@ gBool gwinAttachListener(GListener *pl);
 	 *
 	 * @api
 	 */
-	gBool gwinSetFocus(GHandle gh);
+	bool_t gwinSetFocus(GHandle gh);
 
 	/**
 	 * @brief	Get the widget that is currently in focus
@@ -413,7 +403,11 @@ gBool gwinAttachListener(GListener *pl);
 	GHandle gwinGetFocus(void);
 #else
 	#define gwinGetFocus()		(0)
-	#define gwinSetFocus(gh)	(gFalse)
+	#define gwinSetFocus(gh)	(FALSE)
+#endif
+
+#ifdef __cplusplus
+}
 #endif
 
 /* Include extra widget types */

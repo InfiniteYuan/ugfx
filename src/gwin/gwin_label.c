@@ -21,18 +21,18 @@
 #define gw2obj					((GLabelObject *)gw)
 
 // simple: single line with no wrapping
-static gCoord getwidth(const char *text, gFont font, gCoord maxwidth) {
+static coord_t getwidth(const char *text, font_t font, coord_t maxwidth) {
 	(void) maxwidth;
 
 	return gdispGetStringWidth(text, font)+2;		// Allow one pixel of padding on each side
 }
 
 // simple: single line with no wrapping
-static gCoord getheight(const char *text, gFont font, gCoord maxwidth) {
+static coord_t getheight(const char *text, font_t font, coord_t maxwidth) {
 	(void) text;
 	(void) maxwidth;
 
-	return gdispGetFontMetric(font, gFontHeight);
+	return gdispGetFontMetric(font, fontHeight);
 }
 
 static const gwidgetVMT labelVMT = {
@@ -105,7 +105,7 @@ GHandle gwinGLabelCreate(GDisplay *g, GLabelObject *widget, GWidgetInit *pInit) 
 	return (GHandle)widget;
 }
 
-void gwinLabelSetBorder(GHandle gh, gBool border) {
+void gwinLabelSetBorder(GHandle gh, bool_t border) {
 	// is it a valid handle?
 	if (gh->vmt != (gwinVMT *)&labelVMT)
 		return;
@@ -117,7 +117,7 @@ void gwinLabelSetBorder(GHandle gh, gBool border) {
 }
 
 #if GWIN_LABEL_ATTRIBUTE
-	void gwinLabelSetAttribute(GHandle gh, gCoord tab, const char* attr) {
+	void gwinLabelSetAttribute(GHandle gh, coord_t tab, const char* attr) {
 		// is it a valid handle?
 		if (gh->vmt != (gwinVMT *)&labelVMT)
 			return;
@@ -129,9 +129,9 @@ void gwinLabelSetBorder(GHandle gh, gBool border) {
 	}
 #endif // GWIN_LABEL_ATTRIBUTE
 
-static void gwinLabelDraw(GWidgetObject *gw, gJustify justify) {
-	gCoord				w, h;
-	gColor				c;
+static void gwinLabelDraw(GWidgetObject *gw, justify_t justify) {
+	coord_t				w, h;
+	color_t				c;
 
 	// is it a valid handle?
 	if (gw->g.vmt != (gwinVMT *)&labelVMT)
@@ -173,19 +173,19 @@ static void gwinLabelDraw(GWidgetObject *gw, gJustify justify) {
 void gwinLabelDrawJustifiedLeft(GWidgetObject *gw, void *param) {
 	(void)param;
 	
-	gwinLabelDraw(gw, gJustifyLeft);
+	gwinLabelDraw(gw, justifyLeft);
 }
 
 void gwinLabelDrawJustifiedRight(GWidgetObject *gw, void *param) {
 	(void)param;
 	
-	gwinLabelDraw(gw, gJustifyRight);
+	gwinLabelDraw(gw, justifyRight);
 }
 
 void gwinLabelDrawJustifiedCenter(GWidgetObject *gw, void *param) {
 	(void)param;
 	
-	gwinLabelDraw(gw, gJustifyCenter);
+	gwinLabelDraw(gw, justifyCenter);
 }
 
 #undef gh2obj

@@ -102,17 +102,9 @@ void gwinProgressbarSetRange(GHandle gh, int min, int max) {
 
 	if (min == max)		// prevent divide by 0 errors.
 		max++;
-	if (min <= max) {
-		gsw->min = min;
-		gsw->max = max;
-		gsw->pos = min;
-		gsw->res = 1;
-	} else {
-		gsw->min = max;
-		gsw->max = min;
-		gsw->pos = min;
-		gsw->res = -1;
-	}
+	gsw->min = min;
+	gsw->max = max;
+	gsw->pos = min;
 
 	PBResetDisplayPos(gsw);
 
@@ -125,9 +117,15 @@ void gwinProgressbarSetPosition(GHandle gh, int pos) {
 	if (gh->vmt != (gwinVMT *)&progressbarVMT)
 		return;
 
-	if (pos < gsw->min) gsw->pos = gsw->min;
-	else if (pos > gsw->max) gsw->pos = gsw->max;
-	else gsw->pos = pos;
+	if (gsw->min <= gsw->max) {
+		if (pos < gsw->min) gsw->pos = gsw->min;
+		else if (pos > gsw->max) gsw->pos = gsw->max;
+		else gsw->pos = pos;
+	} else {
+		if (pos > gsw->min) gsw->pos = gsw->min;
+		else if (pos < gsw->max) gsw->pos = gsw->max;
+		else gsw->pos = pos;
+	}
 
 	PBResetDisplayPos(gsw);
 	_gwinUpdate(gh);
@@ -141,6 +139,9 @@ void gwinProgressbarSetResolution(GHandle gh, int resolution) {
 	if (gh->vmt != (gwinVMT *)&progressbarVMT)
 		return;
 
+	if (resolution <= 0)
+		resolution = 1;
+
 	gsw->res = resolution;
 
 	#undef gsw
@@ -152,9 +153,10 @@ void gwinProgressbarIncrement(GHandle gh) {
 	if (gh->vmt != (gwinVMT *)&progressbarVMT)
 		return;
 
-	gsw->pos += gsw->res;
-	if (gsw->pos < gsw->min) gsw->pos = gsw->min;
-	else if (gsw->pos > gsw->max) gsw->pos = gsw->max;
+	if (gsw->max - gsw->pos > gsw->res)
+		gsw->pos += gsw->res;
+	else
+		gsw->pos = gsw->max;
 
 	PBResetDisplayPos(gsw);
 	_gwinUpdate(gh);
@@ -168,9 +170,12 @@ void gwinProgressbarDecrement(GHandle gh) {
 	if (gh->vmt != (gwinVMT *)&progressbarVMT)
 		return;
 
+	if (gsw->pos > gsw->res)
+		gsw->pos -= gsw->min;
+	else
+		gsw->pos = gsw->min;
+
 	gsw->pos -= gsw->res;
-	if (gsw->pos < gsw->min) gsw->pos = gsw->min;
-	else if (gsw->pos > gsw->max) gsw->pos = gsw->max;
 
 	PBResetDisplayPos(gsw);
 	_gwinUpdate(gh);
@@ -195,13 +200,13 @@ void gwinProgressbarDecrement(GHandle gh) {
 		#undef gsw
 	}
 
-	void gwinProgressbarStart(GHandle gh, gDelay delay) {
+	void gwinProgressbarStart(GHandle gh, delaytime_t delay) {
 		#define gsw		((GProgressbarObject *)gh)
 
 		if (gh->vmt != (gwinVMT *)&progressbarVMT)
 			return;
 
-		gtimerStart(&gsw->gt, _progressbarCallback, gh, gTrue, delay);
+		gtimerStart(&gsw->gt, _progressbarCallback, gh, TRUE, delay);
 
 		#undef gsw
 	}
@@ -255,7 +260,7 @@ void gwinProgressbarDraw_Std(GWidgetObject *gw, void *param) {
 		gdispGDrawBox(gw->g.display, gw->g.x, gw->g.y, gw->g.width, gw->g.height, pcol->edge);												// Edge
 		gdispGDrawLine(gw->g.display, gw->g.x+gsw->dpos, gw->g.y, gw->g.x+gsw->dpos, gw->g.y+gw->g.height-1, pcol->edge);					// Thumb
 	}
-	gdispGDrawStringBox(gw->g.display, gw->g.x+1, gw->g.y+1, gw->g.width-2, gw->g.height-2, gw->text, gw->g.font, pcol->text, gJustifyCenter);
+	gdispGDrawStringBox(gw->g.display, gw->g.x+1, gw->g.y+1, gw->g.width-2, gw->g.height-2, gw->text, gw->g.font, pcol->text, justifyCenter);
 
 	#undef gsw
 }
@@ -265,7 +270,7 @@ void gwinProgressbarDraw_Image(GWidgetObject *gw, void *param) {
 	#define gsw			((GProgressbarObject *)gw)
 	#define gi			((gdispImage *)param)
 	const GColorSet *	pcol;
-	gCoord				z, v;
+	coord_t				z, v;
 
 	if (gw->g.vmt != (gwinVMT *)&progressbarVMT)
 		return;
@@ -306,7 +311,7 @@ void gwinProgressbarDraw_Image(GWidgetObject *gw, void *param) {
 		gdispGDrawBox(gw->g.display, gw->g.x, gw->g.y, gw->g.width, gw->g.height, pcol->edge);								// Edge
 		gdispGDrawLine(gw->g.display, gw->g.x+gsw->dpos, gw->g.y+1, gw->g.x+gsw->dpos, gw->g.y+gw->g.height-2, pcol->edge);	// Thumb
 	}
-	gdispGDrawStringBox(gw->g.display, gw->g.x+1, gw->g.y+1, gw->g.width-2, gw->g.height-2, gw->text, gw->g.font, pcol->text, gJustifyCenter);
+	gdispGDrawStringBox(gw->g.display, gw->g.x+1, gw->g.y+1, gw->g.width-2, gw->g.height-2, gw->text, gw->g.font, pcol->text, justifyCenter);
 
 	#undef gsw
 }

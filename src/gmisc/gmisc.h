@@ -26,7 +26,7 @@
 /*===========================================================================*/
 
 // Forward definition
-typedef struct gPoint gPoint;
+typedef struct point point;
 
 /**
  * @brief	Sample data formats
@@ -90,6 +90,10 @@ typedef int32_t	fixed;
 
 #if GFX_USE_GMISC || defined(__DOXYGEN__)
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #if GMISC_NEED_ARRAYOPS || defined(__DOXYGEN__)
 	/**
 	 * @brief				Convert from one array format to another array format.
@@ -130,8 +134,6 @@ typedef int32_t	fixed;
 #endif
 
 #if GMISC_NEED_FASTTRIG || defined(__DOXYGEN__)
-		#include <math.h>
-
 		extern const double sintabledouble[];
 
 		/**
@@ -249,7 +251,7 @@ typedef int32_t	fixed;
 	 *
 	 * @api
 	 */
-	void gmiscMatrixFloat2DApplyToPoints(gPoint *dst, const gPoint *src, const MatrixFloat2D *m, int cnt);
+	void gmiscMatrixFloat2DApplyToPoints(point *dst, const point *src, const MatrixFloat2D *m, int cnt);
 
 	/**
 	 * @brief	Set the 2D matrix to the identity matrix
@@ -367,7 +369,7 @@ typedef int32_t	fixed;
 	 *
 	 * @api
 	 */
-	void gmiscMatrixFixed2DApplyToPoints(gPoint *dst, const gPoint *src, const MatrixFixed2D *m, int cnt);
+	void gmiscMatrixFixed2DApplyToPoints(point *dst, const point *src, const MatrixFixed2D *m, int cnt);
 
 	/**
 	 * @brief	Set the 2D matrix to the identity matrix
@@ -460,24 +462,9 @@ typedef int32_t	fixed;
 	#endif
 #endif
 
-
-#if GMISC_NEED_HITTEST_POLY || defined(__DOXYGEN__)
-	/**
-	 * @brief	Check whether a point is inside or on the edge of a polygon
-	 * @pre		Requires GFX_USE_GMISC and GMISC_NEED_HITTEST_POLY
-	 *
-	 * @note	This function works both with convex and concave polygons
-	 *
-	 * @param[in] pntarray		The array of points that form the polygon
-	 * @param[in] cnt			The number of points in the point array @p pntarray
-	 * @param[in] p				The point to test
-	 *
-	 * @return	@p gTrue if the point @p p is inside or on the edge of the polygon @p pntarray, @p gFalse otherwise.
-	 *
-	 * @api
-	 */
-	gBool gmiscHittestPoly(const gPoint *pntarray, unsigned cnt, const gPoint *p);
-#endif // GMISC_NEED_HITTEST_POLY
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* GFX_USE_MISC */
 

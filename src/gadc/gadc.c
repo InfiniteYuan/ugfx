@@ -214,7 +214,7 @@ void gadcHighSpeedInit(uint32_t physdev, uint32_t frequency)
 #if GFX_USE_GEVENT
 	GSourceHandle gadcHighSpeedGetSource(void) {
 		if (!gtimerIsActive(&hsGTimer))
-			gtimerStart(&hsGTimer, HighSpeedGTimerCallback, 0, gTrue, gDelayForever);
+			gtimerStart(&hsGTimer, HighSpeedGTimerCallback, 0, TRUE, TIME_INFINITE);
 		hsFlags |= GADC_HSADC_GTIMER;
 		return (GSourceHandle)&hsGTimer;
 	}
@@ -224,7 +224,7 @@ void gadcHighSpeedSetISRCallback(GADCISRCallbackFunction isrfn) {
 	hsISRcallback = isrfn;
 }
 
-GDataBuffer *gadcHighSpeedGetData(gDelay ms) {
+GDataBuffer *gadcHighSpeedGetData(delaytime_t ms) {
 	return (GDataBuffer *)gfxQueueGSyncGet(&hsListDone, ms);
 }
 
@@ -285,7 +285,7 @@ static void LowSpeedGTimerCallback(void *param) {
 	NonTimerData		*pdata;
 
 	// Look for completed non-timer jobs and call the call-backs for each
-	while ((pdata = (NonTimerData *)gfxQueueGSyncGet(&lsListDone, gDelayNone))) {
+	while ((pdata = (NonTimerData *)gfxQueueGSyncGet(&lsListDone, TIME_IMMEDIATE))) {
 		pdata->callback(pdata->job.buffer, pdata->param);
 		gfxFree(pdata);
 	}
@@ -315,20 +315,20 @@ void gadcLowSpeedGet(uint32_t physdev, adcsample_t *buffer) {
 	gfxSystemUnlock();
 
 	// Wait for it to complete
-	gfxSemWait(&ndata.sigdone, gDelayForever);
+	gfxSemWait(&ndata.sigdone, TIME_INFINITE);
 	gfxSemDestroy(&ndata.sigdone);
 }
 
-gBool gadcLowSpeedStart(uint32_t physdev, adcsample_t *buffer, GADCCallbackFunction fn, void *param) {
+bool_t gadcLowSpeedStart(uint32_t physdev, adcsample_t *buffer, GADCCallbackFunction fn, void *param) {
 	NonTimerData *pdata;
 
 	/* Start the Low Speed Timer */
 	if (!gtimerIsActive(&lsGTimer))
-		gtimerStart(&lsGTimer, LowSpeedGTimerCallback, 0, gTrue, gDelayForever);
+		gtimerStart(&lsGTimer, LowSpeedGTimerCallback, 0, TRUE, TIME_INFINITE);
 
 	// Prepare the job
 	if (!(pdata = gfxAlloc(sizeof(NonTimerData))))
-		return gFalse;
+		return FALSE;
 	pdata->job.physdev = physdev;
 	pdata->job.buffer = buffer;
 	pdata->callback = fn;
@@ -347,7 +347,7 @@ gBool gadcLowSpeedStart(uint32_t physdev, adcsample_t *buffer, GADCCallbackFunct
 		gfxQueueGSyncPutI(&lsListToDo, (gfxQueueGSyncItem *)pdata);
 	}
 	gfxSystemUnlock();
-	return gTrue;
+	return TRUE;
 }
 
 #endif /* GFX_USE_GADC */

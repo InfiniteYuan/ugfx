@@ -33,7 +33,7 @@ static void SendCheckboxEvent(GWidgetObject *gw) {
 			continue;
 		pce->type = GEVENT_GWIN_CHECKBOX;
 		pce->gwin = &gw->g;
-		pce->isChecked = (gw->g.flags & GCHECKBOX_FLG_CHECKED) ? gTrue : gFalse;
+		pce->isChecked = (gw->g.flags & GCHECKBOX_FLG_CHECKED) ? TRUE : FALSE;
 		#if GWIN_WIDGET_TAGS
 			pce->tag = gw->tag;
 		#endif
@@ -44,7 +44,7 @@ static void SendCheckboxEvent(GWidgetObject *gw) {
 }
 
 #if GINPUT_NEED_MOUSE
-	static void CheckboxMouseDown(GWidgetObject *gw, gCoord x, gCoord y) {
+	static void CheckboxMouseDown(GWidgetObject *gw, coord_t x, coord_t y) {
 		(void) x; (void) y;
 		gw->g.flags ^= GCHECKBOX_FLG_CHECKED;
 		_gwinUpdate((GHandle)gw);
@@ -56,15 +56,16 @@ static void SendCheckboxEvent(GWidgetObject *gw) {
 	static void CheckboxKeyboard(GWidgetObject* gw, GEventKeyboard* pke)
 	{
 		// Only react on KEYDOWN events. Ignore KEYUP events.
-		if ((pke->keystate & GKEYSTATE_KEYUP))
+		if (pke->keystate & GKEYSTATE_KEYUP) {
 			return;
+		}
 
 		// ENTER and SPACE keys to check/uncheck the checkbox
 		if (pke->c[0] == GKEY_ENTER || pke->c[0] == GKEY_SPACE) {
 			gw->g.flags ^= GCHECKBOX_FLG_CHECKED;
-			_gwinUpdate((GHandle)gw);
-			SendCheckboxEvent(gw);
 		}
+
+		_gwinUpdate((GHandle)gw);
 	}
 #endif
 
@@ -139,7 +140,7 @@ GHandle gwinGCheckboxCreate(GDisplay *g, GCheckboxObject *gb, const GWidgetInit 
 	return (GHandle)gb;
 }
 
-void gwinCheckboxCheck(GHandle gh, gBool isChecked) {
+void gwinCheckboxCheck(GHandle gh, bool_t isChecked) {
 	if (gh->vmt != (gwinVMT *)&checkboxVMT)
 		return;
 
@@ -154,11 +155,11 @@ void gwinCheckboxCheck(GHandle gh, gBool isChecked) {
 	SendCheckboxEvent((GWidgetObject *)gh);
 }
 
-gBool gwinCheckboxIsChecked(GHandle gh) {
+bool_t gwinCheckboxIsChecked(GHandle gh) {
 	if (gh->vmt != (gwinVMT *)&checkboxVMT)
-		return gFalse;
+		return FALSE;
 
-	return (gh->flags & GCHECKBOX_FLG_CHECKED) ? gTrue : gFalse;
+	return (gh->flags & GCHECKBOX_FLG_CHECKED) ? TRUE : FALSE;
 }
 
 /*----------------------------------------------------------
@@ -173,7 +174,7 @@ static const GColorSet *getCheckboxColors(GWidgetObject *gw) {
 
 void gwinCheckboxDraw_CheckOnLeft(GWidgetObject *gw, void *param) {
 	#define gcw			((GCheckboxObject *)gw)
-	gCoord				ld, df;
+	coord_t				ld, df;
 	const GColorSet *	pcol;
 	(void)				param;
 
@@ -196,13 +197,13 @@ void gwinCheckboxDraw_CheckOnLeft(GWidgetObject *gw, void *param) {
 	_gwidgetDrawFocusRect(gw, 1, 1, ld-2, ld-2);
 
 	// Draw the text
-	gdispGFillStringBox(gw->g.display, gw->g.x+ld+1, gw->g.y, gw->g.width-ld-1, gw->g.height, gw->text, gw->g.font, pcol->text, gw->pstyle->background, gJustifyLeft);
+	gdispGFillStringBox(gw->g.display, gw->g.x+ld+1, gw->g.y, gw->g.width-ld-1, gw->g.height, gw->text, gw->g.font, pcol->text, gw->pstyle->background, justifyLeft);
 	#undef gcw
 }
 
 void gwinCheckboxDraw_CheckOnRight(GWidgetObject *gw, void *param) {
 	#define gcw			((GCheckboxObject *)gw)
-	gCoord				ep, ld, df;
+	coord_t				ep, ld, df;
 	const GColorSet *	pcol;
 	(void)				param;
 
@@ -228,7 +229,7 @@ void gwinCheckboxDraw_CheckOnRight(GWidgetObject *gw, void *param) {
 	_gwidgetDrawFocusRect(gw, ep+1, 1, ld-2, ld-2);
 
 	// Draw the text
-	gdispGFillStringBox(gw->g.display, gw->g.x, gw->g.y, ep-1, gw->g.height, gw->text, gw->g.font, pcol->text, gw->pstyle->background, gJustifyRight);
+	gdispGFillStringBox(gw->g.display, gw->g.x, gw->g.y, ep-1, gw->g.height, gw->text, gw->g.font, pcol->text, gw->pstyle->background, justifyRight);
 	#undef gcw
 }
 
@@ -242,10 +243,10 @@ void gwinCheckboxDraw_CheckOnRight(GWidgetObject *gw, void *param) {
 
 		#if GWIN_NEED_FLASHING
 			// Flash the on and off state.
-			pcol = _gwinGetFlashedColor(gw, pcol, gTrue);
+			pcol = _gwinGetFlashedColor(gw, pcol, TRUE);
 		#endif
 
-		gdispGFillStringBox(gw->g.display, gw->g.x, gw->g.y, gw->g.width-1, gw->g.height-1, gw->text, gw->g.font, pcol->text, pcol->fill, gJustifyCenter);
+		gdispGFillStringBox(gw->g.display, gw->g.x, gw->g.y, gw->g.width-1, gw->g.height-1, gw->text, gw->g.font, pcol->text, pcol->fill, justifyCenter);
 		gdispGDrawLine(gw->g.display, gw->g.x+gw->g.width-1, gw->g.y, gw->g.x+gw->g.width-1, gw->g.y+gw->g.height-1, pcol->edge);
 		gdispGDrawLine(gw->g.display, gw->g.x, gw->g.y+gw->g.height-1, gw->g.x+gw->g.width-2, gw->g.y+gw->g.height-1, pcol->edge);
 	}
@@ -254,8 +255,8 @@ void gwinCheckboxDraw_CheckOnRight(GWidgetObject *gw, void *param) {
 		const GColorSet *	pcol;
 		fixed				alpha;
 		fixed				dalpha;
-		gCoord				i;
-		gColor				tcol, bcol;
+		coord_t				i;
+		color_t				tcol, bcol;
 		(void)				param;
 
 		if (gw->g.vmt != (gwinVMT *)&checkboxVMT)	return;
@@ -263,17 +264,17 @@ void gwinCheckboxDraw_CheckOnRight(GWidgetObject *gw, void *param) {
 
 		#if GWIN_NEED_FLASHING
 			// Flash the on and off state.
-			pcol = _gwinGetFlashedColor(gw, pcol, gTrue);
+			pcol = _gwinGetFlashedColor(gw, pcol, TRUE);
 		#endif
 
 		/* Fill the box blended from variants of the fill color */
-		tcol = gdispBlendColor(GFX_WHITE, pcol->fill, CHK_TOP_FADE);
-		bcol = gdispBlendColor(GFX_BLACK, pcol->fill, CHK_BOTTOM_FADE);
+		tcol = gdispBlendColor(White, pcol->fill, CHK_TOP_FADE);
+		bcol = gdispBlendColor(Black, pcol->fill, CHK_BOTTOM_FADE);
 		dalpha = FIXED(255)/gw->g.height;
 		for(alpha = 0, i = 0; i < gw->g.height; i++, alpha += dalpha)
 			gdispGDrawLine(gw->g.display, gw->g.x, gw->g.y+i, gw->g.x+gw->g.width-2, gw->g.y+i, gdispBlendColor(bcol, tcol, NONFIXED(alpha)));
 
-		gdispGDrawStringBox(gw->g.display, gw->g.x, gw->g.y, gw->g.width-1, gw->g.height-1, gw->text, gw->g.font, pcol->text, gJustifyCenter);
+		gdispGDrawStringBox(gw->g.display, gw->g.x, gw->g.y, gw->g.width-1, gw->g.height-1, gw->text, gw->g.font, pcol->text, justifyCenter);
 		gdispGDrawLine(gw->g.display, gw->g.x+gw->g.width-1, gw->g.y, gw->g.x+gw->g.width-1, gw->g.y+gw->g.height-1, pcol->edge);
 		gdispGDrawLine(gw->g.display, gw->g.x, gw->g.y+gw->g.height-1, gw->g.x+gw->g.width-2, gw->g.y+gw->g.height-1, pcol->edge);
 	}

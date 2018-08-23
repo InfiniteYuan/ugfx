@@ -54,13 +54,13 @@ int main(void) {
 		GWindowInit		wi;
 
 		gwinClearInit(&wi);
-		wi.show = gTrue;
+		wi.show = TRUE;
 		wi.x = 0; wi.y = 0; wi.width = gdispGetWidth(); wi.height = gdispGetHeight();
 		GW = gwinConsoleCreate(0, &wi);
 
 		/* Set the fore- and background colors for the console */
-		gwinSetColor(GW, GFX_YELLOW);
-		gwinSetBgColor(GW, GFX_BLACK);
+		gwinSetColor(GW, Yellow);
+		gwinSetBgColor(GW, Black);
 		gwinClear(GW);
 	}
 
@@ -70,7 +70,7 @@ int main(void) {
 
 	while(1) {
 		// Get an Event
-		pk = (GEventKeyboard *)geventEventWait(&gl, gDelayForever);
+		pk = (GEventKeyboard *)geventEventWait(&gl, TIME_INFINITE);
 
 		if (pk->type != GEVENT_KEYBOARD)
 			continue;

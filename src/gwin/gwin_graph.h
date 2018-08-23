@@ -16,8 +16,8 @@
  *
  * @details	GWIN allows it to easily draw graphs.
  *
- * @pre		GFX_USE_GWIN must be set to GFXON in your gfxconf.h
- * @pre		GWIN_NEED_GRAPH must be set to GFXON in your gfxconf.h
+ * @pre		GFX_USE_GWIN must be set to TRUE in your gfxconf.h
+ * @pre		GWIN_NEED_GRAPH must be set to TRUE in your gfxconf.h
  *
  * @{
  */
@@ -33,8 +33,8 @@ typedef enum GGraphPointType_e {
 
 typedef struct GGraphPointStyle_t {
 	GGraphPointType		type;
-	gCoord				size;
-	gColor				color;
+	coord_t				size;
+	color_t				color;
 	} GGraphPointStyle;
 
 typedef enum GGraphLineType_e {
@@ -43,15 +43,15 @@ typedef enum GGraphLineType_e {
 
 typedef struct GGraphLineStyle_t {
 	GGraphLineType		type;
-	gCoord				size;
-	gColor				color;
+	coord_t				size;
+	color_t				color;
 	} GGraphLineStyle;
 
 typedef struct GGraphGridStyle_t {
 	GGraphLineType		type;
-	gCoord				size;
-	gColor				color;
-	gCoord				spacing;
+	coord_t				size;
+	color_t				color;
+	coord_t				spacing;
 	} GGraphGridStyle;
 
 typedef struct GGraphStyle_t {
@@ -77,13 +77,17 @@ typedef struct GGraphStyle_t {
 typedef struct GGraphObject {
 	GWindowObject		g;
 	GGraphStyle			style;
-	gCoord				xorigin, yorigin;
-	gCoord				lastx, lasty;
+	coord_t				xorigin, yorigin;
+	coord_t				lastx, lasty;
 	} GGraphObject;
 
 /*===========================================================================*/
 /* External declarations.                                                    */
 /*===========================================================================*/
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /**
  * @brief   Create a graph window.
@@ -94,7 +98,7 @@ typedef struct GGraphObject {
  * @param[in] pInit		The initialization parameters to use
  *
  * @note				The drawing color and the background color get set to the current defaults. If you haven't called
- * 						@p gwinSetDefaultColor() or @p gwinSetDefaultBgColor() then these are GFX_WHITE and GFX_BLACK respectively.
+ * 						@p gwinSetDefaultColor() or @p gwinSetDefaultBgColor() then these are White and Black respectively.
  * @note				The font gets set to the current default font. If you haven't called @p gwinSetDefaultFont() then there
  * 						is no default font and text drawing operations will no nothing.
  * @note				The dimensions and position may be changed to fit on the real screen.
@@ -130,7 +134,7 @@ void gwinGraphSetStyle(GHandle gh, const GGraphStyle *pstyle);
  *
  * @api
  */
-void gwinGraphSetOrigin(GHandle gh, gCoord x, gCoord y);
+void gwinGraphSetOrigin(GHandle gh, coord_t x, coord_t y);
 
 /**
  * @brief   Draw the axis and the background grid.
@@ -161,7 +165,7 @@ void gwinGraphStartSet(GHandle gh);
  *
  * @api
  */
-void gwinGraphDrawPoint(GHandle gh, gCoord x, gCoord y);
+void gwinGraphDrawPoint(GHandle gh, coord_t x, coord_t y);
 
 /**
  * @brief   Draw multiple graph points.
@@ -174,7 +178,11 @@ void gwinGraphDrawPoint(GHandle gh, gCoord x, gCoord y);
  *
  * @api
  */
-void gwinGraphDrawPoints(GHandle gh, const gPoint *points, unsigned count);
+void gwinGraphDrawPoints(GHandle gh, const point *points, unsigned count);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif	/* _GWIN_GRAPH_H */
 /** @} */

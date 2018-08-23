@@ -13,7 +13,7 @@
 
 # uGFX settings
 	# See $(GFXLIB)/tools/gmake_scripts/library_ugfx.mk for the list of variables
-	GFXLIB					= ../ugfx2
+	GFXLIB					= ../ugfx
 	GFXBOARD				= STM32F746-Discovery
 	GFXDEMO					= applications/combo
 	#GFXDRIVERS				=
@@ -22,8 +22,8 @@
 # ChibiOS settings
 ifeq ($(OPT_OS),chibios)
 	# See $(GFXLIB)/tools/gmake_scripts/os_chibios_3.mk for the list of variables
-	CHIBIOS					= ../ChibiOS16
-	CHIBIOS_VERSION			= 16
+	CHIBIOS					= ../ChibiOS-Master
+	CHIBIOS_VERSION			= 3
 	CHIBIOS_CPUCLASS		= ARMCMx
 	CHIBIOS_PLATFORM		= STM32
 	CHIBIOS_DEVICE_FAMILY	= STM32F7xx
@@ -35,14 +35,11 @@ ifeq ($(OPT_OS),chibios)
 	#CHIBIOS_EXCEPTIONS_STACKSIZE = 0x400
 endif
 
-# Raw32 settings
-ifeq ($(OPT_OS),raw32)
-	CMSIS			= ../STM32F7_Drivers/CMSIS
-endif
-
 #Special - Required for the drivers for this discovery board.
-STMHAL		= ../STM32F7_Drivers/STM32F7xx_HAL_Driver
+STMHAL		= ../STM32/STM32F7xx_HAL_Driver
 
+#Special - Required for Raw32
+CMSIS			= ../STM32/CMSIS
 
 ##############################################################################################
 # Set these for your project
@@ -58,8 +55,8 @@ LDFLAGS  =
 SRC      = 
 
 OBJS     =
-DEFS     =
 #DEFS     = GFX_OS_HEAP_SIZE=40960
+DEFS     = 
 LIBS     =
 INCPATH  = 
 

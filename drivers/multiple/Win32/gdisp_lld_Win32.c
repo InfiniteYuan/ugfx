@@ -25,7 +25,7 @@
 #endif
 #ifndef GDISP_WIN32_USE_INDIRECT_UPDATE
 	/**
-	 * Setting this to GFXON delays updating the screen
+	 * Setting this to TRUE delays updating the screen
 	 * to the windows paint routine. Due to the
 	 * drawing lock this does not add as much speed
 	 * as might be expected but it is still faster in
@@ -37,20 +37,20 @@
 	 * if you are debugging drawing and want to see each
 	 * pixel as it is set.
 	 */
-	#define GDISP_WIN32_USE_INDIRECT_UPDATE		GFXON
+	#define GDISP_WIN32_USE_INDIRECT_UPDATE		TRUE
 #endif
 #ifndef GKEYBOARD_WIN32_NO_LAYOUT
 	/**
-	 * Setting this to GFXON turns off the layout engine.
+	 * Setting this to TRUE turns off the layout engine.
 	 * In this situation "cooked" characters are returned but
 	 * shift states etc are lost.
 	 * As only a limited number of keyboard layouts are currently
 	 * defined for Win32 in uGFX (currently only US English), setting this
-	 * to GFXON enables the windows keyboard mapping to be pass non-English
+	 * to TRUE enables the windows keyboard mapping to be pass non-English
 	 * characters to uGFX or to handle non-standard keyboard layouts at
 	 * the expense of losing special function keys etc.
 	 */
-	#define GKEYBOARD_WIN32_NO_LAYOUT			GFXOFF
+	#define GKEYBOARD_WIN32_NO_LAYOUT			FALSE
 #endif
 #ifndef GKEYBOARD_WIN32_DEFAULT_LAYOUT
 	#define GKEYBOARD_WIN32_DEFAULT_LAYOUT		KeyboardLayout_Win32_US
@@ -61,11 +61,9 @@
 #define DISPLAY_Y_OFFSET		50
 
 // Oops - name clashes with Win32 symbols
-#if GFX_COMPAT_V2 && GFX_COMPAT_OLDCOLORS
-	#undef Red
-	#undef Green
-	#undef Blue
-#endif
+#undef Red
+#undef Green
+#undef Blue
 
 #define WIN32_LEAN_AND_MEAN
 #include <stdio.h>
@@ -82,7 +80,7 @@
 	#define GDISP_FLG_WRAPPED			(GDISP_FLG_DRIVER<<4)
 #endif
 
-#if GFX_USE_GINPUT && GINPUT_NEED_TOGGLE
+#if GINPUT_NEED_TOGGLE
 	/* Include toggle support code */
 	#include "../../../src/ginput/ginput_driver_toggle.h"
 
@@ -90,14 +88,14 @@
 	static GDisplay *toggleWindow;
 #endif
 
-#if GFX_USE_GINPUT && GINPUT_NEED_MOUSE
+#if GINPUT_NEED_MOUSE
 	// Include mouse support code
 	#define GMOUSE_DRIVER_VMT		GMOUSEVMT_Win32
 	#include "../../../src/ginput/ginput_driver_mouse.h"
 
 	// Forward definitions
-	static gBool Win32MouseInit(GMouse *m, unsigned driverinstance);
-	static gBool Win32MouseRead(GMouse *m, GMouseReading *prd);
+	static bool_t Win32MouseInit(GMouse *m, unsigned driverinstance);
+	static bool_t Win32MouseRead(GMouse *m, GMouseReading *prd);
 
 	const GMouseVMT const GMOUSE_DRIVER_VMT[1] = {{
 		{
@@ -132,13 +130,13 @@
 	}};
 #endif
 
-#if GFX_USE_GINPUT && GINPUT_NEED_KEYBOARD
+#if GINPUT_NEED_KEYBOARD
 	#define GKEYBOARD_DRIVER_VMT		GKEYBOARDVMT_Win32
 	#include "../../../src/ginput/ginput_driver_keyboard.h"
 
 	#if !GKEYBOARD_WIN32_NO_LAYOUT
 		#if GKEYBOARD_LAYOUT_OFF
-			#error "The Win32 keyboard driver is using the layout engine. Please set GKEYBOARD_LAYOUT_OFF=GFXOFF or GKEYBOARD_WIN32_NO_LAYOUT=GFXON."
+			#error "The Win32 keyboard driver is using the layout engine. Please set GKEYBOARD_LAYOUT_OFF=FALSE or GKEYBOARD_WIN32_NO_LAYOUT=TRUE."
 		#endif
 
 		#include "../../../src/ginput/ginput_keyboard_microcode.h"
@@ -382,15 +380,11 @@
 			KMC_RECORDSTART, 0
 		};
 	#elif !GKEYBOARD_LAYOUT_OFF
-		#if GFX_COMPILER_WARNING_TYPE == GFX_COMPILER_WARNING_DIRECT
-			#warning "The WIN32 keyboard driver is not using the layout engine. If no other keyboard is using it consider defining GKEYBOARD_LAYOUT_OFF=GFXON to save code size."
-		#elif GFX_COMPILER_WARNING_TYPE == GFX_COMPILER_WARNING_MACRO
-			COMPILER_WARNING("The WIN32 keyboard driver is not using the layout engine. If no other keyboard is using it consider defining GKEYBOARD_LAYOUT_OFF=GFXON to save code size.")
-		#endif
+		#warning "The WIN32 keyboard driver is not using the layout engine. If no other keyboard is using it consider defining GKEYBOARD_LAYOUT_OFF=TRUE to save code size."
 	#endif
 
 	// Forward definitions
-	static gBool Win32KeyboardInit(GKeyboard *k, unsigned driverinstance);
+	static bool_t Win32KeyboardInit(GKeyboard *k, unsigned driverinstance);
 	static int Win32KeyboardGetData(GKeyboard *k, uint8_t *pch, int sz);
 
 	const GKeyboardVMT const GKEYBOARD_DRIVER_VMT[1] = {{
@@ -420,7 +414,7 @@
 #endif
 
 static DWORD			winThreadId;
-static volatile gBool	QReady;
+static volatile bool_t	QReady;
 static HANDLE			drawMutex;
 static HWND				hWndParent = 0;
 
@@ -428,7 +422,7 @@ static HWND				hWndParent = 0;
 /* Driver local routines    .                                                */
 /*===========================================================================*/
 
-#if GFX_USE_GINPUT && GINPUT_NEED_TOGGLE
+#if GINPUT_NEED_TOGGLE
 	#define WIN32_BUTTON_AREA		16
 #else
 	#define WIN32_BUTTON_AREA		0
@@ -441,41 +435,41 @@ typedef struct winPriv {
 	HDC				dcBuffer;
 	HBITMAP			dcBitmap;
 	HBITMAP 		dcOldBitmap;
-	#if GFX_USE_GINPUT && GINPUT_NEED_MOUSE
-		gCoord		mousex, mousey;
+	#if GINPUT_NEED_MOUSE
+		coord_t		mousex, mousey;
 		uint16_t	mousebuttons;
 		GMouse		*mouse;
-		gBool		mouseenabled;
-		void (*capfn)(void * hWnd, GDisplay *g, uint16_t buttons, gCoord x, gCoord y);
+		bool_t		mouseenabled;
+		void (*capfn)(HWND hWnd, GDisplay *g, uint16_t buttons, coord_t x, coord_t y);
 	#endif
-	#if GFX_USE_GINPUT && GINPUT_NEED_TOGGLE
+	#if GINPUT_NEED_TOGGLE
 		uint8_t		toggles;
 	#endif
 	#if GDISP_HARDWARE_STREAM_WRITE || GDISP_HARDWARE_STREAM_READ
-		gCoord		x0, y0, x1, y1;
-		gCoord		x, y;
+		coord_t		x0, y0, x1, y1;
+		coord_t		x, y;
 	#endif
 } winPriv;
 
-void gfxEmulatorSetParentWindow(void *hwnd) {
-	hWndParent = (HWND)hwnd;
+void gfxEmulatorSetParentWindow(HWND hwnd) {
+	hWndParent = hwnd;
 }
 
-#if GFX_USE_GINPUT && GINPUT_NEED_MOUSE
-	void gfxEmulatorMouseInject(GDisplay *g, uint16_t buttons, gCoord x, gCoord y) {
+#if GINPUT_NEED_MOUSE
+	void gfxEmulatorMouseInject(GDisplay *g, uint16_t buttons, coord_t x, coord_t y) {
 		winPriv *		priv;
 		
 		priv = (winPriv *)g->priv;
 		priv->mousebuttons = buttons;
 		priv->mousex = x;
 		priv->mousey = y;
-		if ((gmvmt(priv->mouse)->d.flags & GMOUSE_VFLG_NOPOLL))		// For normal setup this is always true
+		if ((gmvmt(priv->mouse)->d.flags & GMOUSE_VFLG_NOPOLL))		// For normal setup this is always TRUE
 			_gmouseWakeup(priv->mouse);
 	}
-	void gfxEmulatorMouseEnable(GDisplay *g, gBool enabled) {
+	void gfxEmulatorMouseEnable(GDisplay *g, bool_t enabled) {
 		((winPriv *)g->priv)->mouseenabled = enabled;
 	}
-	void gfxEmulatorMouseCapture(GDisplay *g, void (*capfn)(void * hWnd, GDisplay *g, uint16_t buttons, gCoord x, gCoord y)) {
+	void gfxEmulatorMouseCapture(GDisplay *g, void (*capfn)(HWND hWnd, GDisplay *g, uint16_t buttons, coord_t x, coord_t y)) {
 		((winPriv *)g->priv)->capfn = capfn;
 	}
 #endif
@@ -486,16 +480,16 @@ static LRESULT myWindowProc(HWND hWnd,	UINT Msg, WPARAM wParam, LPARAM lParam)
 	PAINTSTRUCT		ps;
 	GDisplay *		g;
 	winPriv *		priv;
-	#if GFX_USE_GINPUT && GINPUT_NEED_MOUSE
+	#if GINPUT_NEED_MOUSE
 		uint16_t	btns;
 	#endif
-	#if GFX_USE_GINPUT && GINPUT_NEED_TOGGLE
+	#if GINPUT_NEED_TOGGLE
 		HBRUSH		hbrOn, hbrOff;
 		HPEN		pen;
 		RECT		rect;
 		HGDIOBJ		old;
 		POINT 		p;
-		gCoord		pos;
+		coord_t		pos;
 		uint8_t		bit;
 	#endif
 
@@ -518,7 +512,7 @@ static LRESULT myWindowProc(HWND hWnd,	UINT Msg, WPARAM wParam, LPARAM lParam)
 		g->flags |= GDISP_FLG_READY;
 		break;
 
-	#if GFX_USE_GINPUT && (GINPUT_NEED_MOUSE || GINPUT_NEED_TOGGLE)
+	#if GINPUT_NEED_MOUSE || GINPUT_NEED_TOGGLE
 		case WM_LBUTTONDOWN:
 			// Get our GDisplay structure
 			g = (GDisplay *)GetWindowLongPtr(hWnd, GWLP_USERDATA);
@@ -526,7 +520,7 @@ static LRESULT myWindowProc(HWND hWnd,	UINT Msg, WPARAM wParam, LPARAM lParam)
 
 			// Handle mouse down on the window
 			#if GINPUT_NEED_MOUSE
-				if ((gCoord)HIWORD(lParam) < GDISP_SCREEN_HEIGHT) {
+				if ((coord_t)HIWORD(lParam) < GDISP_SCREEN_HEIGHT) {
 					btns = priv->mousebuttons;
 					btns |= GINPUT_MOUSE_BTN_LEFT;
 					goto mousemove;
@@ -535,8 +529,8 @@ static LRESULT myWindowProc(HWND hWnd,	UINT Msg, WPARAM wParam, LPARAM lParam)
 
 			// Handle mouse down on the toggle area
 			#if GINPUT_NEED_TOGGLE
-				if ((gCoord)HIWORD(lParam) >= GDISP_SCREEN_HEIGHT && (g->flags & GDISP_FLG_HASTOGGLE)) {
-					bit = 1 << ((gCoord)LOWORD(lParam)*8/g->g.Width);
+				if ((coord_t)HIWORD(lParam) >= GDISP_SCREEN_HEIGHT && (g->flags & GDISP_FLG_HASTOGGLE)) {
+					bit = 1 << ((coord_t)LOWORD(lParam)*8/g->g.Width);
 					priv->toggles ^= bit;
 					rect.left = 0;
 					rect.right = GDISP_SCREEN_WIDTH;
@@ -544,7 +538,7 @@ static LRESULT myWindowProc(HWND hWnd,	UINT Msg, WPARAM wParam, LPARAM lParam)
 					rect.bottom = GDISP_SCREEN_HEIGHT + WIN32_BUTTON_AREA;
 					InvalidateRect(hWnd, &rect, FALSE);
 					UpdateWindow(hWnd);
-					#if GINPUT_TOGGLE_POLL_PERIOD == gDelayForever
+					#if GINPUT_TOGGLE_POLL_PERIOD == TIME_INFINITE
 						ginputToggleWakeup();
 					#endif
 				}
@@ -567,7 +561,7 @@ static LRESULT myWindowProc(HWND hWnd,	UINT Msg, WPARAM wParam, LPARAM lParam)
 						rect.bottom = GDISP_SCREEN_HEIGHT + WIN32_BUTTON_AREA;
 						InvalidateRect(hWnd, &rect, FALSE);
 						UpdateWindow(hWnd);
-						#if GINPUT_TOGGLE_POLL_PERIOD == gDelayForever
+						#if GINPUT_TOGGLE_POLL_PERIOD == TIME_INFINITE
 							ginputToggleWakeup();
 						#endif
 					}
@@ -576,7 +570,7 @@ static LRESULT myWindowProc(HWND hWnd,	UINT Msg, WPARAM wParam, LPARAM lParam)
 
 			// Handle mouse up on the window
 			#if GINPUT_NEED_MOUSE
-				if ((gCoord)HIWORD(lParam) < GDISP_SCREEN_HEIGHT) {
+				if ((coord_t)HIWORD(lParam) < GDISP_SCREEN_HEIGHT) {
 					btns = priv->mousebuttons;
 					btns &= ~GINPUT_MOUSE_BTN_LEFT;
 					goto mousemove;
@@ -585,11 +579,11 @@ static LRESULT myWindowProc(HWND hWnd,	UINT Msg, WPARAM wParam, LPARAM lParam)
 			break;
 	#endif
 
-	#if GFX_USE_GINPUT && GINPUT_NEED_MOUSE
+	#if GINPUT_NEED_MOUSE
 		case WM_MBUTTONDOWN:
 			g = (GDisplay *)GetWindowLongPtr(hWnd, GWLP_USERDATA);
 			priv = (winPriv *)g->priv;
-			if ((gCoord)HIWORD(lParam) < GDISP_SCREEN_HEIGHT) {
+			if ((coord_t)HIWORD(lParam) < GDISP_SCREEN_HEIGHT) {
 				btns = priv->mousebuttons;
 				btns |= GINPUT_MOUSE_BTN_MIDDLE;
 				goto mousemove;
@@ -598,7 +592,7 @@ static LRESULT myWindowProc(HWND hWnd,	UINT Msg, WPARAM wParam, LPARAM lParam)
 		case WM_MBUTTONUP:
 			g = (GDisplay *)GetWindowLongPtr(hWnd, GWLP_USERDATA);
 			priv = (winPriv *)g->priv;
-			if ((gCoord)HIWORD(lParam) < GDISP_SCREEN_HEIGHT) {
+			if ((coord_t)HIWORD(lParam) < GDISP_SCREEN_HEIGHT) {
 				btns = priv->mousebuttons;
 				btns &= ~GINPUT_MOUSE_BTN_MIDDLE;
 				goto mousemove;
@@ -607,7 +601,7 @@ static LRESULT myWindowProc(HWND hWnd,	UINT Msg, WPARAM wParam, LPARAM lParam)
 		case WM_RBUTTONDOWN:
 			g = (GDisplay *)GetWindowLongPtr(hWnd, GWLP_USERDATA);
 			priv = (winPriv *)g->priv;
-			if ((gCoord)HIWORD(lParam) < GDISP_SCREEN_HEIGHT) {
+			if ((coord_t)HIWORD(lParam) < GDISP_SCREEN_HEIGHT) {
 				btns = priv->mousebuttons;
 				btns |= GINPUT_MOUSE_BTN_RIGHT;
 				goto mousemove;
@@ -616,7 +610,7 @@ static LRESULT myWindowProc(HWND hWnd,	UINT Msg, WPARAM wParam, LPARAM lParam)
 		case WM_RBUTTONUP:
 			g = (GDisplay *)GetWindowLongPtr(hWnd, GWLP_USERDATA);
 			priv = (winPriv *)g->priv;
-			if ((gCoord)HIWORD(lParam) < GDISP_SCREEN_HEIGHT) {
+			if ((coord_t)HIWORD(lParam) < GDISP_SCREEN_HEIGHT) {
 				btns = priv->mousebuttons;
 				btns &= ~GINPUT_MOUSE_BTN_RIGHT;
 				goto mousemove;
@@ -625,24 +619,24 @@ static LRESULT myWindowProc(HWND hWnd,	UINT Msg, WPARAM wParam, LPARAM lParam)
 		case WM_MOUSEMOVE:
 			g = (GDisplay *)GetWindowLongPtr(hWnd, GWLP_USERDATA);
 			priv = (winPriv *)g->priv;
-			if ((gCoord)HIWORD(lParam) >= GDISP_SCREEN_HEIGHT)
+			if ((coord_t)HIWORD(lParam) >= GDISP_SCREEN_HEIGHT)
 				break;
 			btns = priv->mousebuttons;
 
 		mousemove:
 			if (priv->capfn)
-				priv->capfn(hWnd, g, btns, (gCoord)LOWORD(lParam), (gCoord)HIWORD(lParam));
+				priv->capfn(hWnd, g, btns, (coord_t)LOWORD(lParam), (coord_t)HIWORD(lParam));
 			if (priv->mouseenabled) {
 				priv->mousebuttons = btns;
-				priv->mousex = (gCoord)LOWORD(lParam);
-				priv->mousey = (gCoord)HIWORD(lParam);
-				if ((gmvmt(priv->mouse)->d.flags & GMOUSE_VFLG_NOPOLL))		// For normal setup this is always true
+				priv->mousex = (coord_t)LOWORD(lParam);
+				priv->mousey = (coord_t)HIWORD(lParam);
+				if ((gmvmt(priv->mouse)->d.flags & GMOUSE_VFLG_NOPOLL))		// For normal setup this is always TRUE
 					_gmouseWakeup(priv->mouse);
 			}
 			break;
 	#endif
 
-	#if GFX_USE_GINPUT && GINPUT_NEED_KEYBOARD
+	#if GINPUT_NEED_KEYBOARD
 		case WM_SYSKEYDOWN:
 		case WM_SYSKEYUP:
 		case WM_KEYDOWN:
@@ -654,7 +648,7 @@ static LRESULT myWindowProc(HWND hWnd,	UINT Msg, WPARAM wParam, LPARAM lParam)
 				else if (HIWORD(lParam) & KF_REPEAT)
 					keybuffer[keypos++] = 0x01;			// Repeat
 				keybuffer[keypos++] = wParam;
-				if ((gkvmt(keyboard)->d.flags & GKEYBOARD_VFLG_NOPOLL))		// For normal setup this is always true
+				if ((gkvmt(keyboard)->d.flags & GKEYBOARD_VFLG_NOPOLL))		// For normal setup this is always TRUE
 					_gkeyboardWakeup(keyboard);
 			}
 			return 0;
@@ -668,7 +662,7 @@ static LRESULT myWindowProc(HWND hWnd,	UINT Msg, WPARAM wParam, LPARAM lParam)
 				w = wParam;
 				len = WideCharToMultiByte(CP_UTF8, 0, &w, 1, (char *)(keybuffer+keypos), sizeof(keybuffer)-keypos, 0, 0);
 				keypos += len;
-				if (len && (gkvmt(keyboard)->d.flags & GKEYBOARD_VFLG_NOPOLL))		// For normal setup this is always true
+				if (len && (gkvmt(keyboard)->d.flags & GKEYBOARD_VFLG_NOPOLL))		// For normal setup this is always TRUE
 					_gkeyboardWakeup(keyboard);
 			}
 			return 0;
@@ -700,7 +694,7 @@ static LRESULT myWindowProc(HWND hWnd,	UINT Msg, WPARAM wParam, LPARAM lParam)
 			priv->dcBuffer, ps.rcPaint.left, ps.rcPaint.top, SRCCOPY);
 
 		// Paint the toggle area
-		#if GFX_USE_GINPUT && GINPUT_NEED_TOGGLE
+		#if GINPUT_NEED_TOGGLE
 			if (ps.rcPaint.bottom >= GDISP_SCREEN_HEIGHT && (g->flags & GDISP_FLG_HASTOGGLE)) {
 				pen = CreatePen(PS_SOLID, 1, RGB(0, 0, 0));
 				hbrOn = CreateSolidBrush(RGB(0, 0, 255));
@@ -761,7 +755,7 @@ static DWORD WINAPI WindowThread(void *param) {
 	// Establish this thread as a message queue thread
 	winThreadId = GetCurrentThreadId();
 	PeekMessage(&msg, 0, WM_USER, WM_USER, PM_NOREMOVE);
-	QReady = gTrue;
+	QReady = TRUE;
 
 	// Create the window class
 	{
@@ -797,7 +791,7 @@ static DWORD WINAPI WindowThread(void *param) {
 				// Set the window rectangle
 				rect.top = 0; rect.bottom = g->g.Height;
 				rect.left = 0; rect.right = g->g.Width;
-				#if GFX_USE_GINPUT && GINPUT_NEED_TOGGLE
+				#if GINPUT_NEED_TOGGLE
 					if ((g->flags & GDISP_FLG_HASTOGGLE))
 						rect.bottom += WIN32_BUTTON_AREA;
 				#endif
@@ -825,7 +819,7 @@ static DWORD WINAPI WindowThread(void *param) {
 /* Driver exported functions.                                                */
 /*===========================================================================*/
 
-LLDSPEC gBool gdisp_lld_init(GDisplay *g) {
+LLDSPEC bool_t gdisp_lld_init(GDisplay *g) {
 	winPriv	*	priv;
 	char		buf[132];
 
@@ -838,7 +832,7 @@ LLDSPEC gBool gdisp_lld_init(GDisplay *g) {
 
 		// Create the thread
 		if (!(hth = CreateThread(0, 0, WindowThread, 0, CREATE_SUSPENDED, 0)))
-			return gFalse;
+			return FALSE;
 		SetThreadPriority(hth, THREAD_PRIORITY_ABOVE_NORMAL);
 		ResumeThread(hth);
 		CloseHandle(hth);
@@ -849,15 +843,15 @@ LLDSPEC gBool gdisp_lld_init(GDisplay *g) {
 	}
 
 	// Initialise the GDISP structure
-	g->g.Orientation = gOrientation0;
-	g->g.Powermode = gPowerOn;
+	g->g.Orientation = GDISP_ROTATE_0;
+	g->g.Powermode = powerOn;
 	g->g.Backlight = 100;
 	g->g.Contrast = 50;
 	g->g.Width = GDISP_SCREEN_WIDTH;
 	g->g.Height = GDISP_SCREEN_HEIGHT;
 
 	// Turn on toggles for the first GINPUT_TOGGLE_CONFIG_ENTRIES windows
-	#if GFX_USE_GINPUT && GINPUT_NEED_TOGGLE
+	#if GINPUT_NEED_TOGGLE
 		if (g->controllerdisplay < GINPUT_TOGGLE_CONFIG_ENTRIES) {
 			g->flags |= GDISP_FLG_HASTOGGLE;
 			toggleWindow = g;
@@ -883,17 +877,17 @@ LLDSPEC gBool gdisp_lld_init(GDisplay *g) {
 		Sleep(1);
 
 	// Create the associated mouse
-	#if GFX_USE_GINPUT && GINPUT_NEED_MOUSE
-		priv->mouseenabled = hWndParent ? gFalse : gTrue;
+	#if GINPUT_NEED_MOUSE
+		priv->mouseenabled = hWndParent ? FALSE : TRUE;
 		priv->mouse = (GMouse *)gdriverRegister((const GDriverVMT const *)GMOUSE_DRIVER_VMT, g);
 	#endif
 
 	sprintf(buf, APP_NAME " - %u", g->systemdisplay+1);
-	SetWindowTextA(priv->hwnd, buf);
+	SetWindowText(priv->hwnd, buf);
 	ShowWindow(priv->hwnd, SW_SHOW);
 	UpdateWindow(priv->hwnd);
 
-	return gTrue;
+	return TRUE;
 }
 
 #if GDISP_HARDWARE_FLUSH
@@ -952,20 +946,20 @@ LLDSPEC gBool gdisp_lld_init(GDisplay *g) {
 
 		#if GDISP_NEED_CONTROL
 			switch(g->g.Orientation) {
-			case gOrientation0:
+			case GDISP_ROTATE_0:
 			default:
 				x = priv->x;
 				y = priv->y;
 				break;
-			case gOrientation90:
+			case GDISP_ROTATE_90:
 				x = priv->y;
 				y = g->g.Width - 1 - priv->x;
 				break;
-			case gOrientation180:
+			case GDISP_ROTATE_180:
 				x = g->g.Width - 1 - priv->x;
 				y = g->g.Height - 1 - priv->y;
 				break;
-			case gOrientation270:
+			case GDISP_ROTATE_270:
 				x = g->g.Height - 1 - priv->y;
 				y = priv->x;
 				break;
@@ -1043,7 +1037,7 @@ LLDSPEC gBool gdisp_lld_init(GDisplay *g) {
 		g->flags |= GDISP_FLG_WSTREAM;
 		g->flags &= ~GDISP_FLG_WRAPPED;
 	}
-	LLDSPEC	gColor gdisp_lld_read_color(GDisplay *g) {
+	LLDSPEC	color_t gdisp_lld_read_color(GDisplay *g) {
 		winPriv	*	priv;
 		COLORREF	color;
 
@@ -1061,17 +1055,17 @@ LLDSPEC gBool gdisp_lld_init(GDisplay *g) {
 		WaitForSingleObject(drawMutex, INFINITE);
 		#if GDISP_NEED_CONTROL
 			switch(g->g.Orientation) {
-			case gOrientation0:
+			case GDISP_ROTATE_0:
 			default:
 				color = GetPixel(priv->dcBuffer, priv->x, priv->y);
 				break;
-			case gOrientation90:
+			case GDISP_ROTATE_90:
 				color = GetPixel(priv->dcBuffer, priv->y, g->g.Width - 1 - priv->x);
 				break;
-			case gOrientation180:
+			case GDISP_ROTATE_180:
 				color = GetPixel(priv->dcBuffer, g->g.Width - 1 - priv->x, g->g.Height - 1 - priv->y);
 				break;
-			case gOrientation270:
+			case GDISP_ROTATE_270:
 				color = GetPixel(priv->dcBuffer, g->g.Height - 1 - priv->y, priv->x);
 				break;
 			}
@@ -1109,20 +1103,20 @@ LLDSPEC gBool gdisp_lld_init(GDisplay *g) {
 
 		#if GDISP_NEED_CONTROL
 			switch(g->g.Orientation) {
-			case gOrientation0:
+			case GDISP_ROTATE_0:
 			default:
 				x = g->p.x;
 				y = g->p.y;
 				break;
-			case gOrientation90:
+			case GDISP_ROTATE_90:
 				x = g->p.y;
 				y = g->g.Width - 1 - g->p.x;
 				break;
-			case gOrientation180:
+			case GDISP_ROTATE_180:
 				x = g->g.Width - 1 - g->p.x;
 				y = g->g.Height - 1 - g->p.y;
 				break;
-			case gOrientation270:
+			case GDISP_ROTATE_270:
 				x = g->g.Height - 1 - g->p.y;
 				y = g->p.x;
 				break;
@@ -1170,26 +1164,26 @@ LLDSPEC gBool gdisp_lld_init(GDisplay *g) {
 
 		#if GDISP_NEED_CONTROL
 			switch(g->g.Orientation) {
-			case gOrientation0:
+			case GDISP_ROTATE_0:
 			default:
 				rect.top = g->p.y;
 				rect.bottom = rect.top + g->p.cy;
 				rect.left = g->p.x;
 				rect.right = rect.left + g->p.cx;
 				break;
-			case gOrientation90:
+			case GDISP_ROTATE_90:
 				rect.bottom = g->g.Width - g->p.x;
 				rect.top = rect.bottom - g->p.cx;
 				rect.left = g->p.y;
 				rect.right = rect.left + g->p.cy;
 				break;
-			case gOrientation180:
+			case GDISP_ROTATE_180:
 				rect.bottom = g->g.Height - g->p.y;
 				rect.top = rect.bottom - g->p.cy;
 				rect.right = g->g.Width - g->p.x;
 				rect.left = rect.right - g->p.cx;
 				break;
-			case gOrientation270:
+			case GDISP_ROTATE_270:
 				rect.top = g->p.x;
 				rect.bottom = rect.top + g->p.cx;
 				rect.right = g->g.Height - g->p.y;
@@ -1224,36 +1218,36 @@ LLDSPEC gBool gdisp_lld_init(GDisplay *g) {
 #endif
 
 #if GDISP_HARDWARE_BITFILLS && GDISP_NEED_CONTROL
-	static gPixel *rotateimg(GDisplay *g, const gPixel *buffer) {
-		gPixel	*dstbuf;
-		gPixel	*dst;
-		const gPixel	*src;
+	static pixel_t *rotateimg(GDisplay *g, const pixel_t *buffer) {
+		pixel_t	*dstbuf;
+		pixel_t	*dst;
+		const pixel_t	*src;
 		size_t	sz;
-		gCoord	i, j;
+		coord_t	i, j;
 
 		// Allocate the destination buffer
 		sz = (size_t)g->p.cx * (size_t)g->p.cy;
-		if (!(dstbuf = (gPixel *)malloc(sz * sizeof(gPixel))))
+		if (!(dstbuf = (pixel_t *)malloc(sz * sizeof(pixel_t))))
 			return 0;
 
 		// Copy the bits we need
 		switch(g->g.Orientation) {
-		case gOrientation0:
+		case GDISP_ROTATE_0:
 		default:
 			return 0;					// not handled as it doesn't need to be.
-		case gOrientation90:
+		case GDISP_ROTATE_90:
 			for(src = buffer+g->p.x1, j = 0; j < g->p.cy; j++, src += g->p.x2 - g->p.cx) {
 				dst = dstbuf+sz-g->p.cy+j;
 				for(i = 0; i < g->p.cx; i++, dst -= g->p.cy)
 					*dst = *src++;
 			}
 			break;
-		case gOrientation180:
+		case GDISP_ROTATE_180:
 			for(dst = dstbuf+sz, src = buffer+g->p.x1, j = 0; j < g->p.cy; j++, src += g->p.x2 - g->p.cx)
 				for(i = 0; i < g->p.cx; i++)
 					*--dst = *src++;
 			break;
-		case gOrientation270:
+		case GDISP_ROTATE_270:
 			for(src = buffer+g->p.x1, j = 0; j < g->p.cy; j++, src += g->p.x2 - g->p.cx) {
 				dst = dstbuf+g->p.cy-j-1;
 				for(i = 0; i < g->p.cx; i++, dst += g->p.cy)
@@ -1272,7 +1266,7 @@ LLDSPEC gBool gdisp_lld_init(GDisplay *g) {
 
 	LLDSPEC void gdisp_lld_blit_area(GDisplay *g) {
 		winPriv	*		priv;
-		gPixel	*		buffer;
+		pixel_t	*		buffer;
 		RECT			rect;
 		BITMAPV4HEADER	bmpInfo;
 
@@ -1298,9 +1292,9 @@ LLDSPEC gBool gdisp_lld_init(GDisplay *g) {
 
 		#if GDISP_NEED_CONTROL
 			switch(g->g.Orientation) {
-			case gOrientation0:
+			case GDISP_ROTATE_0:
 			default:
-				bmpInfo.bV4SizeImage = (g->p.cy*g->p.x2) * sizeof(gPixel);
+				bmpInfo.bV4SizeImage = (g->p.cy*g->p.x2) * sizeof(pixel_t);
 				bmpInfo.bV4Width = g->p.x2;
 				bmpInfo.bV4Height = -g->p.cy; /* top-down image */
 				rect.top = g->p.y;
@@ -1308,9 +1302,9 @@ LLDSPEC gBool gdisp_lld_init(GDisplay *g) {
 				rect.left = g->p.x;
 				rect.right = rect.left+g->p.cx;
 				break;
-			case gOrientation90:
+			case GDISP_ROTATE_90:
 				if (!(buffer = rotateimg(g, buffer))) return;
-				bmpInfo.bV4SizeImage = (g->p.cy*g->p.cx) * sizeof(gPixel);
+				bmpInfo.bV4SizeImage = (g->p.cy*g->p.cx) * sizeof(pixel_t);
 				bmpInfo.bV4Width = g->p.cy;
 				bmpInfo.bV4Height = -g->p.cx; /* top-down image */
 				rect.bottom = g->g.Width - g->p.x;
@@ -1318,9 +1312,9 @@ LLDSPEC gBool gdisp_lld_init(GDisplay *g) {
 				rect.left = g->p.y;
 				rect.right = rect.left+g->p.cy;
 				break;
-			case gOrientation180:
+			case GDISP_ROTATE_180:
 				if (!(buffer = rotateimg(g, buffer))) return;
-				bmpInfo.bV4SizeImage = (g->p.cy*g->p.cx) * sizeof(gPixel);
+				bmpInfo.bV4SizeImage = (g->p.cy*g->p.cx) * sizeof(pixel_t);
 				bmpInfo.bV4Width = g->p.cx;
 				bmpInfo.bV4Height = -g->p.cy; /* top-down image */
 				rect.bottom = g->g.Height-1 - g->p.y;
@@ -1328,9 +1322,9 @@ LLDSPEC gBool gdisp_lld_init(GDisplay *g) {
 				rect.right = g->g.Width - g->p.x;
 				rect.left = rect.right-g->p.cx;
 				break;
-			case gOrientation270:
+			case GDISP_ROTATE_270:
 				if (!(buffer = rotateimg(g, buffer))) return;
-				bmpInfo.bV4SizeImage = (g->p.cy*g->p.cx) * sizeof(gPixel);
+				bmpInfo.bV4SizeImage = (g->p.cy*g->p.cx) * sizeof(pixel_t);
 				bmpInfo.bV4Width = g->p.cy;
 				bmpInfo.bV4Height = -g->p.cx; /* top-down image */
 				rect.top = g->p.x;
@@ -1340,7 +1334,7 @@ LLDSPEC gBool gdisp_lld_init(GDisplay *g) {
 				break;
 			}
 		#else
-			bmpInfo.bV4SizeImage = (g->p.cy*g->p.x2) * sizeof(gPixel);
+			bmpInfo.bV4SizeImage = (g->p.cy*g->p.x2) * sizeof(pixel_t);
 			bmpInfo.bV4Width = g->p.x2;
 			bmpInfo.bV4Height = -g->p.cy; /* top-down image */
 			rect.top = g->p.y;
@@ -1365,14 +1359,14 @@ LLDSPEC gBool gdisp_lld_init(GDisplay *g) {
 		#endif
 
 		#if GDISP_NEED_CONTROL
-			if (buffer != (gPixel *)g->p.ptr)
+			if (buffer != (pixel_t *)g->p.ptr)
 				free(buffer);
 		#endif
 	}
 #endif
 
 #if GDISP_HARDWARE_PIXELREAD
-	LLDSPEC	gColor gdisp_lld_get_pixel_color(GDisplay *g) {
+	LLDSPEC	color_t gdisp_lld_get_pixel_color(GDisplay *g) {
 		winPriv	*	priv;
 		COLORREF	color;
 
@@ -1381,17 +1375,17 @@ LLDSPEC gBool gdisp_lld_init(GDisplay *g) {
 		WaitForSingleObject(drawMutex, INFINITE);
 		#if GDISP_NEED_CONTROL
 			switch(g->g.Orientation) {
-			case gOrientation0:
+			case GDISP_ROTATE_0:
 			default:
 				color = GetPixel(priv->dcBuffer, g->p.x, g->p.y);
 				break;
-			case gOrientation90:
+			case GDISP_ROTATE_90:
 				color = GetPixel(priv->dcBuffer, g->p.y, g->g.Width - 1 - g->p.x);
 				break;
-			case gOrientation180:
+			case GDISP_ROTATE_180:
 				color = GetPixel(priv->dcBuffer, g->g.Width - 1 - g->p.x, g->g.Height - 1 - g->p.y);
 				break;
-			case gOrientation270:
+			case GDISP_ROTATE_270:
 				color = GetPixel(priv->dcBuffer, g->g.Height - 1 - g->p.y, g->p.x);
 				break;
 			}
@@ -1408,13 +1402,13 @@ LLDSPEC gBool gdisp_lld_init(GDisplay *g) {
 	LLDSPEC void gdisp_lld_vertical_scroll(GDisplay *g) {
 		winPriv	*	priv;
 		RECT		rect;
-		gCoord		lines;
+		coord_t		lines;
 
 		priv = g->priv;
 
 		#if GDISP_NEED_CONTROL
 			switch(g->g.Orientation) {
-			case gOrientation0:
+			case GDISP_ROTATE_0:
 			default:
 				rect.top = g->p.y;
 				rect.bottom = rect.top+g->p.cy;
@@ -1422,14 +1416,14 @@ LLDSPEC gBool gdisp_lld_init(GDisplay *g) {
 				rect.right = rect.left+g->p.cx;
 				lines = -g->p.y1;
 				goto vertical_scroll;
-			case gOrientation90:
+			case GDISP_ROTATE_90:
 				rect.bottom = g->g.Width - g->p.x;
 				rect.top = rect.bottom-g->p.cx;
 				rect.left = g->p.y;
 				rect.right = rect.left+g->p.cy;
 				lines = -g->p.y1;
 				goto horizontal_scroll;
-			case gOrientation180:
+			case GDISP_ROTATE_180:
 				rect.bottom = g->g.Height - g->p.y;
 				rect.top = rect.bottom-g->p.cy;
 				rect.right = g->g.Width - g->p.x;
@@ -1458,7 +1452,7 @@ LLDSPEC gBool gdisp_lld_init(GDisplay *g) {
 					#endif
 				}
 				break;
-			case gOrientation270:
+			case GDISP_ROTATE_270:
 				rect.top = g->p.x;
 				rect.bottom = rect.top+g->p.cx;
 				rect.right = g->g.Height - g->p.y;
@@ -1523,23 +1517,23 @@ LLDSPEC gBool gdisp_lld_init(GDisplay *g) {
 	LLDSPEC void gdisp_lld_control(GDisplay *g) {
 		switch(g->p.x) {
 		case GDISP_CONTROL_ORIENTATION:
-			if (g->g.Orientation == (gOrientation)g->p.ptr)
+			if (g->g.Orientation == (orientation_t)g->p.ptr)
 				return;
-			switch((gOrientation)g->p.ptr) {
-				case gOrientation0:
-				case gOrientation180:
+			switch((orientation_t)g->p.ptr) {
+				case GDISP_ROTATE_0:
+				case GDISP_ROTATE_180:
 					g->g.Width = GDISP_SCREEN_WIDTH;
 					g->g.Height = GDISP_SCREEN_HEIGHT;
 					break;
-				case gOrientation90:
-				case gOrientation270:
+				case GDISP_ROTATE_90:
+				case GDISP_ROTATE_270:
 					g->g.Height = GDISP_SCREEN_WIDTH;
 					g->g.Width = GDISP_SCREEN_HEIGHT;
 					break;
 				default:
 					return;
 			}
-			g->g.Orientation = (gOrientation)g->p.ptr;
+			g->g.Orientation = (orientation_t)g->p.ptr;
 			return;
 /*
 		case GDISP_CONTROL_POWER:
@@ -1550,13 +1544,13 @@ LLDSPEC gBool gdisp_lld_init(GDisplay *g) {
 	}
 #endif
 
-#if GFX_USE_GINPUT && GINPUT_NEED_MOUSE
-	static gBool Win32MouseInit(GMouse *m, unsigned driverinstance) {
+#if GINPUT_NEED_MOUSE
+	static bool_t Win32MouseInit(GMouse *m, unsigned driverinstance) {
 		(void)	m;
 		(void)	driverinstance;
-		return gTrue;
+		return TRUE;
 	}
-	static gBool Win32MouseRead(GMouse *m, GMouseReading *pt) {
+	static bool_t Win32MouseRead(GMouse *m, GMouseReading *pt) {
 		GDisplay *	g;
 		winPriv	*	priv;
 
@@ -1571,22 +1565,22 @@ LLDSPEC gBool gdisp_lld_init(GDisplay *g) {
 		#if GDISP_NEED_CONTROL
 			// If the self-rotation has been set in the VMT then do that here (TESTING ONLY)
 			if ((gmvmt(m)->d.flags & GMOUSE_VFLG_SELFROTATION)) {		// For normal setup this is always False
-				gCoord		t;
+				coord_t		t;
 
 				switch(gdispGGetOrientation(m->display)) {
-					case gOrientation0:
+					case GDISP_ROTATE_0:
 					default:
 						break;
-					case gOrientation90:
+					case GDISP_ROTATE_90:
 						t = pt->x;
 						pt->x = g->g.Width - 1 - pt->y;
 						pt->y = t;
 						break;
-					case gOrientation180:
+					case GDISP_ROTATE_180:
 						pt->x = g->g.Width - 1 - pt->x;
 						pt->y = g->g.Height - 1 - pt->y;
 						break;
-					case gOrientation270:
+					case GDISP_ROTATE_270:
 						t = pt->y;
 						pt->y = g->g.Height - 1 - pt->x;
 						pt->x = t;
@@ -1595,20 +1589,20 @@ LLDSPEC gBool gdisp_lld_init(GDisplay *g) {
 			}
 		#endif
 
-		return gTrue;
+		return TRUE;
 	}
 #endif /* GINPUT_NEED_MOUSE */
 
-#if GFX_USE_GINPUT && GINPUT_NEED_KEYBOARD
-	static gBool Win32KeyboardInit(GKeyboard *k, unsigned driverinstance) {
+#if GINPUT_NEED_KEYBOARD
+	static bool_t Win32KeyboardInit(GKeyboard *k, unsigned driverinstance) {
 		(void)	driverinstance;
 
 		// Only one please
 		if (keyboard)
-			return gFalse;
+			return FALSE;
 
 		keyboard = k;
-		return gTrue;
+		return TRUE;
 	}
 
 	static int Win32KeyboardGetData(GKeyboard *k, uint8_t *pch, int sz) {
@@ -1627,7 +1621,7 @@ LLDSPEC gBool gdisp_lld_init(GDisplay *g) {
 	}
 #endif
 
-#if GFX_USE_GINPUT && GINPUT_NEED_TOGGLE
+#if GINPUT_NEED_TOGGLE
 	#if GINPUT_TOGGLE_CONFIG_ENTRIES > 1
 		#error "GDISP Win32: GINPUT_TOGGLE_CONFIG_ENTRIES must be 1 until Toggles can use GDriver"
 	#endif

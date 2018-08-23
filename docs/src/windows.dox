@@ -31,5 +31,5 @@
  *
  *				For the common window API, please see @ref Window.
  *
- * @pre			GFX_USE_GWIN must be set to GFXON in your gfxconf.h
+ * @pre			GFX_USE_GWIN must be set to TRUE in your gfxconf.h
  */

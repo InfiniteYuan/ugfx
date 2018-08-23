@@ -32,10 +32,10 @@
 	#define GDISP_INITIAL_BACKLIGHT	100
 #endif
 #ifndef GDISP_USE_DMA
-	#define GDISP_USE_DMA			GFXOFF
+	#define GDISP_USE_DMA			FALSE
 #endif
 #ifndef GDISP_NO_DMA_FROM_STACK
-	#define GDISP_NO_DMA_FROM_STACK	GFXOFF
+	#define GDISP_NO_DMA_FROM_STACK	FALSE
 #endif
 
 #include "ssd2119.h"
@@ -55,19 +55,19 @@ static void set_cursor(GDisplay* g) {
 	 */
 	switch(g->g.Orientation) {
 		default:
-		case gOrientation0:
+		case GDISP_ROTATE_0:
 			write_reg(g, SSD2119_REG_X_RAM_ADDR, g->p.x & 0x01FF);
 			write_reg(g, SSD2119_REG_Y_RAM_ADDR, g->p.y & 0x00FF);
 			break;
-		case gOrientation90:
+		case GDISP_ROTATE_90:
 			write_reg(g, SSD2119_REG_X_RAM_ADDR, g->p.y & 0x01FF);
 			write_reg(g, SSD2119_REG_Y_RAM_ADDR, (GDISP_SCREEN_HEIGHT-1 - g->p.x) & 0x00FF);
 			break;
-		case gOrientation180:
+		case GDISP_ROTATE_180:
 			write_reg(g, SSD2119_REG_X_RAM_ADDR, (GDISP_SCREEN_WIDTH-1 - g->p.x) & 0x01FF);
 			write_reg(g, SSD2119_REG_Y_RAM_ADDR, (GDISP_SCREEN_HEIGHT-1 - g->p.y) & 0x00FF);
 			break;
-		case gOrientation270:
+		case GDISP_ROTATE_270:
 			write_reg(g, SSD2119_REG_X_RAM_ADDR, (GDISP_SCREEN_WIDTH-1 - g->p.y) & 0x01FF);
 			write_reg(g, SSD2119_REG_Y_RAM_ADDR, g->p.x & 0x00FF);
 			break;
@@ -86,22 +86,22 @@ static void set_viewport(GDisplay* g) {
 	 */
 	switch(g->g.Orientation) {
 		default:
-		case gOrientation0:
+		case GDISP_ROTATE_0:
 			write_reg(g, SSD2119_REG_V_RAM_POS,   (((g->p.y + g->p.cy - 1) << 8) & 0xFF00 ) | (g->p.y & 0x00FF));
 			write_reg(g, SSD2119_REG_H_RAM_START, (g->p.x & 0x01FF));
 			write_reg(g, SSD2119_REG_H_RAM_END,   (g->p.x + g->p.cx - 1) & 0x01FF);
 			break;
-		case gOrientation90:
+		case GDISP_ROTATE_90:
 			write_reg(g, SSD2119_REG_V_RAM_POS,   (((GDISP_SCREEN_HEIGHT-1 - g->p.x) & 0x00FF) << 8) | ((GDISP_SCREEN_HEIGHT - (g->p.x + g->p.cx)) & 0x00FF));
 			write_reg(g, SSD2119_REG_H_RAM_START, (g->p.y & 0x01FF));
 			write_reg(g, SSD2119_REG_H_RAM_END,   (g->p.y + g->p.cy - 1) & 0x01FF);
 			break;
-		case gOrientation180:
+		case GDISP_ROTATE_180:
 			write_reg(g, SSD2119_REG_V_RAM_POS,   (((GDISP_SCREEN_HEIGHT-1 - g->p.y) & 0x00FF) << 8) | ((GDISP_SCREEN_HEIGHT - (g->p.y + g->p.cy)) & 0x00FF));
 			write_reg(g, SSD2119_REG_H_RAM_START, (GDISP_SCREEN_WIDTH - (g->p.x + g->p.cx)) & 0x01FF);
 			write_reg(g, SSD2119_REG_H_RAM_END,   (GDISP_SCREEN_WIDTH-1 - g->p.x) & 0x01FF);
 			break;
-		case gOrientation270:
+		case GDISP_ROTATE_270:
 			write_reg(g, SSD2119_REG_V_RAM_POS,   (((g->p.x + g->p.cx - 1) << 8) & 0xFF00 ) | (g->p.x & 0x00FF));
 			write_reg(g, SSD2119_REG_H_RAM_START, (GDISP_SCREEN_WIDTH - (g->p.y + g->p.cy)) & 0x01FF);
 			write_reg(g, SSD2119_REG_H_RAM_END,   (GDISP_SCREEN_WIDTH-1 - g->p.y) & 0x01FF);
@@ -117,7 +117,7 @@ static void set_viewport(GDisplay* g) {
 /* Driver exported functions.                                                */
 /*===========================================================================*/
 
-LLDSPEC gBool gdisp_lld_init(GDisplay* g) {
+LLDSPEC bool_t gdisp_lld_init(GDisplay* g) {
 	// no private area for this controller
 	g->priv = 0;
 
@@ -125,9 +125,9 @@ LLDSPEC gBool gdisp_lld_init(GDisplay* g) {
 	init_board(g);
 
 	// Hardware reset
-	setpin_reset(g, gTrue);
+	setpin_reset(g, TRUE);
 	gfxSleepMilliseconds(20);
-	setpin_reset(g, gFalse);
+	setpin_reset(g, FALSE);
 	gfxSleepMilliseconds(20);
 
 	// Get the bus for the following initialisation commands
@@ -228,11 +228,11 @@ LLDSPEC gBool gdisp_lld_init(GDisplay* g) {
 	/* Initialise the GDISP structure */
 	g->g.Width = GDISP_SCREEN_WIDTH;
 	g->g.Height = GDISP_SCREEN_HEIGHT;
-	g->g.Orientation = gOrientation0;
-	g->g.Powermode = gPowerOn;
+	g->g.Orientation = GDISP_ROTATE_0;
+	g->g.Powermode = powerOn;
 	g->g.Backlight = GDISP_INITIAL_BACKLIGHT;
 	g->g.Contrast = GDISP_INITIAL_CONTRAST;
-	return gTrue;
+	return TRUE;
 }
 
 #if GDISP_HARDWARE_STREAM_WRITE
@@ -259,7 +259,7 @@ LLDSPEC gBool gdisp_lld_init(GDisplay* g) {
 		setreadmode(g);
 		dummy_read(g);
 	}
-	LLDSPEC gColor gdisp_lld_read_color(GDisplay* g) {
+	LLDSPEC color_t gdisp_lld_read_color(GDisplay* g) {
 		uint16_t	data;
 
 		data = read_data(g);
@@ -294,10 +294,10 @@ LLDSPEC gBool gdisp_lld_init(GDisplay* g) {
 	#endif
 
 	LLDSPEC void gdisp_lld_blit_area(GDisplay* g) {
-		gPixel*	buffer;
-		gCoord		ycnt;
+		pixel_t*	buffer;
+		coord_t		ycnt;
 
-		buffer = (gPixel*)g->p.ptr + g->p.x1 + g->p.y1 * g->p.x2;
+		buffer = (pixel_t*)g->p.ptr + g->p.x1 + g->p.y1 * g->p.x2;
 
 		acquire_bus(g);
 		set_viewport(g);
@@ -318,34 +318,34 @@ LLDSPEC gBool gdisp_lld_init(GDisplay* g) {
 	LLDSPEC void gdisp_lld_control(GDisplay *g) {
 		switch(g->p.x) {
 		case GDISP_CONTROL_POWER:
-			if (g->g.Powermode == (gPowermode)g->p.ptr)
+			if (g->g.Powermode == (powermode_t)g->p.ptr)
 				return;
-			switch((gPowermode)g->p.ptr) {
-			case gPowerOff:
-			case gPowerDeepSleep:
+			switch((powermode_t)g->p.ptr) {
+			case powerOff:
+			case powerDeepSleep:
 				acquire_bus(g);
 				write_reg(g, SSD2119_REG_SLEEP_MODE_1,	0x0001);	// Enter sleep mode
 				write_reg(g, SSD2119_REG_SLEEP_MODE_2, 0x2999);		// Enable deep sleep function
 				write_reg(g, SSD2119_REG_DISPLAY_CTRL,	0x0000);	// Display off
-				if ((gPowermode)g->p.ptr == gPowerOff)
+				if ((powermode_t)g->p.ptr == powerOff)
 					write_reg(g, SSD2119_REG_OSC_START,	0x0000);	// Turn off oscillator
 				release_bus(g);
 				set_backlight(g, 0);
 				break;
-			case gPowerSleep:
+			case powerSleep:
 				acquire_bus(g);
 				write_reg(g, SSD2119_REG_SLEEP_MODE_1, 0x0001);		// Enter sleep mode
 				write_reg(g, SSD2119_REG_DISPLAY_CTRL, 0x0000);		// Display off
 				release_bus(g);
 				set_backlight(g, 0);
 				break;
-			case gPowerOn:
+			case powerOn:
 				acquire_bus(g);
-				if (g->g.Powermode == gPowerOff) {
+				if (g->g.Powermode == powerOff) {
 					write_reg(g, SSD2119_REG_OSC_START, 0x0001);	// Start the oscillator
 					gfxSleepMicroseconds(5);
 					write_reg(g, SSD2119_REG_SLEEP_MODE_2, 0x0999);	// Disable deep sleep function
-				} else if (g->g.Powermode == gPowerDeepSleep)
+				} else if (g->g.Powermode == powerDeepSleep)
 					write_reg(g, SSD2119_REG_SLEEP_MODE_2, 0x0999);	// Disable deep sleep function
 				write_reg(g, SSD2119_REG_SLEEP_MODE_1, 0x0000);		// Leave sleep mode
 				write_reg(g, SSD2119_REG_DISPLAY_CTRL, 0x0033);		// Display on
@@ -356,14 +356,14 @@ LLDSPEC gBool gdisp_lld_init(GDisplay* g) {
 			default:
 				return;
 			}
-			g->g.Powermode = (gPowermode)g->p.ptr;
+			g->g.Powermode = (powermode_t)g->p.ptr;
 			return;
 
 		case GDISP_CONTROL_ORIENTATION:
-			if (g->g.Orientation == (gOrientation)g->p.ptr)
+			if (g->g.Orientation == (orientation_t)g->p.ptr)
 				return;
-			switch((gOrientation)g->p.ptr) {
-			case gOrientation0:
+			switch((orientation_t)g->p.ptr) {
+			case GDISP_ROTATE_0:
 				acquire_bus(g);
 				/* ID = 11 AM = 0 */
 				write_reg(g, SSD2119_REG_ENTRY_MODE, 0x6830);
@@ -371,7 +371,7 @@ LLDSPEC gBool gdisp_lld_init(GDisplay* g) {
 				g->g.Height = GDISP_SCREEN_HEIGHT;
 				g->g.Width = GDISP_SCREEN_WIDTH;
 				break;
-			case gOrientation90:
+			case GDISP_ROTATE_90:
 				acquire_bus(g);
 				/* ID = 01 AM = 1 */
 				write_reg(g, SSD2119_REG_ENTRY_MODE, 0x6818);
@@ -379,7 +379,7 @@ LLDSPEC gBool gdisp_lld_init(GDisplay* g) {
 				g->g.Height = GDISP_SCREEN_WIDTH;
 				g->g.Width = GDISP_SCREEN_HEIGHT;
 				break;
-			case gOrientation180:
+			case GDISP_ROTATE_180:
 				acquire_bus(g);
 				/* ID = 00 AM = 0 */
 				write_reg(g, SSD2119_REG_ENTRY_MODE, 0x6800);
@@ -387,7 +387,7 @@ LLDSPEC gBool gdisp_lld_init(GDisplay* g) {
 				g->g.Height = GDISP_SCREEN_HEIGHT;
 				g->g.Width = GDISP_SCREEN_WIDTH;
 				break;
-			case gOrientation270:
+			case GDISP_ROTATE_270:
 				acquire_bus(g);
 				/* ID = 10 AM = 1 */
 				write_reg(g, SSD2119_REG_ENTRY_MODE, 0x6828);
@@ -398,7 +398,7 @@ LLDSPEC gBool gdisp_lld_init(GDisplay* g) {
 			default:
 				return;
 			}
-			g->g.Orientation = (gOrientation)g->p.ptr;
+			g->g.Orientation = (orientation_t)g->p.ptr;
 			return;
 
         case GDISP_CONTROL_BACKLIGHT:

@@ -14,6 +14,6 @@ GFXSRC +=   $(GFXLIB)/src/gos/gos_chibios.c	\
 			$(GFXLIB)/src/gos/gos_arduino.c \
 			$(GFXLIB)/src/gos/gos_cmsis.c \
 			$(GFXLIB)/src/gos/gos_nios.c \
-			$(GFXLIB)/src/gos/gos_zephyr.c \
 			$(GFXLIB)/src/gos/gos_x_threads.c \
 			$(GFXLIB)/src/gos/gos_x_heap.c
+

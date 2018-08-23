@@ -45,22 +45,22 @@ void gfxMutexExit(gfxMutex *pmutex) {
 	pmutex[0] = 0;
 }
 
-void gfxSemInit(gfxSem *psem, gSemcount val, gSemcount limit) {
+void gfxSemInit(gfxSem *psem, semcount_t val, semcount_t limit) {
 	psem->cnt = val;
 	psem->limit = limit;
 }
 
-gBool gfxSemWait(gfxSem *psem, gDelay ms) {
-	gTicks	starttm, delay;
+bool_t gfxSemWait(gfxSem *psem, delaytime_t ms) {
+	systemticks_t	starttm, delay;
 
 	// Convert our delay to ticks
 	starttm = 0;
 	switch (ms) {
-	case gDelayNone:
-		delay = gDelayNone;
+	case TIME_IMMEDIATE:
+		delay = TIME_IMMEDIATE;
 		break;
-	case gDelayForever:
-		delay = gDelayForever;
+	case TIME_INFINITE:
+		delay = TIME_INFINITE;
 		break;
 	default:
 		delay = gfxMillisecondsToTicks(ms);
@@ -73,13 +73,13 @@ gBool gfxSemWait(gfxSem *psem, gDelay ms) {
 		INTERRUPTS_ON();
 		// Check if we have exceeded the defined delay
 		switch (delay) {
-		case gDelayNone:
-			return gFalse;
-		case gDelayForever:
+		case TIME_IMMEDIATE:
+			return FALSE;
+		case TIME_INFINITE:
 			break;
 		default:
 			if (gfxSystemTicks() - starttm >= delay)
-				return gFalse;
+				return FALSE;
 			break;
 		}
 		gfxYield();
@@ -87,14 +87,14 @@ gBool gfxSemWait(gfxSem *psem, gDelay ms) {
 	}
 	psem->cnt--;
 	INTERRUPTS_ON();
-	return gTrue;
+	return TRUE;
 }
 
-gBool gfxSemWaitI(gfxSem *psem) {
+bool_t gfxSemWaitI(gfxSem *psem) {
 	if (psem->cnt <= 0)
-		return gFalse;
+		return FALSE;
 	psem->cnt--;
-	return gTrue;
+	return TRUE;
 }
 
 void gfxSemSignal(gfxSem *psem) {
@@ -112,14 +112,14 @@ void gfxSemSignalI(gfxSem *psem) {
  * Sleep functions
  *********************************************************/
 
-void gfxSleepMilliseconds(gDelay ms) {
-	gTicks	starttm, delay;
+void gfxSleepMilliseconds(delaytime_t ms) {
+	systemticks_t	starttm, delay;
 
 	// Safety first
 	switch (ms) {
-	case gDelayNone:
+	case TIME_IMMEDIATE:
 		return;
-	case gDelayForever:
+	case TIME_INFINITE:
 		while(1)
 			gfxYield();
 		return;
@@ -134,14 +134,14 @@ void gfxSleepMilliseconds(gDelay ms) {
 	} while (gfxSystemTicks() - starttm < delay);
 }
 
-void gfxSleepMicroseconds(gDelay ms) {
-	gTicks	starttm, delay;
+void gfxSleepMicroseconds(delaytime_t ms) {
+	systemticks_t	starttm, delay;
 
 	// Safety first
 	switch (ms) {
-	case gDelayNone:
+	case TIME_IMMEDIATE:
 		return;
-	case gDelayForever:
+	case TIME_INFINITE:
 		while(1)
 			gfxYield();
 		return;
@@ -176,7 +176,7 @@ typedef struct thread {
 		#define FLG_THD_DEAD	0x0004
 		#define FLG_THD_WAIT	0x0008
 	size_t			size;					// Size of the thread stack (including this structure)
-	gThreadreturn	(*fn)(void *param);		// Thread function
+	threadreturn_t	(*fn)(void *param);		// Thread function
 	void *			param;					// Parameter for the thread function
 	void *			cxt;					// The current thread context.
 	} thread;
@@ -188,22 +188,121 @@ typedef struct threadQ {
 
 static threadQ		readyQ;					// The list of ready threads
 static threadQ		deadQ;					// Where we put threads waiting to be deallocated
-thread *			_gfxCurrentThread;		// The current running thread - unfortunately this has to be non-static for the keil compiler
+static thread *		current;				// The current running thread
 static thread		mainthread;				// The main thread context
 
-#undef GFX_THREADS_DONE
-
 #if GFX_CPU == GFX_CPU_CORTEX_M0 || GFX_CPU == GFX_CPU_CORTEX_M1
-	#include "gos_x_threads_cortexm01.h"
+
+	// Use the EABI calling standard (ARM's AAPCS) - Save r4 - r11
+	// The context is saved at the current stack location and a pointer is maintained in the thread structure.
+
+	#define _gfxThreadsInit()
+
+	static __attribute__((pcs("aapcs"),naked)) void _gfxTaskSwitch(thread *oldt, thread *newt) {
+		__asm__ volatile (	"push    {r4, r5, r6, r7, lr}                   \n\t"
+							"mov     r4, r8                                 \n\t"
+							"mov     r5, r9                                 \n\t"
+							"mov     r6, r10                                \n\t"
+							"mov     r7, r11                                \n\t"
+							"push    {r4, r5, r6, r7}						\n\t"
+							"str	sp, %[oldtcxt]							\n\t"
+							"ldr	sp, %[newtcxt]							\n\t"
+							"pop     {r4, r5, r6, r7}                   	\n\t"
+							"mov     r8, r4                                 \n\t"
+							"mov     r9, r5                                 \n\t"
+							"mov     r10, r6                                \n\t"
+							"mov     r11, r7                                \n\t"
+							"pop     {r4, r5, r6, r7, pc}					\n\t"
+							: [newtcxt] "=m" (newt->cxt)
+							: [oldtcxt] "m" (oldt->cxt)
+							: "memory");
+	}
+
+	static __attribute__((pcs("aapcs"),naked)) void _gfxStartThread(thread *oldt, thread *newt) {
+		newt->cxt = (char *)newt + newt->size;
+		__asm__ volatile (	"push	{r4, r5, r6, r7, r8, r9, r10, r11, lr}	\n\t"		// save current context
+							"str	sp, %[oldtcxt]							\n\t"		// save context pointer
+							"ldr	sp, %[newtcxt]							\n\t"		// load new context pointer
+							: [newtcxt] "=m" (newt->cxt)
+							: [oldtcxt] "m" (oldt->cxt)
+							: "memory");
+
+		// Run the users function
+		gfxThreadExit(current->fn(current->param));
+	}
+
 #elif GFX_CPU == GFX_CPU_CORTEX_M3 || GFX_CPU == GFX_CPU_CORTEX_M4 || GFX_CPU == GFX_CPU_CORTEX_M7
-	#include "gos_x_threads_cortexm347.h"
+
+	// Use the EABI calling standard (ARM's AAPCS) - Save r4 - r11
+	// The context is saved at the current stack location and a pointer is maintained in the thread structure.
+
+	#if CORTEX_USE_FPU
+		#warning "GOS Threads: You have specified GFX_CPU=GFX_CPU_CORTX_M? with no hardware floating point support but CORTEX_USE_FPU is TRUE. Try using GFX_CPU_GFX_CPU_CORTEX_M?_FP instead"
+	#endif
+
+	#define _gfxThreadsInit()
+
+	static __attribute__((pcs("aapcs"),naked)) void _gfxTaskSwitch(thread *oldt, thread *newt) {
+		__asm__ volatile (	"push	{r4, r5, r6, r7, r8, r9, r10, r11, lr}	\n\t"
+							"str	sp, %[oldtcxt]							\n\t"
+							"ldr	sp, %[newtcxt]							\n\t"
+							"pop	{r4, r5, r6, r7, r8, r9, r10, r11, pc}	\n\t"
+							: [newtcxt] "=m" (newt->cxt)
+							: [oldtcxt] "m" (oldt->cxt)
+							: "memory");
+	}
+
+	static __attribute__((pcs("aapcs"),naked)) void _gfxStartThread(thread *oldt, thread *newt) {
+		newt->cxt = (char *)newt + newt->size;
+		__asm__ volatile (	"push	{r4, r5, r6, r7, r8, r9, r10, r11, lr}	\n\t"
+							"str	sp, %[oldtcxt]							\n\t"
+							"ldr	sp, %[newtcxt]							\n\t"
+							: [newtcxt] "=m" (newt->cxt)
+							: [oldtcxt] "m" (oldt->cxt)
+							: "memory");
+
+		// Run the users function
+		gfxThreadExit(current->fn(current->param));
+	}
+
 #elif GFX_CPU == GFX_CPU_CORTEX_M4_FP || GFX_CPU == GFX_CPU_CORTEX_M7_FP
-	#include "gos_x_threads_cortexm47fp.h"
-#endif
 
-#ifndef GFX_THREADS_DONE
-	#define GFX_THREADS_DONE
+	// Use the EABI calling standard (ARM's AAPCS) - Save r4 - r11 and floating point
+	// The context is saved at the current stack location and a pointer is maintained in the thread structure.
 
+	#if !CORTEX_USE_FPU
+		#warning "GOS Threads: You have specified GFX_CPU=GFX_CPU_CORTX_M?_FP with hardware floating point support but CORTEX_USE_FPU is FALSE. Try using GFX_CPU_GFX_CPU_CORTEX_M? instead"
+	#endif
+
+	#define _gfxThreadsInit()
+
+	static __attribute__((pcs("aapcs-vfp"),naked)) void _gfxTaskSwitch(thread *oldt, thread *newt) {
+		__asm__ volatile (	"push	{r4, r5, r6, r7, r8, r9, r10, r11, lr}	\n\t"
+							"vpush	{s16-s31}								\n\t"
+							"str	sp, %[oldtcxt]							\n\t"
+							"ldr	sp, %[newtcxt]							\n\t"
+							"vpop	{s16-s31}								\n\t"
+							"pop	{r4, r5, r6, r7, r8, r9, r10, r11, pc}	\n\t"
+							: [newtcxt] "=m" (newt->cxt)
+							: [oldtcxt] "m" (oldt->cxt)
+							: "memory");
+	}
+
+	static __attribute__((pcs("aapcs-vfp"),naked)) void _gfxStartThread(thread *oldt, thread *newt) {
+		newt->cxt = (char *)newt + newt->size;
+		__asm__ volatile (	"push	{r4, r5, r6, r7, r8, r9, r10, r11, lr}	\n\t"
+							"vpush	{s16-s31}								\n\t"
+							"str	sp, %[oldtcxt]							\n\t"
+							"ldr	sp, %[newtcxt]							\n\t"
+							: [newtcxt] "=m" (newt->cxt)
+							: [oldtcxt] "m" (oldt->cxt)
+							: "memory");
+
+		// Run the users function
+		gfxThreadExit(current->fn(current->param));
+	}
+
+#else
 	#include <string.h>				// Prototype for memcpy()
 	#include <setjmp.h>
 
@@ -214,12 +313,12 @@ static thread		mainthread;				// The main thread context
 	 * If they don't exist compile them to be the standard setjmp() function.
 	 * Similarly for longjmp().
 	 */
-	#if (!defined(setjmp) && !defined(_setjmp)) || GFX_COMPILER == GFX_COMPILER_KEIL || GFX_COMPILER == GFX_COMPILER_MINGW32 || GFX_COMPILER == GFX_COMPILER_MINGW64
+	#if (!defined(setjmp) && !defined(_setjmp)) || GFX_COMPILER == GFX_COMPILER_KEIL
 		#define CXT_SAVE 		setjmp
 	#else
 		#define CXT_SAVE 		_setjmp
 	#endif
-	#if (!defined(longjmp) && !defined(_longjmp)) || GFX_COMPILER == GFX_COMPILER_KEIL || GFX_COMPILER == GFX_COMPILER_MINGW32 || GFX_COMPILER == GFX_COMPILER_MINGW64
+	#if (!defined(longjmp) && !defined(_longjmp)) || GFX_COMPILER == GFX_COMPILER_KEIL
 		#define CXT_RESTORE 	longjmp
 	#else
 		#define CXT_RESTORE 	_longjmp
@@ -242,8 +341,8 @@ static thread		mainthread;				// The main thread context
 	 *
 	 * MACROS:
 	 *
-	 *	AUTO_DETECT_STACKFRAME	GFXON/GFXOFF			- GFXON to auto-detect stack frame structure
-	 *	STACK_DIR_UP			Macro/gBool		- GFXON if the stack grows up instead of down
+	 *	AUTO_DETECT_STACKFRAME	TRUE/FALSE			- TRUE to auto-detect stack frame structure
+	 *	STACK_DIR_UP			Macro/bool_t		- TRUE if the stack grows up instead of down
 	 *	MASK1					Macro/uint32_t		- The 1st mask of jmp_buf elements that need relocation
 	 *	MASK2					Macro/uint32_t		- The 2nd mask of jmp_buf elements that need relocation
 	 *	STACK_BASE				Macro/size_t		- The base of the stack frame relative to the local variables
@@ -252,8 +351,8 @@ static thread		mainthread;				// The main thread context
 	 */
 	#if GFX_COMPILER == GFX_COMPILER_MINGW32
 
-		#define AUTO_DETECT_STACKFRAME	GFXOFF
-		#define STACK_DIR_UP		GFXOFF
+		#define AUTO_DETECT_STACKFRAME	FALSE
+		#define STACK_DIR_UP		FALSE
 		#define MASK1				0x00000011
 		#define MASK2				0x00000000
 		#define STACK_BASE			12
@@ -263,8 +362,8 @@ static thread		mainthread;				// The main thread context
 
 		// Use auto-detection of the stack frame format
 		// Assumes all the relevant stuff to be relocated is in the first 256 bytes of the jmpbuf.
-		#define AUTO_DETECT_STACKFRAME	GFXON
-		#define STACK_DIR_UP		stackdirup			// GFXON if the stack grow up instead of down
+		#define AUTO_DETECT_STACKFRAME	TRUE
+		#define STACK_DIR_UP		stackdirup			// TRUE if the stack grow up instead of down
 		#define MASK1				jmpmask1			// The 1st mask of jmp_buf elements that need relocation
 		#define MASK2				jmpmask2			// The 2nd mask of jmp_buf elements that need relocation
 		#define STACK_BASE			stackbase			// The base of the stack frame relative to the local variables
@@ -275,7 +374,7 @@ static thread		mainthread;				// The main thread context
 			jmp_buf		cxt;
 		} saveloc;
 
-		static gBool		stackdirup;
+		static bool_t		stackdirup;
 		static uint32_t		jmpmask1;
 		static uint32_t		jmpmask2;
 		static size_t		stackbase;
@@ -348,7 +447,6 @@ static thread		mainthread;				// The main thread context
 		uint32_t	i;
 
 		// Copy the stack frame
-		s = 0;
 		#if AUTO_DETECT_STACKFRAME
 			if (STACK_DIR_UP) {					// Stack grows up
 				nf = (char *)(t) + sizeof(thread) + sizeof(jmp_buf) + STACK_BASE;
@@ -384,7 +482,7 @@ static thread		mainthread;				// The main thread context
 			}
 		#endif
 	}
-	static void _gfxXSwitch(thread *oldt, thread *newt, gBool doBuildFrame) {
+	static void _gfxXSwitch(thread *oldt, thread *newt, bool_t doBuildFrame) {
 
 		// Save the old context
 		if (CXT_SAVE(oldt->cxt)) return;
@@ -402,7 +500,7 @@ static thread		mainthread;				// The main thread context
 				//	as we are on a different stack.
 
 				// Run the users function.
-				gfxThreadExit(_gfxCurrentThread->fn(_gfxCurrentThread->param));
+				gfxThreadExit(current->fn(current->param));
 
 				// We never get here as gfxThreadExit() never returns
 			}
@@ -415,10 +513,9 @@ static thread		mainthread;				// The main thread context
 		CXT_RESTORE(newt->cxt, 1);
 	}
 
-	#define _gfxTaskSwitch(oldt, newt)		_gfxXSwitch(oldt, newt, gFalse)
-	#define _gfxStartThread(oldt, newt)		_gfxXSwitch(oldt, newt, gTrue)
+	#define _gfxTaskSwitch(oldt, newt)		_gfxXSwitch(oldt, newt, FALSE)
+	#define _gfxStartThread(oldt, newt)		_gfxXSwitch(oldt, newt, TRUE)
 #endif
-#undef GFX_THREADS_DONE
 
 static void Qinit(threadQ * q) {
 	q->head = q->tail = 0;
@@ -454,11 +551,11 @@ void _gosThreadsInit(void) {
 
 	_gfxThreadsInit();
 
-	_gfxCurrentThread = &mainthread;
+	current = &mainthread;
 }
 
-gThread gfxThreadMe(void) {
-	return (gThread)_gfxCurrentThread;
+gfxThreadHandle gfxThreadMe(void) {
+	return (gfxThreadHandle)current;
 }
 
 // Check if there are dead processes to deallocate
@@ -479,17 +576,17 @@ void gfxYield(void) {
 	if (!readyQ.head)
 		return;
 
-	Qadd(&readyQ, me = _gfxCurrentThread);
-	_gfxCurrentThread = Qpop(&readyQ);
-	_gfxTaskSwitch(me, _gfxCurrentThread);
+	Qadd(&readyQ, me = current);
+	current = Qpop(&readyQ);
+	_gfxTaskSwitch(me, current);
 }
 
 // This routine is not currently public - but it could be.
-void gfxThreadExit(gThreadreturn ret) {
+void gfxThreadExit(threadreturn_t ret) {
 	thread	*me;
 
 	// Save the results in case someone is waiting
-	me = _gfxCurrentThread;
+	me = current;
 	me->param = (void *)ret;
 	me->flags |= FLG_THD_DEAD;
 
@@ -499,16 +596,16 @@ void gfxThreadExit(gThreadreturn ret) {
 		Qadd(&deadQ, me);
 
 	// Set the next thread. Exit if it was the last thread
-	if (!(_gfxCurrentThread = Qpop(&readyQ)))
+	if (!(current = Qpop(&readyQ)))
 		gfxExit();
 
 	// Switch to the new thread
-	_gfxTaskSwitch(me, _gfxCurrentThread);
+	_gfxTaskSwitch(me, current);
 
 	// We never get back here as we didn't re-queue ourselves
 }
 
-gThread gfxThreadCreate(void *stackarea, size_t stacksz, gThreadpriority prio, DECLARE_THREAD_FUNCTION((*fn),p), void *param) {
+gfxThreadHandle gfxThreadCreate(void *stackarea, size_t stacksz, threadpriority_t prio, DECLARE_THREAD_FUNCTION((*fn),p), void *param) {
 	thread *	t;
 	thread *	me;
 	(void)		prio;
@@ -533,9 +630,9 @@ gThread gfxThreadCreate(void *stackarea, size_t stacksz, gThreadpriority prio, D
 	t->param = param;
 
 	// Add the current thread to the queue because we are starting a new thread.
-	me = _gfxCurrentThread;
+	me = current;
 	Qadd(&readyQ, me);
-	_gfxCurrentThread = t;
+	current = t;
 
 	_gfxStartThread(me, t);
 
@@ -543,11 +640,11 @@ gThread gfxThreadCreate(void *stackarea, size_t stacksz, gThreadpriority prio, D
 	return t;
 }
 
-gThreadreturn gfxThreadWait(gThread th) {
+threadreturn_t gfxThreadWait(gfxThreadHandle th) {
 	thread *		t;
 
 	t = th;
-	if (t == _gfxCurrentThread)
+	if (t == current)
 		return -1;
 
 	// Mark that we are waiting
@@ -565,7 +662,7 @@ gThreadreturn gfxThreadWait(gThread th) {
 		gfxFree(t);
 
 	// Return the status left by the dead process
-	return (gThreadreturn)t->param;
+	return (threadreturn_t)t->param;
 }
 
 #endif /* GFX_USE_OS_RAW32 */

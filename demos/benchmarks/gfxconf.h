@@ -31,22 +31,22 @@
 #define _GFXCONF_H
 
 /* The operating system to use. One of these must be defined - preferably in your Makefile */
-//#define GFX_USE_OS_CHIBIOS	GFXOFF
-//#define GFX_USE_OS_WIN32		GFXOFF
-//#define GFX_USE_OS_LINUX		GFXOFF
-//#define GFX_USE_OS_OSX		GFXOFF
+//#define GFX_USE_OS_CHIBIOS	FALSE
+//#define GFX_USE_OS_WIN32		FALSE
+//#define GFX_USE_OS_LINUX		FALSE
+//#define GFX_USE_OS_OSX		FALSE
 
 /* GFX sub-systems to turn on */
-#define GFX_USE_GDISP                   GFXON
+#define GFX_USE_GDISP                   TRUE
 
 /* Features for the GDISP sub-system. */
-#define GDISP_NEED_VALIDATION           GFXOFF
-#define GDISP_NEED_CLIP                 GFXOFF
-#define GDISP_NEED_TEXT                 GFXON
-#define GDISP_NEED_CONTROL              GFXON
+#define GDISP_NEED_VALIDATION           FALSE
+#define GDISP_NEED_CLIP                 FALSE
+#define GDISP_NEED_TEXT                 TRUE
+#define GDISP_NEED_CONTROL              TRUE
 
 /* Builtin Fonts */
-#define GDISP_INCLUDE_FONT_UI2          GFXON
+#define GDISP_INCLUDE_FONT_UI2          TRUE
 
 #endif /* _GFXCONF_H */
 

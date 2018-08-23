@@ -58,22 +58,22 @@ static GFXINLINE void setup_z(void) {
 	palSetPad(GPIOC, 3);
 }
 
-static gBool init_board(GMouse *m, unsigned driverinstance) {
+static bool_t init_board(GMouse *m, unsigned driverinstance) {
 	(void)	m;
 
 	// Only one touch interface on this board
 	if (driverinstance)
-		return gFalse;
+		return FALSE;
 
 	adcStart(&ADCD1, 0);
 
 	// Set up for reading Z
 	setup_z();
     chThdSleepMilliseconds(1);				// Settling time
-	return gTrue;
+	return TRUE;
 }
 
-static gBool read_xyz(GMouse *m, GMouseReading *prd) {
+static bool_t read_xyz(GMouse *m, GMouseReading *prd) {
 	adcsample_t samples[ADC_NUM_CHANNELS * ADC_BUF_DEPTH];
 	uint16_t val1, val2;
 	(void)		m;
@@ -130,7 +130,7 @@ static gBool read_xyz(GMouse *m, GMouseReading *prd) {
 		// Set up for reading z again. We know it will be 20ms before we get called again so don't worry about settling time
 	    setup_z();
     }
-	return gTrue;
+	return TRUE;
 }
 
 #endif /* _LLD_GMOUSE_MCU_BOARD_H */

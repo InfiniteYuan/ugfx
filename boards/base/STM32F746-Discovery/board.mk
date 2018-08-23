@@ -1,6 +1,4 @@
-GFXINC  +=	$(GFXLIB)/boards/base/STM32F746-Discovery \
-			$(STMHAL)/Inc
-
+GFXINC  +=	$(GFXLIB)/boards/base/STM32F746-Discovery
 GFXSRC  +=	$(GFXLIB)/boards/base/STM32F746-Discovery/stm32f746g_discovery_sdram.c \
 			$(GFXLIB)/boards/base/STM32F746-Discovery/stm32f7_i2c.c
 				
@@ -17,9 +15,10 @@ ifeq ($(OPT_OS),raw32)
 				$(GFXLIB)/boards/base/STM32F746-Discovery/stm32f746g_raw32_ugfx.c \
 				$(GFXLIB)/boards/base/STM32F746-Discovery/stm32f746g_raw32_system.c \
 				$(GFXLIB)/boards/base/STM32F746-Discovery/stm32f746g_raw32_interrupts.c
-	GFXDEFS	+=	GFX_OS_PRE_INIT_FUNCTION=Raw32OSInit GFX_OS_INIT_NO_WARNING=GFXON
+	GFXDEFS	+=	GFX_OS_PRE_INIT_FUNCTION=Raw32OSInit GFX_OS_INIT_NO_WARNING=TRUE
 	GFXINC	+=	$(CMSIS)/Device/ST/STM32F7xx/Include \
-				$(CMSIS)/Include
+				$(CMSIS)/Include \
+				$(STMHAL)/Inc
 	LDSCRIPT = $(GFXLIB)/boards/base/STM32F746-Discovery/stm32f746nghx_flash.ld
 endif
 

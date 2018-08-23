@@ -80,7 +80,7 @@ GSourceHandle ginputGetDial(uint16_t instance) {
 			pds->lastvalue = 0;
 		}
 		ginput_lld_dial_init();
-		gtimerStart(&DialTimer, (GTimerFunction)ginput_lld_dial_poll, DialCallback, gTrue, GINPUT_DIAL_POLL_PERIOD);
+		gtimerStart(&DialTimer, (GTimerFunction)ginput_lld_dial_poll, DialCallback, TRUE, GINPUT_DIAL_POLL_PERIOD);
 	}
 
 	// OK - return this input
@@ -137,16 +137,16 @@ void ginputSetDialSensitivity(uint16_t instance, uint16_t diff) {
  * @param[in] instance	The ID of the dial input instance
  * @param[in] pdial		The dial event struct
  *
- * @return	Returns gFalse on an error (eg invalid instance)
+ * @return	Returns FALSE on an error (eg invalid instance)
  */
-gBool ginputGetDialStatus(uint16_t instance, GEventDial *pdial) {
+bool_t ginputGetDialStatus(uint16_t instance, GEventDial *pdial) {
 	if (instance >= GINPUT_DIAL_NUM_PORTS)
-		return gFalse;
+		return FALSE;
 	pdial->type = GEVENT_DIAL;
 	pdial->instance = instance;
 	pdial->value = DialStatus[instance].lastvalue;
 	pdial->maxvalue = DialStatus[instance].max;
-	return gTrue;
+	return TRUE;
 }
 
 #endif /* GFX_USE_GINPUT && GINPUT_NEED_DIAL */

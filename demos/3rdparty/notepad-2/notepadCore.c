@@ -48,15 +48,15 @@ static DECLARE_THREAD_STACK(waDrawThread, NCORE_THD_STACK_SIZE);
 static uint8_t 					nPenWidth = 1;
 static uint8_t 					nMode = NCORE_MODE_DRAW;
 
-static gThread			nThd;
+static gfxThreadHandle			nThd;
 
 static GHandle					ncoreDrawingArea = NULL;
 static GHandle					nStatusConsole = NULL;
 
-static volatile gBool			doExit;
+static volatile bool_t			doExit;
 
-static void draw_point(gCoord x, gCoord y) {
-  gColor c = ncoreDrawingArea->color;
+static void draw_point(coord_t x, coord_t y) {
+  color_t c = ncoreDrawingArea->color;
 
   if (nMode == NCORE_MODE_DRAW)
 	c = ncoreDrawingArea->color;
@@ -71,7 +71,7 @@ static void draw_point(gCoord x, gCoord y) {
 
 /* Bresenham's Line Drawing Algorithm
    Modified version to draw line of variable thickness */
-static void draw_line(gCoord x0, gCoord y0, gCoord x1, gCoord y1) {
+static void draw_line(coord_t x0, coord_t y0, coord_t x1, coord_t y1) {
   int16_t dy, dx;
   int16_t addx, addy;
   int16_t P, diff, i;
@@ -130,7 +130,7 @@ static void draw_line(gCoord x0, gCoord y0, gCoord x1, gCoord y1) {
 static DECLARE_THREAD_FUNCTION(ncoreDrawThread, msg) {
 
   GEventMouse ev, evPrev;
-  gCoord dx, dy;
+  coord_t dx, dy;
 
   int state = 0, dist;
 
@@ -204,7 +204,7 @@ void ncoreSpawnDrawThread(GHandle drawingArea, GHandle statusConsole) {
 
   ncoreDrawingArea = drawingArea;
   nStatusConsole = statusConsole;
-  doExit = gFalse;
+  doExit = FALSE;
 
   nThd = gfxThreadCreate(waDrawThread,
                            sizeof(waDrawThread),
@@ -216,7 +216,7 @@ void ncoreSpawnDrawThread(GHandle drawingArea, GHandle statusConsole) {
 
 /* Terminate the core thread, wait for control release */
 void ncoreTerminateDrawThread(void) {
-  doExit = gTrue;
+  doExit = TRUE;
   gfxThreadWait(nThd);
   nThd = 0;
 }
@@ -227,8 +227,8 @@ void ncoreSetPenWidth(uint8_t penWidth) { nPenWidth = penWidth; }
 uint8_t ncoreGetPenWidth(void) 			{ return nPenWidth; }
 
 /* Get and set the drawing color */
-void ncoreSetPenColor(gColor penColor) { gwinSetColor(ncoreDrawingArea, penColor); }
-gColor ncoreGetPenColor(void) 			{ return ncoreDrawingArea->color; }
+void ncoreSetPenColor(color_t penColor) { gwinSetColor(ncoreDrawingArea, penColor); }
+color_t ncoreGetPenColor(void) 			{ return ncoreDrawingArea->color; }
 
 /* Set mode */
 void ncoreSetMode(uint8_t mode)			{ nMode = mode; }

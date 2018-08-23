@@ -76,13 +76,13 @@ void _gaudioDeinit(void)
 
 #if GAUDIO_NEED_PLAY
 
-	gBool gaudioPlayInit(uint16_t channel, uint32_t frequency, ArrayDataFormat format) {
+	bool_t gaudioPlayInit(uint16_t channel, uint32_t frequency, ArrayDataFormat format) {
 		gaudioPlayStop();
 		playFlags &= ~PLAYFLG_ISINIT;
 		if (!gaudio_play_lld_init(channel, frequency, format))
-			return gFalse;
+			return FALSE;
 		playFlags |= PLAYFLG_ISINIT;
-		return gTrue;
+		return TRUE;
 	}
 
 	void gaudioPlay(GDataBuffer *pd) {
@@ -115,13 +115,13 @@ void _gaudioDeinit(void)
 			gfxBufferRelease(pd);
 	}
 
-	gBool gaudioPlaySetVolume(uint8_t vol) {
+	bool_t gaudioPlaySetVolume(uint8_t vol) {
 		return gaudio_play_lld_set_volume(vol);
 	}
 
-	gBool gaudioPlayWait(gDelay ms) {
+	bool_t gaudioPlayWait(delaytime_t ms) {
 		if (!(playFlags & PLAYFLG_PLAYING))
-			return gTrue;
+			return TRUE;
 		return gfxSemWait(&playComplete, ms);
 	}
 
@@ -152,7 +152,7 @@ void _gaudioDeinit(void)
 
 		GSourceHandle gaudioPlayGetSource(void) {
 			if (!gtimerIsActive(&playTimer))
-				gtimerStart(&playTimer, PlayTimerCallback, 0, gTrue, gDelayForever);
+				gtimerStart(&playTimer, PlayTimerCallback, 0, TRUE, TIME_INFINITE);
 			playFlags |= PLAYFLG_USEEVENTS;
 			return (GSourceHandle)&playTimer;
 		}
@@ -185,13 +185,13 @@ void _gaudioDeinit(void)
 #endif
 
 #if GAUDIO_NEED_RECORD
-	gBool gaudioRecordInit(uint16_t channel, uint32_t frequency, ArrayDataFormat format) {
+	bool_t gaudioRecordInit(uint16_t channel, uint32_t frequency, ArrayDataFormat format) {
 		gaudioRecordStop();
 		recordFlags &= ~RECORDFLG_ISINIT;
 		if (!gaudio_record_lld_init(channel, frequency, format))
-			return gFalse;
+			return FALSE;
 		recordFlags |= RECORDFLG_ISINIT;
-		return gTrue;
+		return TRUE;
 	}
 
 	void gaudioRecordStart(void) {
@@ -209,11 +209,11 @@ void _gaudioDeinit(void)
 		if ((recordFlags & (RECORDFLG_RECORDING|RECORDFLG_STALLED)) == RECORDFLG_RECORDING)
 			gaudio_record_lld_stop();
 		recordFlags &= ~(RECORDFLG_RECORDING|RECORDFLG_STALLED);
-		while((pd = (GDataBuffer *)gfxQueueGSyncGet(&recordList, gDelayNone)))
+		while((pd = (GDataBuffer *)gfxQueueGSyncGet(&recordList, TIME_IMMEDIATE)))
 			gfxBufferRelease(pd);
 	}
 
-	GDataBuffer *gaudioRecordGetData(gDelay ms) {
+	GDataBuffer *gaudioRecordGetData(delaytime_t ms) {
 		return (GDataBuffer *)gfxQueueGSyncGet(&recordList, ms);
 	}
 
@@ -245,7 +245,7 @@ void _gaudioDeinit(void)
 
 		GSourceHandle gaudioRecordGetSource(void) {
 			if (!gtimerIsActive(&recordTimer))
-				gtimerStart(&recordTimer, RecordTimerCallback, 0, gTrue, gDelayForever);
+				gtimerStart(&recordTimer, RecordTimerCallback, 0, TRUE, TIME_INFINITE);
 			recordFlags |= RECORDFLG_USEEVENTS;
 			return (GSourceHandle)&recordTimer;
 		}

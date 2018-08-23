@@ -15,7 +15,7 @@
  * @details		GINPUT provides an easy and common interface to use different input devices
  *				such as touchscreens and mices.
  *
- * @pre			GFX_USE_GINPUT must be set to GFXON in your gfxconf.h
+ * @pre			GFX_USE_GINPUT must be set to TRUE in your gfxconf.h
  *
  * @{
  */

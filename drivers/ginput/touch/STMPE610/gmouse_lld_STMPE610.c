@@ -20,13 +20,13 @@
 
 // Extra settings for the users gfxconf.h file. See readme.txt
 #ifndef GMOUSE_STMPE610_SELF_CALIBRATE
-	#define GMOUSE_STMPE610_SELF_CALIBRATE	GFXOFF
+	#define GMOUSE_STMPE610_SELF_CALIBRATE	FALSE
 #endif
 #ifndef GMOUSE_STMPE610_READ_PRESSURE
-	#define GMOUSE_STMPE610_READ_PRESSURE	GFXOFF
+	#define GMOUSE_STMPE610_READ_PRESSURE	FALSE
 #endif
 #ifndef GMOUSE_STMPE610_TEST_MODE
-	#define GMOUSE_STMPE610_TEST_MODE		GFXOFF
+	#define GMOUSE_STMPE610_TEST_MODE		FALSE
 #endif
 
 /**
@@ -57,9 +57,9 @@
  * 		The settling times. We have set these conservatively at 1ms.
  * 		The reading window. We set this to 16 just to reduce noise. High-res panels may need a lower value.
  */
-static gBool MouseInit(GMouse* m, unsigned driverinstance) {
+static bool_t MouseInit(GMouse* m, unsigned driverinstance) {
 	if (!init_board(m, driverinstance))
-		return gFalse;
+		return FALSE;
 
 	aquire_bus(m);
 
@@ -95,10 +95,10 @@ static gBool MouseInit(GMouse* m, unsigned driverinstance) {
 	write_reg(m, STMPE610_REG_INT_CTRL, 0x01);		// Level interrupt, enable interrupts
 
 	release_bus(m);
-	return gTrue;
+	return TRUE;
 }
 
-static gBool read_xyz(GMouse* m, GMouseReading* pdr)
+static bool_t read_xyz(GMouse* m, GMouseReading* pdr)
 {
 	#if GMOUSE_STMPE610_TEST_MODE
 		static GMouseReading n;
@@ -133,14 +133,14 @@ static gBool read_xyz(GMouse* m, GMouseReading* pdr)
 				write_reg(m, STMPE610_REG_INT_STA, 0xFF);
 			#endif
 			release_bus(m);
-			return gTrue;
+			return TRUE;
 		}
 
 	#else
 		// Is there a new sample or a touch transition
 		#if GMOUSE_STMPE610_GPIO_IRQPIN
 			if(!getpin_irq(m))
-				return gFalse;
+				return FALSE;
 		#endif
 
 		// Is there something in the fifo
@@ -157,7 +157,7 @@ static gBool read_xyz(GMouse* m, GMouseReading* pdr)
 					write_reg(m, STMPE610_REG_INT_STA, 0xFF);
 				#endif
 				release_bus(m);
-				return gTrue;
+				return TRUE;
 			}
 
 			// No new result
@@ -165,16 +165,16 @@ static gBool read_xyz(GMouse* m, GMouseReading* pdr)
 				write_reg(m, STMPE610_REG_INT_STA, 0xFF);
 			#endif
 			release_bus(m);
-			return gFalse;
+			return FALSE;
 		}
 
 	#endif
 
 	// Time to get some readings
-	pdr->x = (gCoord)read_word(m, STMPE610_REG_TSC_DATA_X);
-	pdr->y = (gCoord)read_word(m, STMPE610_REG_TSC_DATA_Y);
+	pdr->x = (coord_t)read_word(m, STMPE610_REG_TSC_DATA_X);
+	pdr->y = (coord_t)read_word(m, STMPE610_REG_TSC_DATA_Y);
 	#if GMOUSE_STMPE610_READ_PRESSURE
-		pdr->z = (gCoord)read_byte(m, STMPE610_REG_TSC_DATA_Z);
+		pdr->z = (coord_t)read_byte(m, STMPE610_REG_TSC_DATA_Z);
 	#else
 		pdr->z = gmvmt(m)->z_max;
 	#endif
@@ -211,14 +211,14 @@ static gBool read_xyz(GMouse* m, GMouseReading* pdr)
 		#if GDISP_NEED_CONTROL
 			switch(gdispGGetOrientation(m->display)) {
 			default:
-			case gOrientation0:
-			case gOrientation180:
+			case GDISP_ROTATE_0:
+			case GDISP_ROTATE_180:
 			default:
 				pdr->x = pdr->x / (4096/gdispGGetWidth(m->display));
 				pdr->y = pdr->y / (4096/gdispGGetHeight(m->display));
 				break;
-			case gOrientation90:
-			case gOrientation270:
+			case GDISP_ROTATE_90:
+			case GDISP_ROTATE_270:
 				pdr->x = pdr->x / (4096/gdispGGetHeight(m->display));
 				pdr->y = pdr->y / (4096/gdispGGetWidth(m->display));
 				break;
@@ -229,7 +229,7 @@ static gBool read_xyz(GMouse* m, GMouseReading* pdr)
 		#endif
 	#endif
 
-	return gTrue;
+	return TRUE;
 }
 
 const GMouseVMT const GMOUSE_DRIVER_VMT[1] = {{

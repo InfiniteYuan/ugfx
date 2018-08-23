@@ -11,15 +11,13 @@
 
 #include "mcufont/mcufont.h"
 
-#define FONT_FLAG_DYNAMIC	0x80		// Custom flag to indicate dynamically allocated font
-#define FONT_FLAG_UNLISTED	0x40		// Custom flag to indicate font is not currently listed
-
-static const struct mf_font_list_s *fontList;
+/* Custom flag to indicate dynamically allocated font */
+#define FONT_FLAG_DYNAMIC 0x80
 
 /**
  * Match a pattern against the font name.
  */
-static gBool matchfont(const char *pattern, const char *name) {
+static bool_t matchfont(const char *pattern, const char *name) {
 	while(1) {
 		switch (pattern[0]) {
 		case '*':
@@ -34,7 +32,7 @@ static gBool matchfont(const char *pattern, const char *name) {
 			return name[0] == 0;
 		default:
 			if (name[0] != pattern[0])
-				return gFalse;
+				return FALSE;
 			pattern++;
 			name++;
 			break;
@@ -42,70 +40,48 @@ static gBool matchfont(const char *pattern, const char *name) {
 	}
 }
 
-gFont gdispOpenFont(const char *name) {
+font_t gdispOpenFont(const char *name) {
 	const struct mf_font_list_s *fp;
 	
-	if (!fontList)
-		fontList = mf_get_font_list();
-		
+	
 	// Try the long names first
-	for(fp = fontList; fp; fp = fp->next) {
+	for(fp = mf_get_font_list(); fp; fp = fp->next) {
 		if (matchfont(name, fp->font->full_name))
 			return fp->font;
 	}
 
 	// Try the short names if no long names match
-	for(fp = fontList; fp; fp = fp->next) {
+	for(fp = mf_get_font_list(); fp; fp = fp->next) {
 		if (matchfont(name, fp->font->short_name))
 			return fp->font;
 	}
 	
-	/* Return default builtin font.. better than nothing. */
+	/* Return default font.. better than nothing. */
 	return mf_get_font_list()->font;
 }
 
-void gdispCloseFont(gFont font) {
-	if ((font->flags & (FONT_FLAG_DYNAMIC|FONT_FLAG_UNLISTED)) == (FONT_FLAG_DYNAMIC|FONT_FLAG_UNLISTED)) {
+void gdispCloseFont(font_t font) {
+	if (font->flags & FONT_FLAG_DYNAMIC)
+	{
+		struct mf_font_s *dfont = (struct mf_font_s *)font;
+		
 		/* Make sure that no-one can successfully use font after closing */
-		((struct mf_font_s *)font)->render_character = 0;
+		dfont->render_character = 0;
 		
 		/* Release the allocated memory */
-		gfxFree((void *)font);
+		gfxFree(dfont);
 	}
 }
 
-gFont gdispScaleFont(gFont font, uint8_t scale_x, uint8_t scale_y)
+font_t gdispScaleFont(font_t font, uint8_t scale_x, uint8_t scale_y)
 {
-	struct mf_scaledfont_s *newfont;
-	
-	if (!(newfont = gfxAlloc(sizeof(struct mf_scaledfont_s))))
-		return 0;
-	
+	struct mf_scaledfont_s *newfont = gfxAlloc(sizeof(struct mf_scaledfont_s));
 	mf_scale_font(newfont, font, scale_x, scale_y);
-	((struct mf_font_s *)newfont)->flags |= FONT_FLAG_DYNAMIC|FONT_FLAG_UNLISTED;
-	return (gFont)newfont;
+	return (font_t)newfont;
 }
 
-const char *gdispGetFontName(gFont font) {
+const char *gdispGetFontName(font_t font) {
 	return font->short_name;
-}
-
-gBool gdispAddFont(gFont font) {
-	struct mf_font_list_s *hdr;
-
-	if ((font->flags & (FONT_FLAG_DYNAMIC|FONT_FLAG_UNLISTED)) != (FONT_FLAG_DYNAMIC|FONT_FLAG_UNLISTED))
-		return gFalse;
-		
-	if (!(hdr = gfxAlloc(sizeof(struct mf_font_list_s))))
-		return gFalse;
-
-	if (!fontList)
-		fontList = mf_get_font_list();
-	hdr->font = (const struct mf_font_s *)font;
-	hdr->next = fontList;
-	((struct mf_font_s *)font)->flags &= ~FONT_FLAG_UNLISTED;
-	fontList = hdr;
-	return gTrue;
 }
 
 #endif /* GFX_USE_GDISP && GDISP_NEED_TEXT */

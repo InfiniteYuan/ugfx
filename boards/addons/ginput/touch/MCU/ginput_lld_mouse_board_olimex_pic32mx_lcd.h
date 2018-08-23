@@ -59,18 +59,18 @@ static const ADCConversionGroup ADC_Y_CG = {
   .channels = 1 << YPOS,
 };
 
-static gBool init_board(GMouse *m, unsigned driverinstance) {
+static bool_t init_board(GMouse *m, unsigned driverinstance) {
 	(void)	m;
 
 	if (driverinstance)
-		return gFalse;
+		return FALSE;
 
 	adcObjectInit(&ADCD);
 	adcStart(&ADCD, &ADCC);
-	return gTrue;
+	return TRUE;
 }
 
-static gBool read_xyz(GMouse *m, GMouseReading *prd) {
+static bool_t read_xyz(GMouse *m, GMouseReading *prd) {
 	adcsample_t samples[2];
 
 	prd->buttons = 0;
@@ -89,7 +89,7 @@ static gBool read_xyz(GMouse *m, GMouseReading *prd) {
 
 	// Shortcut - no need to read X or Y if the touch is off.
 	if (pdr->z < GMOUSE_MCU_Z_TOUCHON)
-		return gTrue;
+		return TRUE;
 
 	// Read X
 	palSetPadMode(IOPORTB, XPOS, PAL_MODE_OUTPUT);
@@ -111,7 +111,7 @@ static gBool read_xyz(GMouse *m, GMouseReading *prd) {
 	adcConvert(&ADCD, &ADC_X_CG, &samples[0], 1);
 	pdr->y = ADC_MAX - samples[0];
 
-	return gTrue;
+	return TRUE;
 }
 
 #endif /* _GINPUT_LLD_MOUSE_BOARD_H */

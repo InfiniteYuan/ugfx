@@ -41,12 +41,12 @@ extern "C" {
 	unsigned ginput_lld_toggle_getbits(const GToggleConfig *ptc);
 
 	/* This routine is provided to low level drivers to wakeup a value read from a thread context.
-	 *	Particularly useful if GINPUT_TOGGLE_POLL_PERIOD = gDelayForever
+	 *	Particularly useful if GINPUT_TOGGLE_POLL_PERIOD = TIME_INFINITE
 	 */
 	void ginputToggleWakeup(void);
 
 	/* This routine is provided to low level drivers to wakeup a value read from an ISR
-	 *	Particularly useful if GINPUT_TOGGLE_POLL_PERIOD = gDelayForever
+	 *	Particularly useful if GINPUT_TOGGLE_POLL_PERIOD = TIME_INFINITE
 	 */
 	void ginputToggleWakeupI(void);
 

@@ -44,7 +44,7 @@ void initialize (void)
 }
 
 
-void matrix (int16_t xyz[3][N], gColor col[N])
+void matrix (int16_t xyz[3][N], color_t col[N])
 {
   static uint32_t t = 0;
   int16_t x = -SCALE, y = -SCALE;
@@ -106,7 +106,7 @@ void rotate (int16_t xyz[3][N], uint16_t angleX, uint16_t angleY, uint16_t angle
 }
 
 
-void draw(int16_t xyz[3][N], gColor col[N])
+void draw(int16_t xyz[3][N], color_t col[N])
 {
   static uint16_t oldProjX[N] = {0};
   static uint16_t oldProjY[N] = {0};
@@ -142,7 +142,7 @@ int16_t angleX = 0, angleY = 0, angleZ = 0;
 int16_t speedX = 0, speedY = 0, speedZ = 0;
 
 int16_t xyz[3][N];
-gColor col[N];
+color_t col[N];
 
 
 int main (void)

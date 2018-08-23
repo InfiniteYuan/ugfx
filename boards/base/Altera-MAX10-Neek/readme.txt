@@ -6,5 +6,4 @@ In order to use this board file, the following things are needed:
 		data cache if the MSB is set.
 
 On this board uGFX currently supports:
-	- GDISP via the altraframereader driver
-	- GINPUT via the FT5316 mouse/touchscreen driver
+	- GDISP via the framebuffer driver

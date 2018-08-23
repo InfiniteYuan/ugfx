@@ -22,7 +22,7 @@
 /**
  * @brief	Whether each channel is mono or stereo
  */
-#define GAUDIO_RECORD_CHANNEL0_IS_STEREO			GFXOFF
+#define GAUDIO_RECORD_CHANNEL0_IS_STEREO			FALSE
 
 /**
  * The list of audio channels and their uses

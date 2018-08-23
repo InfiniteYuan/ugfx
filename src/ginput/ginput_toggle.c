@@ -71,14 +71,14 @@ static void TogglePoll(void *param) {
 						if ((psl->listenflags & GLISTEN_TOGGLE_ON)) {
 							pe->type = GEVENT_TOGGLE;
 							pe->instance = i;
-							pe->on = gTrue;
+							pe->on = TRUE;
 							geventSendEvent(psl);
 						}
 					} else {
 						if ((psl->listenflags & GLISTEN_TOGGLE_OFF)) {
 							pe->type = GEVENT_TOGGLE;
 							pe->instance = i;
-							pe->on = gFalse;
+							pe->on = FALSE;
 							geventSendEvent(psl);
 						}
 					}
@@ -102,7 +102,7 @@ GSourceHandle ginputGetToggle(uint16_t instance) {
 	if (!gtimerIsActive(&ToggleTimer)) {
 		for(ptc = GInputToggleConfigTable; ptc < GInputToggleConfigTable+sizeof(GInputToggleConfigTable)/sizeof(GInputToggleConfigTable[0]); ptc++)
 			ginput_lld_toggle_init(ptc);
-		gtimerStart(&ToggleTimer, TogglePoll, 0, gTrue, GINPUT_TOGGLE_POLL_PERIOD);
+		gtimerStart(&ToggleTimer, TogglePoll, 0, TRUE, GINPUT_TOGGLE_POLL_PERIOD);
 	}
 		
 	// OK - return this input
@@ -110,7 +110,7 @@ GSourceHandle ginputGetToggle(uint16_t instance) {
 }
 
 // If invert is true, invert the on/off sense for the toggle
-void ginputInvertToggle(uint16_t instance, gBool invert) {
+void ginputInvertToggle(uint16_t instance, bool_t invert) {
 	if (instance >= GINPUT_TOGGLE_NUM_PORTS)
 		return;
 	if (invert) {
@@ -127,19 +127,19 @@ void ginputInvertToggle(uint16_t instance, gBool invert) {
 }
 
 /* Get the current toggle status.
- *	Returns gFalse on error (eg invalid instance)
+ *	Returns FALSE on error (eg invalid instance)
  */
-gBool ginputGetToggleStatus(uint16_t instance, GEventToggle *ptoggle) {
+bool_t ginputGetToggleStatus(uint16_t instance, GEventToggle *ptoggle) {
 	// Win32 threads don't seem to recognise priority and/or pre-emption
 	// so we add a sleep here to prevent 100% polled applications from locking up.
 	gfxSleepMilliseconds(1);
 
 	if (instance >= GINPUT_TOGGLE_NUM_PORTS)
-		return gFalse;
+		return FALSE;
 	ptoggle->type = GEVENT_TOGGLE;
 	ptoggle->instance = instance;
-	ptoggle->on = (ToggleStatus[instance].status & GINPUT_TOGGLE_ISON) ? gTrue : gFalse;
-	return gTrue;
+	ptoggle->on = (ToggleStatus[instance].status & GINPUT_TOGGLE_ISON) ? TRUE : FALSE;
+	return TRUE;
 }
 
 /* Wake up the mouse driver from an interrupt service routine (there may be new readings available) */

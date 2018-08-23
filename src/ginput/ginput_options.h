@@ -22,43 +22,43 @@
  */
 	/**
 	 * @brief   Should mouse/touch functions be included.
-	 * @details	Defaults to GFXOFF
+	 * @details	Defaults to FALSE
 	 * @note	Also add a mouse/touch hardware driver to your makefile.
 	 * 			Eg.
 	 * 				include $(GFXLIB)/drivers/ginput/touch/MCU/driver.mk
 	 */
 	#ifndef GINPUT_NEED_MOUSE
-		#define GINPUT_NEED_MOUSE		GFXOFF
+		#define GINPUT_NEED_MOUSE		FALSE
 	#endif
 	/**
 	 * @brief   Should keyboard functions be included.
-	 * @details	Defaults to GFXOFF
+	 * @details	Defaults to FALSE
 	 * @note	Also add a keyboard hardware driver to your makefile.
 	 * 			Eg.
 	 * 				include $(GFXLIB)/drivers/ginput/keyboard/XXXX/driver.mk
 	 */
 	#ifndef GINPUT_NEED_KEYBOARD
-		#define GINPUT_NEED_KEYBOARD	GFXOFF
+		#define GINPUT_NEED_KEYBOARD	FALSE
 	#endif
 	/**
 	 * @brief   Should hardware toggle/switch/button functions be included.
-	 * @details	Defaults to GFXOFF
+	 * @details	Defaults to FALSE
 	 * @note	Also add a toggle hardware driver to your makefile.
 	 * 			Eg.
 	 * 				include $(GFXLIB)/drivers/ginput/toggle/Pal/driver.mk
 	 */
 	#ifndef GINPUT_NEED_TOGGLE
-		#define GINPUT_NEED_TOGGLE		GFXOFF
+		#define GINPUT_NEED_TOGGLE		FALSE
 	#endif
 	/**
 	 * @brief   Should analog dial functions be included.
-	 * @details	Defaults to GFXOFF
+	 * @details	Defaults to FALSE
 	 * @note	Also add a dial hardware driver to your makefile.
 	 * 			Eg.
 	 * 				include $(GFXLIB)/drivers/ginput/dial/analog/driver.mk
 	 */
 	#ifndef GINPUT_NEED_DIAL
-		#define GINPUT_NEED_DIAL		GFXOFF
+		#define GINPUT_NEED_DIAL		FALSE
 	#endif
 /**
  * @}
@@ -74,16 +74,16 @@
  */
 	/**
 	 * @brief   Start touch devices without loading or running calibration.
-	 * @details	Defaults to GFXOFF
+	 * @details	Defaults to FALSE
 	 * @note	This is used if you want to manually control the initial calibration
 	 * 			process. In practice this is only useful for a touch driver test program.
 	 */
 	#ifndef GINPUT_TOUCH_STARTRAW
-		#define GINPUT_TOUCH_STARTRAW					GFXOFF
+		#define GINPUT_TOUCH_STARTRAW					FALSE
 	#endif
  	/**
 	 * @brief   Turn off the touch calibration GUI.
-	 * @details	Defaults to GFXOFF
+	 * @details	Defaults to FALSE
 	 * @note	Turning off the calibration GUI just turns off the manual calibration
 	 * 			process. Readings may still be calibrated if calibration data
 	 * 			can be loaded.
@@ -91,28 +91,28 @@
 	 * 			using this option can save a lot of space.
 	 */
 	#ifndef GINPUT_TOUCH_NOCALIBRATE_GUI
-		#define GINPUT_TOUCH_NOCALIBRATE_GUI			GFXOFF
+		#define GINPUT_TOUCH_NOCALIBRATE_GUI			FALSE
 	#endif
 	/**
 	 * @brief   Turn off all touch calibration support.
-	 * @details	Defaults to GFXOFF
-	 * @note	With this set to GFXON touch readings will not be calibrated.
+	 * @details	Defaults to FALSE
+	 * @note	With this set to TRUE touch readings will not be calibrated.
 	 * @note	This automatically turns off the calibration GUI too!
 	 * @note	Calibration requires a lot of code. If your device doesn't require it
 	 * 			using this option can save a lot of space.
 	 */
 	#ifndef GINPUT_TOUCH_NOCALIBRATE
-		#define GINPUT_TOUCH_NOCALIBRATE				GFXOFF
+		#define GINPUT_TOUCH_NOCALIBRATE				FALSE
 	#endif
 	/**
 	 * @brief   Turn off all touch support.
-	 * @details	Defaults to GFXOFF
+	 * @details	Defaults to FALSE
 	 * @note	This automatically turns off all calibration and the calibration GUI too!
 	 * @note	Touch device handling requires a lot of code. If your device doesn't require it
 	 * 			using this option can save a lot of space.
 	 */
 	#ifndef GINPUT_TOUCH_NOTOUCH
-		#define GINPUT_TOUCH_NOTOUCH					GFXOFF
+		#define GINPUT_TOUCH_NOTOUCH					FALSE
 	#endif
 	/**
 	 * @brief   Milliseconds between mouse polls.
@@ -143,19 +143,19 @@
 	#endif
    /**
      * @brief   There is a user supplied routine to load mouse calibration data
-	 * @details	Defaults to GFXOFF
-     * @note    If GFXON the user must supply the @p LoadMouseCalibration() routine.
+	 * @details	Defaults to FALSE
+     * @note    If TRUE the user must supply the @p LoadMouseCalibration() routine.
      */
 	#ifndef GINPUT_TOUCH_USER_CALIBRATION_LOAD
-		#define GINPUT_TOUCH_USER_CALIBRATION_LOAD		GFXOFF
+		#define GINPUT_TOUCH_USER_CALIBRATION_LOAD		FALSE
 	#endif
    /**
      * @brief   There is a user supplied routine to save mouse calibration data
-	 * @details	Defaults to GFXOFF
-     * @note    If GFXON the user must supply the @p SaveMouseCalibration() routine.
+	 * @details	Defaults to FALSE
+     * @note    If TRUE the user must supply the @p SaveMouseCalibration() routine.
      */
 	#ifndef GINPUT_TOUCH_USER_CALIBRATION_SAVE
-		#define GINPUT_TOUCH_USER_CALIBRATION_SAVE		GFXOFF
+		#define GINPUT_TOUCH_USER_CALIBRATION_SAVE		FALSE
 	#endif
 	#if defined(__DOXYGEN__)
 	   /**
@@ -198,7 +198,7 @@
 	 * @note	Turning off the layout engine just saves code if it is not needed.
      */
 	#ifndef GKEYBOARD_LAYOUT_OFF
-		#define GKEYBOARD_LAYOUT_OFF					GFXOFF
+		#define GKEYBOARD_LAYOUT_OFF					FALSE
 	#endif
 	/**
 	 * @brief   Various Keyboard Layouts that can be included.
@@ -212,7 +212,7 @@
 	 * @{
 	 */
 	#ifndef GKEYBOARD_LAYOUT_SCANCODE2_US
-		#define GKEYBOARD_LAYOUT_SCANCODE2_US			GFXOFF				// US Keyboard using the ScanCode 2 set.
+		#define GKEYBOARD_LAYOUT_SCANCODE2_US			FALSE				// US Keyboard using the ScanCode 2 set.
 	#endif
 	/** @} */
 /** @} */

@@ -15,11 +15,9 @@
 /* Include the driver defines */
 #include "../../../src/gaudio/gaudio_driver_play.h"
 
-#if GFX_COMPAT_V2 && GFX_COMPAT_OLDCOLORS
-	#undef Red
-	#undef Green
-	#undef Blue
-#endif
+#undef Red
+#undef Green
+#undef Blue
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #include <stdio.h>
@@ -31,7 +29,7 @@
 
 static HWAVEOUT		ah = 0;
 static volatile int	nQueuedBuffers;
-static gBool		isRunning;
+static bool_t		isRunning;
 static WAVEHDR		WaveHdrs[MAX_WAVE_HEADERS];
 static HANDLE		waveThread;
 static DWORD		threadID;
@@ -46,7 +44,7 @@ static DWORD		threadID;
  * anyway, so instead just use CALLBACK_THREAD here instead.
  *************************************************************************/
 
-static gBool senddata(WAVEHDR *pwh) {
+static bool_t senddata(WAVEHDR *pwh) {
 	GDataBuffer *paud;
 
 	// Get the next data block to send
@@ -56,7 +54,7 @@ static gBool senddata(WAVEHDR *pwh) {
 		gaudioPlayDoneI();
 	gfxSystemUnlock();
 	if (!paud)
-		return gFalse;
+		return FALSE;
 
 	// Prepare the wave header for Windows
 	pwh->dwUser = (DWORD_PTR)paud;
@@ -76,7 +74,7 @@ static gBool senddata(WAVEHDR *pwh) {
 	}
 
 	nQueuedBuffers++;
-	return gTrue;
+	return TRUE;
 }
 
 static DWORD WINAPI waveProc(LPVOID arg) {
@@ -122,11 +120,11 @@ static DWORD WINAPI waveProc(LPVOID arg) {
 /* External declarations.                                                    */
 /*===========================================================================*/
 
-gBool gaudio_play_lld_init(uint16_t channel, uint32_t frequency, ArrayDataFormat format) {
+bool_t gaudio_play_lld_init(uint16_t channel, uint32_t frequency, ArrayDataFormat format) {
 	WAVEFORMATEX	wfx;
 
 	if (format != ARRAY_DATA_8BITUNSIGNED && format != ARRAY_DATA_16BITSIGNED)
-		return gFalse;
+		return FALSE;
 
 	if (!waveThread) {
 		if (!(waveThread = CreateThread(0, 0, (LPTHREAD_START_ROUTINE)waveProc, 0, 0, &threadID))) {
@@ -153,19 +151,19 @@ gBool gaudio_play_lld_init(uint16_t channel, uint32_t frequency, ArrayDataFormat
 		exit(-1);
 	}
 
-	return gTrue;
+	return TRUE;
 }
 
-gBool gaudio_play_lld_set_volume(uint8_t vol) {
+bool_t gaudio_play_lld_set_volume(uint8_t vol) {
 	if (!ah)
-		return gFalse;
+		return FALSE;
 	return waveOutSetVolume(ah, (((uint16_t)vol)<<8)|vol) != 0;
 }
 
 void gaudio_play_lld_start(void) {
 	WAVEHDR		*pwh;
 
-	isRunning = gTrue;
+	isRunning = TRUE;
 	while (nQueuedBuffers < MAX_WAVE_HEADERS) {
 		// Find the empty one - there will always be at least one.
 		for(pwh = WaveHdrs; pwh->lpData; pwh++);
@@ -177,7 +175,7 @@ void gaudio_play_lld_start(void) {
 }
 
 void gaudio_play_lld_stop(void) {
-	isRunning = gFalse;
+	isRunning = FALSE;
 	waveOutReset(ah);
 	while(nQueuedBuffers) Sleep(1);
 }

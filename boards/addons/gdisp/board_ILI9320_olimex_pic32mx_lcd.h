@@ -68,7 +68,7 @@ static GFXINLINE void post_init_board(GDisplay *g) {
 	(void) g;
 }
 
-static noinline void setpin_reset(GDisplay *g, gBool state) {
+static noinline void setpin_reset(GDisplay *g, bool_t state) {
 	(void) g;
 	if (state)
 		palClearPad(IOPORTA, 7);

@@ -63,7 +63,7 @@ E     C
    D
 */
 const uint8_t   sevenSegNumbers[10]                                   = {0x3F, 0x06, 0x5B, 0x4F, 0x66, 0x6D, 0x7D, 0x07, 0x7F, 0x6F}; // 0,1,2,3,4,5,6,7,8,9
-const gColor   tetrisShapeColors[9]                                  = {GFX_BLACK, HTML2COLOR(0x009000), GFX_RED, GFX_BLUE, GFX_MAGENTA, GFX_SKYBLUE, GFX_ORANGE, HTML2COLOR(0xBBBB00), GFX_WHITE}; // shape colors
+const color_t   tetrisShapeColors[9]                                  = {Black, HTML2COLOR(0x009000), Red, Blue, Magenta, SkyBlue, Orange, HTML2COLOR(0xBBBB00), White}; // shape colors
 // default tetris shapes
 const int       tetrisShapes[TETRIS_SHAPE_COUNT][4][2]                = {
                                                                           {{4, 17},{4, 16},{5, 16},{4, 15}},
@@ -78,19 +78,19 @@ const int       tetrisShapes[TETRIS_SHAPE_COUNT][4][2]                = {
 int             tetrisField[TETRIS_FIELD_HEIGHT][TETRIS_FIELD_WIDTH];        // main tetris field array
 unsigned int    tetrisGameSpeed                                       = 500; // game auto-move speed in ms
 unsigned int    tetrisKeySpeed                                        = 140; // game key repeat speed in ms
-gTicks   tetrisPreviousGameTime                                = 0;
-gTicks   tetrisPreviousKeyTime                                 = 0;
+systemticks_t   tetrisPreviousGameTime                                = 0;
+systemticks_t   tetrisPreviousKeyTime                                 = 0;
 int             tetrisCurrentShape[4][2];
 int             tetrisNextShape[4][2];
 int             tetrisOldShape[4][2];
 int             tetrisNextShapeNum, tetrisOldShapeNum;
 unsigned long   tetrisLines                                           = 0;
 unsigned long   tetrisScore                                           = 0;
-gBool          tetrisKeysPressed[5]                                  = {gFalse, gFalse, gFalse, gFalse, gFalse}; // left/down/right/up/pause
-gBool          tetrisPaused                                          = gFalse;
-gBool          tetrisGameOver                                        = gFalse;
-gFont          font16;
-gFont          font12;
+bool_t          tetrisKeysPressed[5]                                  = {FALSE, FALSE, FALSE, FALSE, FALSE}; // left/down/right/up/pause
+bool_t          tetrisPaused                                          = FALSE;
+bool_t          tetrisGameOver                                        = FALSE;
+font_t          font16;
+font_t          font12;
 
 GEventMouse     ev;
 
@@ -143,7 +143,7 @@ static int uitoa(unsigned int value, char * buf, int max) {
   return n;
 }
 
-static void sevenSegDraw(int x, int y, uint8_t number, gColor color) {
+static void sevenSegDraw(int x, int y, uint8_t number, color_t color) {
   if (number & 0x01) gdispFillArea(x+SEVEN_SEG_HEIGHT+SEVEN_SEG_SIZE, y, SEVEN_SEG_WIDTH, SEVEN_SEG_HEIGHT, color); // A
   if (number & 0x02) gdispFillArea(x+SEVEN_SEG_HEIGHT+(SEVEN_SEG_SIZE*2)+SEVEN_SEG_WIDTH, y+SEVEN_SEG_HEIGHT+SEVEN_SEG_SIZE, SEVEN_SEG_HEIGHT, SEVEN_SEG_WIDTH, color); // B
   if (number & 0x04) gdispFillArea(x+SEVEN_SEG_HEIGHT+(SEVEN_SEG_SIZE*2)+SEVEN_SEG_WIDTH, y+(SEVEN_SEG_HEIGHT*2)+SEVEN_SEG_WIDTH+(SEVEN_SEG_SIZE*3), SEVEN_SEG_HEIGHT, SEVEN_SEG_WIDTH, color); // C
@@ -209,16 +209,16 @@ static void tellScore(uint8_t color) {
   uitoa(tetrisScore, pps_str, sizeof(pps_str));
   gdispFillArea(0, 0, gdispGetWidth(),  gdispGetHeight()-(TETRIS_FIELD_HEIGHT*TETRIS_CELL_HEIGHT)-6, tetrisShapeColors[0]);
   for (i = 0; i < strlen(pps_str); i++) {
-    if (pps_str[i] == '0') sevenSegDraw(TETRIS_SEVEN_SEG_SCORE_X, gdispGetHeight()-(TETRIS_FIELD_HEIGHT*TETRIS_CELL_HEIGHT)-SEVEN_SEG_CHAR_HEIGHT-7, sevenSegNumbers[0], GFX_LIME);
-    if (pps_str[i] == '1') sevenSegDraw(TETRIS_SEVEN_SEG_SCORE_X, gdispGetHeight()-(TETRIS_FIELD_HEIGHT*TETRIS_CELL_HEIGHT)-SEVEN_SEG_CHAR_HEIGHT-7, sevenSegNumbers[1], GFX_LIME);
-    if (pps_str[i] == '2') sevenSegDraw(TETRIS_SEVEN_SEG_SCORE_X, gdispGetHeight()-(TETRIS_FIELD_HEIGHT*TETRIS_CELL_HEIGHT)-SEVEN_SEG_CHAR_HEIGHT-7, sevenSegNumbers[2], GFX_LIME);
-    if (pps_str[i] == '3') sevenSegDraw(TETRIS_SEVEN_SEG_SCORE_X, gdispGetHeight()-(TETRIS_FIELD_HEIGHT*TETRIS_CELL_HEIGHT)-SEVEN_SEG_CHAR_HEIGHT-7, sevenSegNumbers[3], GFX_LIME);
-    if (pps_str[i] == '4') sevenSegDraw(TETRIS_SEVEN_SEG_SCORE_X, gdispGetHeight()-(TETRIS_FIELD_HEIGHT*TETRIS_CELL_HEIGHT)-SEVEN_SEG_CHAR_HEIGHT-7, sevenSegNumbers[4], GFX_LIME);
-    if (pps_str[i] == '5') sevenSegDraw(TETRIS_SEVEN_SEG_SCORE_X, gdispGetHeight()-(TETRIS_FIELD_HEIGHT*TETRIS_CELL_HEIGHT)-SEVEN_SEG_CHAR_HEIGHT-7, sevenSegNumbers[5], GFX_LIME);
-    if (pps_str[i] == '6') sevenSegDraw(TETRIS_SEVEN_SEG_SCORE_X, gdispGetHeight()-(TETRIS_FIELD_HEIGHT*TETRIS_CELL_HEIGHT)-SEVEN_SEG_CHAR_HEIGHT-7, sevenSegNumbers[6], GFX_LIME);
-    if (pps_str[i] == '7') sevenSegDraw(TETRIS_SEVEN_SEG_SCORE_X, gdispGetHeight()-(TETRIS_FIELD_HEIGHT*TETRIS_CELL_HEIGHT)-SEVEN_SEG_CHAR_HEIGHT-7, sevenSegNumbers[7], GFX_LIME);
-    if (pps_str[i] == '8') sevenSegDraw(TETRIS_SEVEN_SEG_SCORE_X, gdispGetHeight()-(TETRIS_FIELD_HEIGHT*TETRIS_CELL_HEIGHT)-SEVEN_SEG_CHAR_HEIGHT-7, sevenSegNumbers[8], GFX_LIME);
-    if (pps_str[i] == '9') sevenSegDraw(TETRIS_SEVEN_SEG_SCORE_X, gdispGetHeight()-(TETRIS_FIELD_HEIGHT*TETRIS_CELL_HEIGHT)-SEVEN_SEG_CHAR_HEIGHT-7, sevenSegNumbers[9], GFX_LIME);
+    if (pps_str[i] == '0') sevenSegDraw(TETRIS_SEVEN_SEG_SCORE_X, gdispGetHeight()-(TETRIS_FIELD_HEIGHT*TETRIS_CELL_HEIGHT)-SEVEN_SEG_CHAR_HEIGHT-7, sevenSegNumbers[0], Lime);
+    if (pps_str[i] == '1') sevenSegDraw(TETRIS_SEVEN_SEG_SCORE_X, gdispGetHeight()-(TETRIS_FIELD_HEIGHT*TETRIS_CELL_HEIGHT)-SEVEN_SEG_CHAR_HEIGHT-7, sevenSegNumbers[1], Lime);
+    if (pps_str[i] == '2') sevenSegDraw(TETRIS_SEVEN_SEG_SCORE_X, gdispGetHeight()-(TETRIS_FIELD_HEIGHT*TETRIS_CELL_HEIGHT)-SEVEN_SEG_CHAR_HEIGHT-7, sevenSegNumbers[2], Lime);
+    if (pps_str[i] == '3') sevenSegDraw(TETRIS_SEVEN_SEG_SCORE_X, gdispGetHeight()-(TETRIS_FIELD_HEIGHT*TETRIS_CELL_HEIGHT)-SEVEN_SEG_CHAR_HEIGHT-7, sevenSegNumbers[3], Lime);
+    if (pps_str[i] == '4') sevenSegDraw(TETRIS_SEVEN_SEG_SCORE_X, gdispGetHeight()-(TETRIS_FIELD_HEIGHT*TETRIS_CELL_HEIGHT)-SEVEN_SEG_CHAR_HEIGHT-7, sevenSegNumbers[4], Lime);
+    if (pps_str[i] == '5') sevenSegDraw(TETRIS_SEVEN_SEG_SCORE_X, gdispGetHeight()-(TETRIS_FIELD_HEIGHT*TETRIS_CELL_HEIGHT)-SEVEN_SEG_CHAR_HEIGHT-7, sevenSegNumbers[5], Lime);
+    if (pps_str[i] == '6') sevenSegDraw(TETRIS_SEVEN_SEG_SCORE_X, gdispGetHeight()-(TETRIS_FIELD_HEIGHT*TETRIS_CELL_HEIGHT)-SEVEN_SEG_CHAR_HEIGHT-7, sevenSegNumbers[6], Lime);
+    if (pps_str[i] == '7') sevenSegDraw(TETRIS_SEVEN_SEG_SCORE_X, gdispGetHeight()-(TETRIS_FIELD_HEIGHT*TETRIS_CELL_HEIGHT)-SEVEN_SEG_CHAR_HEIGHT-7, sevenSegNumbers[7], Lime);
+    if (pps_str[i] == '8') sevenSegDraw(TETRIS_SEVEN_SEG_SCORE_X, gdispGetHeight()-(TETRIS_FIELD_HEIGHT*TETRIS_CELL_HEIGHT)-SEVEN_SEG_CHAR_HEIGHT-7, sevenSegNumbers[8], Lime);
+    if (pps_str[i] == '9') sevenSegDraw(TETRIS_SEVEN_SEG_SCORE_X, gdispGetHeight()-(TETRIS_FIELD_HEIGHT*TETRIS_CELL_HEIGHT)-SEVEN_SEG_CHAR_HEIGHT-7, sevenSegNumbers[9], Lime);
   }
 }
 
@@ -262,46 +262,46 @@ static void printGameOver(void) {
 }
 
 static void printTouchAreas(void) {
-  gdispDrawStringBox(0, 0, gdispGetWidth(), gdispGetFontMetric(font16, gFontHeight), "Touch Area's", font16, GFX_WHITE, gJustifyCenter);
-  gdispDrawStringBox(0, 0, gdispGetWidth(), gdispGetHeight()/4, "Pause", font16, GFX_GRAY, gJustifyCenter);
-  gdispDrawStringBox(0, gdispGetHeight()/4, gdispGetWidth(), gdispGetHeight()/2, "Rotate", font16, GFX_GRAY, gJustifyCenter);
-  gdispDrawStringBox(0, gdispGetHeight()-(gdispGetHeight()/4), gdispGetWidth()/4, gdispGetHeight()/4, "Left", font16, GFX_GRAY, gJustifyCenter);
-  gdispDrawStringBox(gdispGetWidth()/4, gdispGetHeight()-(gdispGetHeight()/4), gdispGetWidth()/2, gdispGetHeight()/4, "Down", font16, GFX_GRAY, gJustifyCenter);
-  gdispDrawStringBox(gdispGetWidth()-(gdispGetWidth()/4), gdispGetHeight()-(gdispGetHeight()/4), gdispGetWidth()/4, gdispGetHeight()/4, "Right", font16, GFX_GRAY, gJustifyCenter);
-  gdispDrawLine(0, gdispGetHeight()/4, gdispGetWidth()-1, gdispGetHeight()/4, GFX_GRAY);
-  gdispDrawLine(0, gdispGetHeight()-gdispGetHeight()/4, gdispGetWidth()-1, gdispGetHeight()-gdispGetHeight()/4, GFX_GRAY);
-  gdispDrawLine(gdispGetWidth()/4, gdispGetHeight()-gdispGetHeight()/4, gdispGetWidth()/4, gdispGetHeight()-1, GFX_GRAY);
-  gdispDrawLine(gdispGetWidth()-(gdispGetWidth()/4), gdispGetHeight()-gdispGetHeight()/4, gdispGetWidth()-(gdispGetWidth()/4), gdispGetHeight()-1, GFX_GRAY);
+  gdispDrawStringBox(0, 0, gdispGetWidth(), gdispGetFontMetric(font16, fontHeight), "Touch Area's", font16, White, justifyCenter);
+  gdispDrawStringBox(0, 0, gdispGetWidth(), gdispGetHeight()/4, "Pause", font16, Grey, justifyCenter);
+  gdispDrawStringBox(0, gdispGetHeight()/4, gdispGetWidth(), gdispGetHeight()/2, "Rotate", font16, Grey, justifyCenter);
+  gdispDrawStringBox(0, gdispGetHeight()-(gdispGetHeight()/4), gdispGetWidth()/4, gdispGetHeight()/4, "Left", font16, Grey, justifyCenter);
+  gdispDrawStringBox(gdispGetWidth()/4, gdispGetHeight()-(gdispGetHeight()/4), gdispGetWidth()/2, gdispGetHeight()/4, "Down", font16, Grey, justifyCenter);
+  gdispDrawStringBox(gdispGetWidth()-(gdispGetWidth()/4), gdispGetHeight()-(gdispGetHeight()/4), gdispGetWidth()/4, gdispGetHeight()/4, "Right", font16, Grey, justifyCenter);
+  gdispDrawLine(0, gdispGetHeight()/4, gdispGetWidth()-1, gdispGetHeight()/4, Grey);
+  gdispDrawLine(0, gdispGetHeight()-gdispGetHeight()/4, gdispGetWidth()-1, gdispGetHeight()-gdispGetHeight()/4, Grey);
+  gdispDrawLine(gdispGetWidth()/4, gdispGetHeight()-gdispGetHeight()/4, gdispGetWidth()/4, gdispGetHeight()-1, Grey);
+  gdispDrawLine(gdispGetWidth()-(gdispGetWidth()/4), gdispGetHeight()-gdispGetHeight()/4, gdispGetWidth()-(gdispGetWidth()/4), gdispGetHeight()-1, Grey);
 }
 
-static gBool stay(gBool down) {
+static bool_t stay(bool_t down) {
   int sk, k;
-  gBool stay;
-  if (down) sk = 1; else sk = 0;
-  stay = gFalse;
+  bool_t stay;
+  if (down == TRUE) sk = 1; else sk = 0;
+  stay = FALSE;
   for (k = 0; k <= 3; k++) {
     if (tetrisCurrentShape[k][1] == 0) {
-      return gTrue;
+      return TRUE;
     }
   }
   for (k = 0; k <= 3; k++) {
-    if ((tetrisCurrentShape[k][0] < 0) || (tetrisCurrentShape[k][0] > 9)) return gTrue;
+    if ((tetrisCurrentShape[k][0] < 0) || (tetrisCurrentShape[k][0] > 9)) return TRUE;
     if (tetrisCurrentShape[k][1] <= 16)
-      if (tetrisField[tetrisCurrentShape[k][1]-sk][tetrisCurrentShape[k][0]] != 0) return gTrue;
+      if (tetrisField[tetrisCurrentShape[k][1]-sk][tetrisCurrentShape[k][0]] != 0) return TRUE;
   }
   return stay;
 }
 
 static void clearCompleteLines(void) {
-  gBool t;
+  bool_t t;
   uint8_t reiz = 0;
   int l,k,j;
   l = 0;
   while (l <= 16) {
-    t = gTrue;
+    t = TRUE;
     for (j = 0; j <= 9; j++)
-      if (tetrisField[l][j] == 0) t = gFalse;
-    if (t) {
+      if (tetrisField[l][j] == 0) t = FALSE;
+    if (t == TRUE) {
       for (j = 4; j >= 0; j--) { // cheap & dirty line removal animation :D
         drawCell(j,l, 0);
         drawCell(9-j,l, 0);
@@ -331,7 +331,7 @@ static void clearCompleteLines(void) {
 
 static void goDown(void) {
   int i;
-  if (!stay(gTrue)) {
+  if (stay(TRUE) == FALSE) {
     drawShape(0);
     for (i = 0; i <= 3; i++) {
       tetrisCurrentShape[i][1]--;
@@ -340,7 +340,7 @@ static void goDown(void) {
   } else {
     for (i = 0; i <= 3; i++) {
       if (tetrisCurrentShape[i][1] >=17) {
-        tetrisGameOver = gTrue;
+        tetrisGameOver = TRUE;
         return;
       } else {
        tetrisField[tetrisCurrentShape[i][1]][tetrisCurrentShape[i][0]] = tetrisOldShapeNum+1;
@@ -348,8 +348,8 @@ static void goDown(void) {
     }
     clearCompleteLines();
     createShape();
-    if (stay(gFalse)) {
-      tetrisGameOver = gTrue;
+    if (stay(FALSE) == TRUE) {
+      tetrisGameOver = TRUE;
       return;
     }
     drawShape(tetrisOldShapeNum+1);
@@ -383,7 +383,7 @@ static void rotateShape(void) {
     tetrisCurrentShape[i][0] = ox+(round((tx-ox)*cos(90*(3.14/180))-(ty-oy)*sin(90*(3.14/180))));
     tetrisCurrentShape[i][1] = oy+(round((tx-ox)*sin(90*(3.14/180))+(ty-oy)*cos(90*(3.14/180))));
   }
-  if (!stay(gFalse)) {
+  if (stay(FALSE) == FALSE) {
     memcpy(tetrisNextShape, tetrisCurrentShape, sizeof(tetrisNextShape)); // tetrisNextShape = tetrisCurrentShape;
     memcpy(tetrisCurrentShape, tetrisOldShape, sizeof(tetrisCurrentShape)); // tetrisCurrentShape = tetrisOldShape;
     drawShape(0);
@@ -394,20 +394,20 @@ static void rotateShape(void) {
   }
 }
 
-static gBool checkSides(gBool left) {
+static bool_t checkSides(bool_t left) {
   int sk,k;
-  if (left) sk = 1; else sk = -1;
+  if (left == TRUE) sk = 1; else sk = -1;
   for (k = 0; k <= 3; k++) {
-    if ((tetrisCurrentShape[k][0]+sk < 0) || (tetrisCurrentShape[k][0]+sk > 9)) return gTrue;
+    if ((tetrisCurrentShape[k][0]+sk < 0) || (tetrisCurrentShape[k][0]+sk > 9)) return TRUE;
     if (tetrisCurrentShape[k][1] <= 16)
-      if (tetrisField[tetrisCurrentShape[k][1]][tetrisCurrentShape[k][0]+sk] != 0) return gTrue;
+      if (tetrisField[tetrisCurrentShape[k][1]][tetrisCurrentShape[k][0]+sk] != 0) return TRUE;
   }
-  return gFalse;
+  return FALSE;
 }
 
 static void goRight(void) {
   int i;
-  if (!checkSides(gTrue)) {
+  if (checkSides(TRUE) == FALSE) {
     drawShape(0);
     for (i = 0; i <= 3; i++) {
       tetrisCurrentShape[i][0]++;
@@ -418,7 +418,7 @@ static void goRight(void) {
 
 static void goLeft(void) {
   int i;
-  if (!checkSides(gFalse)) {
+  if (checkSides(FALSE) == FALSE) {
     drawShape(0);
     for (i = 0; i <= 3; i++) {
       tetrisCurrentShape[i][0]--;
@@ -434,8 +434,8 @@ static DECLARE_THREAD_FUNCTION(thdTetris, arg) {
     // key handling
     if (gfxSystemTicks() - tetrisPreviousKeyTime >= gfxMillisecondsToTicks(tetrisKeySpeed) || gfxSystemTicks() <= gfxMillisecondsToTicks(tetrisKeySpeed)) {
       for (i = 0; i < sizeof(tetrisKeysPressed); i++) {
-        if (tetrisKeysPressed[i]) {
-          tetrisKeysPressed[i] = gFalse;
+        if (tetrisKeysPressed[i] == TRUE) {
+          tetrisKeysPressed[i] = FALSE;
         }
       }
       tetrisPreviousKeyTime = gfxSystemTicks();
@@ -447,34 +447,34 @@ static DECLARE_THREAD_FUNCTION(thdTetris, arg) {
       tetrisPreviousGameTime = gfxSystemTicks();
     }
     if (!(ev.buttons & GINPUT_MOUSE_BTN_LEFT)) continue;
-    if (ev.x <= gdispGetWidth()/4 && ev.y >= gdispGetHeight()-(gdispGetHeight()/4) && !tetrisKeysPressed[0] && !tetrisPaused) {
+    if (ev.x <= gdispGetWidth()/4 && ev.y >= gdispGetHeight()-(gdispGetHeight()/4) && tetrisKeysPressed[0] == FALSE && !tetrisPaused) {
       goLeft();
-      tetrisKeysPressed[0] = gTrue;
+      tetrisKeysPressed[0] = TRUE;
       tetrisPreviousKeyTime = gfxSystemTicks();
     }
-    if (ev.x > gdispGetWidth()-(gdispGetWidth()/4) && ev.y >= gdispGetHeight()-(gdispGetHeight()/4) && !tetrisKeysPressed[2] && !tetrisPaused) {
+    if (ev.x > gdispGetWidth()-(gdispGetWidth()/4) && ev.y >= gdispGetHeight()-(gdispGetHeight()/4) && tetrisKeysPressed[2] == FALSE && !tetrisPaused) {
       goRight();
-      tetrisKeysPressed[2] = gTrue;
+      tetrisKeysPressed[2] = TRUE;
       tetrisPreviousKeyTime = gfxSystemTicks();
     }
-    if (ev.y > gdispGetHeight()/4 && ev.y < gdispGetHeight()-(gdispGetHeight()/4) && !tetrisKeysPressed[3] && !tetrisPaused) {
+    if (ev.y > gdispGetHeight()/4 && ev.y < gdispGetHeight()-(gdispGetHeight()/4) && tetrisKeysPressed[3] == FALSE && !tetrisPaused) {
       rotateShape();
-      tetrisKeysPressed[3] = gTrue;
+      tetrisKeysPressed[3] = TRUE;
       tetrisPreviousKeyTime = gfxSystemTicks();
     }
-    if (ev.x > gdispGetWidth()/4 && ev.x <= gdispGetWidth()-(gdispGetWidth()/4) && ev.y >= gdispGetHeight()-(gdispGetHeight()/4) && !tetrisKeysPressed[1] && !tetrisPaused) {
+    if (ev.x > gdispGetWidth()/4 && ev.x <= gdispGetWidth()-(gdispGetWidth()/4) && ev.y >= gdispGetHeight()-(gdispGetHeight()/4) && tetrisKeysPressed[1] == FALSE && !tetrisPaused) {
       goDown();
-      tetrisKeysPressed[1] = gTrue;
+      tetrisKeysPressed[1] = TRUE;
       tetrisPreviousKeyTime = gfxSystemTicks();
     }
-    if (ev.y <= gdispGetHeight()/4 && !tetrisKeysPressed[4]) {
-      tetrisKeysPressed[4] = gTrue;
+    if (ev.y <= gdispGetHeight()/4 && tetrisKeysPressed[4] == FALSE) {
+      tetrisKeysPressed[4] = TRUE;
       tetrisPaused = !tetrisPaused;
       printPaused();
       tetrisPreviousKeyTime = gfxSystemTicks();
     }
   }
-  return (gThreadreturn)0;
+  return (threadreturn_t)0;
 }
 
 static void tetrisDeinit(void) {
@@ -484,21 +484,21 @@ static void tetrisDeinit(void) {
 
 void tetrisStart(void) {
   // Show the help first
-  gdispClear(GFX_BLACK);
+  gdispClear(Black);
   printTouchAreas();
   gfxSleepMilliseconds(3000);
 
   // Draw the board
-  gdispClear(GFX_BLACK);
-  gdispDrawBox(0, gdispGetHeight()-(TETRIS_FIELD_HEIGHT*TETRIS_CELL_HEIGHT)-5, (TETRIS_FIELD_WIDTH*TETRIS_CELL_WIDTH)+3, (TETRIS_FIELD_HEIGHT*TETRIS_CELL_HEIGHT)+3, GFX_WHITE);
+  gdispClear(Black);
+  gdispDrawBox(0, gdispGetHeight()-(TETRIS_FIELD_HEIGHT*TETRIS_CELL_HEIGHT)-5, (TETRIS_FIELD_WIDTH*TETRIS_CELL_WIDTH)+3, (TETRIS_FIELD_HEIGHT*TETRIS_CELL_HEIGHT)+3, White);
   printText(8);
 
   // Away we go
   initField();
-  tetrisGameOver = gFalse;
-  printGameOver(); // removes "Game Over!" if tetrisGameOver == gFalse
+  tetrisGameOver = FALSE;
+  printGameOver(); // removes "Game Over!" if tetrisGameOver == FALSE
   tetrisPreviousGameTime = gfxSystemTicks();
-  gfxThreadCreate(0, 1024, gThreadpriorityNormal, thdTetris, 0);
+  gfxThreadCreate(0, 1024, NORMAL_PRIORITY, thdTetris, 0);
   while (!tetrisGameOver) {
     gfxSleepMilliseconds(1000);
   }

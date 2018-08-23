@@ -114,7 +114,7 @@ static int NumKeyRows(const char **keyset) {
 	return len;
 }
 
-static void SendVirtualKeyEventToListener(GSourceListener	*psl, GKeyboardObject *gk) {
+static void SendKeyboardEventToListener(GSourceListener	*psl, GKeyboardObject *gk) {
 	GEventKeyboard		*pe;
 	const GVSpecialKey	*skey;
 	unsigned			i;
@@ -157,24 +157,24 @@ static void SendVirtualKeyEventToListener(GSourceListener	*psl, GKeyboardObject 
 	geventSendEvent(psl);
 }
 
-static void SendVirtualKeyEvent(GKeyboardObject *gk) {
+static void SendKeyboardEvent(GKeyboardObject *gk) {
 	GSourceListener	*psl;
 
 	// Send to the "All Keyboards" source listeners
 	psl = 0;
 	while ((psl = geventGetSourceListener(AllKeyboards, psl)))
-		SendVirtualKeyEventToListener(psl, gk);
+		SendKeyboardEventToListener(psl, gk);
 
 	// Send to the keyboard specific source listeners
 	psl = 0;
 	while ((psl = geventGetSourceListener((GSourceHandle)gk, psl)))
-		SendVirtualKeyEventToListener(psl, gk);
+		SendKeyboardEventToListener(psl, gk);
 }
 
 
 #if GINPUT_NEED_MOUSE
 	// Find the key from the keyset and the x, y position
-	static void KeyFindKey(GKeyboardObject *gk, gCoord x, gCoord y) {
+	static void KeyFindKey(GKeyboardObject *gk, coord_t x, coord_t y) {
 		const utf8		*krow;
 		fixed			f;
 		int				idx;
@@ -210,7 +210,7 @@ static void SendVirtualKeyEvent(GKeyboardObject *gk) {
 	}
 
 	// A mouse up has occurred (it may or may not be over the button)
-	static void KeyMouseUp(GWidgetObject *gw, gCoord x, gCoord y) {
+	static void KeyMouseUp(GWidgetObject *gw, coord_t x, coord_t y) {
 		#define gk		((GKeyboardObject *)gw)
 
 		KeyFindKey(gk, x, y);
@@ -257,7 +257,7 @@ static void SendVirtualKeyEvent(GKeyboardObject *gk) {
 
 			// Send the key if required
 			if (skey->sendkey && skey->sendkey[0])
-				SendVirtualKeyEvent(gk);
+				SendKeyboardEvent(gk);
 
 			// Update the display
 			_gwinUpdate((GHandle)gw);
@@ -274,14 +274,14 @@ static void SendVirtualKeyEvent(GKeyboardObject *gk) {
 		}
 
 		// Send the key
-		SendVirtualKeyEvent(gk);
+		SendKeyboardEvent(gk);
 
 		// Update the display
 		_gwinUpdate((GHandle)gw);
 	}
 
 	// A mouse move has occurred (it may or may not be over the button)
-	static void KeyMouseMove(GWidgetObject *gw, gCoord x, gCoord y) {
+	static void KeyMouseMove(GWidgetObject *gw, coord_t x, coord_t y) {
 		#define gk		((GKeyboardObject *)gw)
 
 		KeyFindKey(gk, x, y);
@@ -392,7 +392,7 @@ void gwinKeyboardDraw_Normal(GWidgetObject *gw, void *param) {
 	char cap[5];
 	const char *pcap;
 	const utf8 *krow;
-	gCoord x, y, cx, cy;
+	coord_t x, y, cx, cy;
 	uint8_t rows, cols, row, col, kcols;
 	ucode key;
 	fixed fx, fy;
@@ -552,7 +552,7 @@ void gwinKeyboardDraw_Normal(GWidgetObject *gw, void *param) {
 				break;
 
 			default:   // Regular character
-				gdispGFillStringBox(gw->g.display, gw->g.x+x, gw->g.y+y, cx, cy, pcap, gw->g.font, pcol->text, pcol->fill, gJustifyCenter);
+				gdispGFillStringBox(gw->g.display, gw->g.x+x, gw->g.y+y, cx, cy, pcap, gw->g.font, pcol->text, pcol->fill, justifyCenter);
 				
 				break;
 			}

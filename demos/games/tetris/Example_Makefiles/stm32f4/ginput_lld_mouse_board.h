@@ -26,7 +26,7 @@ static GFXINLINE void init_board(void)
   spiStart(&SPID1, &spicfg);
 }
  
-static GFXINLINE gBool getpin_pressed(void)
+static GFXINLINE bool_t getpin_pressed(void)
 {
   return (!palReadPad(GPIOC, 4));
 }

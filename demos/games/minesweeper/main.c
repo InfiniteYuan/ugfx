@@ -40,7 +40,7 @@ int main(void)
 {
 	GEventMouse ev;
 #if !MINES_SHOW_SPLASH
-	gFont font;
+	font_t font;
 #endif
 
     gfxInit();
@@ -51,11 +51,11 @@ int main(void)
     minesShowSplash();
 #else
     font = gdispOpenFont("DejaVuSans16");
-    gdispDrawString((gdispGetWidth()-gdispGetStringWidth("Touch to start!", font))/2, gdispGetHeight()-25, "Touch to start!", font, GFX_WHITE);
+    gdispDrawString((gdispGetWidth()-gdispGetStringWidth("Touch to start!", font))/2, gdispGetHeight()-25, "Touch to start!", font, White);
     gdispCloseFont(font);
 #endif
 
-    while (1) {
+    while (TRUE) {
         ginputGetMouseStatus(0, &ev);
         if (ev.buttons & GINPUT_MOUSE_BTN_LEFT) {
             while (ev.buttons & GINPUT_MOUSE_BTN_LEFT) {            // Wait until release

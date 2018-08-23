@@ -9,10 +9,10 @@
 
 # Requirements:
 #
-# OSX_SDK	The location of the SDK eg. OSX_SDK  = /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.12.sdk
-# OSX_ARCH	The architecture flags eg.  OSX_ARCH = -mmacosx-version-min=10.12
+# OSX_SDK	The location of the SDK eg. OSX_SDK  = /Developer/SDKs/MacOSX10.7.sdk
+# OSX_ARCH	The architecture flags eg.  OSX_ARCH = -mmacosx-version-min=10.3
 #
 
 SRCFLAGS	+= -isysroot $(OSX_SDK) $(OSX_ARCH)
 LDFLAGS		+= -pthread -Wl,-syslibroot,$(OSX_SDK) $(OSX_ARCH)
-OPT_CPU = x64
+OPT_CPU = x86

@@ -99,18 +99,11 @@ static void gwidgetEvent(void *param, GEvent *pe) {
 	#define pte		((GEventToggle *)pe)
 	#define pde		((GEventDial *)pe)
 
-	#if GFX_USE_GINPUT
-		#if GINPUT_NEED_MOUSE
-			GHandle			h;
-		#endif
-		#if GINPUT_NEED_MOUSE || GINPUT_NEED_TOGGLE || GINPUT_NEED_DIAL || GINPUT_NEED_KEYBOARD
-			GHandle			gh;
-		#endif
-		#if GINPUT_NEED_TOGGLE || GINPUT_NEED_DIAL
-			uint16_t		role;
-		#endif
+	GHandle				h;
+	GHandle				gh;
+	#if GFX_USE_GINPUT && (GINPUT_NEED_TOGGLE || GINPUT_NEED_DIAL)
+		uint16_t		role;
 	#endif
-	
 	(void)				param;
 
 	// Process various events
@@ -238,12 +231,12 @@ static void gwidgetEvent(void *param, GEvent *pe) {
 		return _widgetInFocus;
 	}
 
-	gBool gwinSetFocus(GHandle gh) {
+	bool_t gwinSetFocus(GHandle gh) {
 		GHandle	oldFocus;
 
 		// Do we already have the focus?
 		if (gh == _widgetInFocus)
-			return gTrue;
+			return TRUE;
 
 		// The new window must be NULLL or a visible enabled widget with a keyboard handler
 		if (!gh || ((gh->flags & (GWIN_FLG_WIDGET|GWIN_FLG_ENABLED|GWIN_FLG_SYSENABLED|GWIN_FLG_VISIBLE|GWIN_FLG_SYSVISIBLE)) == (GWIN_FLG_WIDGET|GWIN_FLG_ENABLED|GWIN_FLG_SYSENABLED|GWIN_FLG_VISIBLE|GWIN_FLG_SYSVISIBLE)
@@ -253,20 +246,20 @@ static void gwidgetEvent(void *param, GEvent *pe) {
 			_widgetInFocus = gh;
 			if (oldFocus)	_gwinUpdate(oldFocus);
 			if (gh)			_gwinUpdate(gh);
-			return gTrue;
+			return TRUE;
 		}
-		return gFalse;
+		return FALSE;
 	}
 
 	void _gwinMoveFocus(void) {
 		GHandle	gh;
-		gBool	looponce;
+		bool_t	looponce;
 
 		// Find a new focus window (one may or may not exist).
-		looponce = gFalse;
+		looponce = FALSE;
 		for(gh = gwinGetNextWindow(_widgetInFocus); ; gh = gwinGetNextWindow(gh)) {
 			if (!gh && !looponce) {
-				looponce = gTrue;
+				looponce = TRUE;
 				gh = gwinGetNextWindow(0);
 			}
 			if (gwinSetFocus(gh))
@@ -317,8 +310,8 @@ static void gwidgetEvent(void *param, GEvent *pe) {
 		_widgetInFocus = 0;
 	}
 
-	void _gwidgetDrawFocusRect(GWidgetObject *gx, gCoord x, gCoord y, gCoord cx, gCoord cy) {
-		gCoord i;
+	void _gwidgetDrawFocusRect(GWidgetObject *gx, coord_t x, coord_t y, coord_t cx, coord_t cy) {
+		uint16_t i;
 		
 		// Don't do anything if we don't have the focus
 		if (&gx->g != _widgetInFocus)
@@ -330,19 +323,6 @@ static void gwidgetEvent(void *param, GEvent *pe) {
 		}
 	}
 
-	#if GDISP_NEED_CIRCLE
-		void _gwidgetDrawFocusCircle(GWidgetObject *gx, gCoord radius) {
-			gCoord i;
-
-			// Don't do anything if we don't have the focus
-			if (&gx->g != _widgetInFocus)
-				return;
-
-			for (i = 0; i < GWIN_FOCUS_HIGHLIGHT_WIDTH; i++) {
-				gdispGDrawCircle(gx->g.display, gx->g.x + radius, gx->g.y + radius, radius + i, gx->pstyle->focus);
-			}
-		}
-	#endif
 #endif
 
 #if GFX_USE_GINPUT && GINPUT_NEED_TOGGLE
@@ -494,7 +474,7 @@ void gwinWidgetClearInit(GWidgetInit *pwi) {
 		*p++ = 0;
 }
 
-void gwinSetDefaultStyle(const GWidgetStyle *pstyle, gBool updateAll) {
+void gwinSetDefaultStyle(const GWidgetStyle *pstyle, bool_t updateAll) {
 	if (!pstyle)
 		pstyle = &BlackWidgetStyle;
 
@@ -521,7 +501,7 @@ const GWidgetStyle *gwinGetDefaultStyle(void) {
 	return defaultStyle;
 }
 
-void gwinSetText(GHandle gh, const char *text, gBool useAlloc) {
+void gwinSetText(GHandle gh, const char *text, bool_t useAlloc) {
 	if (!(gh->flags & GWIN_FLG_WIDGET))
 		return;
 
@@ -595,12 +575,12 @@ const char *gwinGetText(GHandle gh) {
 	return gw->text;
 }
 
-gBool gwinIsWidget(GHandle gh) {
+bool_t gwinIsWidget(GHandle gh) {
 	if (gh->flags & GWIN_FLG_WIDGET) {
-		return gTrue;
+		return TRUE;
 	}
 
-	return gFalse;
+	return FALSE;
 }
 
 void gwinSetStyle(GHandle gh, const GWidgetStyle *pstyle) {
@@ -608,8 +588,8 @@ void gwinSetStyle(GHandle gh, const GWidgetStyle *pstyle) {
 		return;
 
 	gw->pstyle = pstyle ? pstyle : defaultStyle;
-	gh->bgcolor = gw->pstyle->background;
-	gh->color = gw->pstyle->enabled.text;
+	gh->bgcolor = pstyle->background;
+	gh->color = pstyle->enabled.text;
 
 	_gwinUpdate(gh);
 }
@@ -630,39 +610,39 @@ void gwinSetCustomDraw(GHandle gh, CustomWidgetDrawFunction fn, void *param) {
 	_gwinUpdate(gh);
 }
 
-gBool gwinAttachListener(GListener *pl) {
+bool_t gwinAttachListener(GListener *pl) {
 	return geventAttachSource(pl, GWIDGET_SOURCE, 0);
 }
 
 #if GFX_USE_GINPUT && GINPUT_NEED_MOUSE
-	gBool DEPRECATED("This call can now be removed. Attaching the mouse to GWIN is now automatic.") gwinAttachMouse(uint16_t instance) {
+	bool_t DEPRECATED("This call can now be removed. Attaching the mouse to GWIN is now automatic.") gwinAttachMouse(uint16_t instance) {
 		// This is now a NULL event because we automatically attach to all mice in the system.
 		(void) instance;
-		return gTrue;
+		return TRUE;
 	}
 #endif
 
 #if GFX_USE_GINPUT && GINPUT_NEED_TOGGLE
-	gBool gwinAttachToggle(GHandle gh, uint16_t role, uint16_t instance) {
+	bool_t gwinAttachToggle(GHandle gh, uint16_t role, uint16_t instance) {
 		GSourceHandle	gsh;
 		uint16_t		oi;
 
 		// Is this a widget
 		if (!(gh->flags & GWIN_FLG_WIDGET))
-			return gFalse;
+			return FALSE;
 
 		// Is the role valid
 		if (role >= wvmt->toggleroles)
-			return gFalse;
+			return FALSE;
 
 		// Is this a valid device
 		if (!(gsh = ginputGetToggle(instance)))
-			return gFalse;
+			return FALSE;
 
 		// Is this already done?
 		oi = wvmt->ToggleGet(gw, role);
 		if (instance == oi)
-			return gTrue;
+			return TRUE;
 
 		// Remove the old instance
 		if (oi != GWIDGET_NO_INSTANCE) {
@@ -676,16 +656,16 @@ gBool gwinAttachListener(GListener *pl) {
 		return geventAttachSource(&gl, gsh, GLISTEN_TOGGLE_ON|GLISTEN_TOGGLE_OFF);
 	}
 
-	gBool gwinDetachToggle(GHandle gh, uint16_t role) {
+	bool_t gwinDetachToggle(GHandle gh, uint16_t role) {
 		uint16_t		oi;
 
 		// Is this a widget
 		if (!(gh->flags & GWIN_FLG_WIDGET))
-			return gFalse;
+			return FALSE;
 
 		// Is the role valid
 		if (role >= ((gwidgetVMT *)gh->vmt)->toggleroles)
-			return gFalse;
+			return FALSE;
 
 		oi = ((gwidgetVMT *)gh->vmt)->ToggleGet(gw, role);
 
@@ -695,31 +675,31 @@ gBool gwinAttachListener(GListener *pl) {
 			if (!FindToggleUser(oi))
 				geventDetachSource(&gl, ginputGetToggle(oi));
 		}
-		return gTrue;
+		return TRUE;
 	}
 
 #endif
 
 #if GFX_USE_GINPUT && GINPUT_NEED_DIAL
-	gBool gwinAttachDial(GHandle gh, uint16_t role, uint16_t instance) {
+	bool_t gwinAttachDial(GHandle gh, uint16_t role, uint16_t instance) {
 		GSourceHandle	gsh;
 		uint16_t		oi;
 
 		if (!(gh->flags & GWIN_FLG_WIDGET))
-			return gFalse;
+			return FALSE;
 
 		// Is the role valid
 		if (role >= wvmt->dialroles)
-			return gFalse;
+			return FALSE;
 
 		// Is this a valid device
 		if (!(gsh = ginputGetDial(instance)))
-			return gFalse;
+			return FALSE;
 
 		// Is this already done?
 		oi = wvmt->DialGet(gw, role);
 		if (instance == oi)
-			return gTrue;
+			return TRUE;
 
 		// Remove the old instance
 		if (oi != GWIDGET_NO_INSTANCE) {

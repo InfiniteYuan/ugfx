@@ -71,7 +71,7 @@ void gaudioPlayDoneI(void);
 
 /**
  * @brief				Initialise the play driver
- * @return				gTrue if the channel, frequency and format are valid.
+ * @return				TRUE if the channel, frequency and format are valid.
  *
  * @param[in] channel	The channel to use (see the driver for the available channels provided)
  * @param[in] frequency	The sample frequency to use
@@ -81,7 +81,7 @@ void gaudioPlayDoneI(void);
  *
  * @api
  */
-gBool gaudio_play_lld_init(uint16_t channel, uint32_t frequency, ArrayDataFormat format);
+bool_t gaudio_play_lld_init(uint16_t channel, uint32_t frequency, ArrayDataFormat format);
 
 /**
  * @brief				Start the audio output playing
@@ -108,16 +108,16 @@ void gaudio_play_lld_stop(void);
 
 /**
  * @brief				Set the output volume.
- * @return				gTrue if successful.
+ * @return				TRUE if successful.
  *
  * @param[in] vol		0->255 (0 = muted)
  *
- * @note				Some drivers may not support this. They will return gFalse.
+ * @note				Some drivers may not support this. They will return FALSE.
  * @note				For stereo devices, both channels are set to the same volume.
  *
  * @api
  */
-gBool gaudio_play_lld_set_volume(uint8_t vol);
+bool_t gaudio_play_lld_set_volume(uint8_t vol);
 
 #ifdef __cplusplus
 }

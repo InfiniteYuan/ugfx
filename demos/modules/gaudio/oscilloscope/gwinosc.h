@@ -63,14 +63,14 @@
 typedef struct GScopeObject_t {
 	GWindowObject		g;						// Base Class
 
-	gCoord				*lastscopetrace;		// To store last scope trace
+	coord_t				*lastscopetrace;		// To store last scope trace
 	ArrayDataFormat		format;					// The sample format
-	gCoord				nextx;					// Where we are up to
+	coord_t				nextx;					// Where we are up to
 #if TRIGGER_METHOD == TRIGGER_POSITIVERAMP
-	gCoord				lasty;					// The last y value - used for trigger slope detection
+	coord_t				lasty;					// The last y value - used for trigger slope detection
 #elif TRIGGER_METHOD == TRIGGER_MINVALUE
-	gCoord				lasty;					// The last y value - used for trigger slope detection
-	gCoord				scopemin;				// The last scopes minimum value
+	coord_t				lasty;					// The last y value - used for trigger slope detection
+	coord_t				scopemin;				// The last scopes minimum value
 #endif
 	} GScopeObject;
 

@@ -16,8 +16,10 @@
 #endif
 
 /* Flags in the listener structure */
-#define GLISTENER_WITHLISTENER		0x0001			// The listener is current using the buffer
-#define GLISTENER_WITHSOURCE		0x0002			// The source is currently using the buffer
+#define GLISTENER_EVENTBUSY			0x0001			// The event buffer is busy
+#define GLISTENER_WAITING			0x0002			// The listener is waiting for a signal
+#define GLISTENER_WITHSOURCE		0x0004			// The listener is being looked at by a source for a possible event
+#define GLISTENER_PENDING			0x0008			// There is an event waiting ready to go without a current listener
 
 /* This mutex protects access to our tables */
 static gfxMutex	geventMutex;
@@ -28,10 +30,11 @@ static GSourceListener		Assignments[GEVENT_MAX_SOURCE_LISTENERS];
 /* Send an exit event if possible. */
 /* We already have the geventMutex */
 static void doExitEvent(GListener *pl) {
-	// Don't do the exit if someone else currently is using the buffer
-	if (!(pl->flags & GLISTENER_WITHLISTENER)) {
+	// Don't do the exit if someone else currently has the event lock
+	if ((pl->flags & (GLISTENER_WAITING|GLISTENER_EVENTBUSY)) == GLISTENER_WAITING) {
+		pl->flags |= GLISTENER_EVENTBUSY;							// Event buffer is in use
 		pl->event.type = GEVENT_EXIT;								// Set up the EXIT event
-		pl->flags = GLISTENER_WITHLISTENER;							// Event buffer is now in use by the listener
+		pl->flags &= ~GLISTENER_WAITING;							// Wake up the listener (with data)
 		gfxSemSignal(&pl->waitqueue);
 	}
 }
@@ -68,13 +71,13 @@ void geventListenerInit(GListener *pl) {
 	pl->flags = 0;
 }
 
-gBool geventAttachSource(GListener *pl, GSourceHandle gsh, uint32_t flags) {
+bool_t geventAttachSource(GListener *pl, GSourceHandle gsh, uint32_t flags) {
 	GSourceListener *psl, *pslfree;
 
 	// Safety first
 	if (!pl || !gsh) {
-		GEVENT_ASSERT(gFalse);
-		return gFalse;
+		GEVENT_ASSERT(FALSE);
+		return FALSE;
 	}
 
 	gfxMutexEnter(&geventMutex);
@@ -87,7 +90,7 @@ gBool geventAttachSource(GListener *pl, GSourceHandle gsh, uint32_t flags) {
 			// Just update the flags
 			psl->listenflags = flags;
 			gfxMutexExit(&geventMutex);
-			return gTrue;
+			return TRUE;
 		}
 		if (!pslfree && !psl->pListener)
 			pslfree = psl;
@@ -115,37 +118,39 @@ void geventDetachSource(GListener *pl, GSourceHandle gsh) {
 	}
 }
 
-GEvent *geventEventWait(GListener *pl, gDelay timeout) {
-	/* NOTE:
-		We no longer try to protect against two threads trying to listen on the
-		one listener. This was never allowed, it makes little sense to try to do so,
-		and the testing caused strange multi-thread windows of opportunity.
-		
-		In practice it is probably safer than it used to be - the only potential
-		issue is that the buffer may be prematurely marked as not in use by the listener.
-		If the calling code can guarantee that the event buffer is free when either thread
-		calls the event wait - it is now safe for them to do so.
-		ie. it is the implicit geventEventComplete() that is the only thing that now raises
-		possible multi-thread issues.
-	*/
-
-	// Don't allow waiting if we are on callbacks
-	if (pl->callback)
+GEvent *geventEventWait(GListener *pl, delaytime_t timeout) {
+	gfxMutexEnter(&geventMutex);
+	// Don't allow waiting if we are on callbacks or if there is already a thread waiting
+	if (pl->callback || (pl->flags & GLISTENER_WAITING)) {
+		gfxMutexExit(&geventMutex);
 		return 0;
-		
-	// Event buffer is not in use by the listener - this is an implicit geventEventComplete() call
-	pl->flags &= ~GLISTENER_WITHLISTENER;
+	}
 
-	// Wait for an event
-	if (!gfxSemWait(&pl->waitqueue, timeout))
-		return 0;				// Timeout
+	// Check to see if there is a pending event ready for us
+	if ((pl->flags & GLISTENER_PENDING)) {
+		pl->flags &= ~GLISTENER_PENDING;				// We have now got this
+		pl->flags |= GLISTENER_EVENTBUSY;				// Event buffer is definitely busy
+		gfxMutexExit(&geventMutex);
+		return &pl->event;
+	}
 
-	return &pl->event;
+	// No - wait for one.
+	pl->flags &= ~GLISTENER_EVENTBUSY;				// Event buffer is definitely not busy
+	pl->flags |= GLISTENER_WAITING;					// We will now be waiting on the thread
+	gfxMutexExit(&geventMutex);
+	if (gfxSemWait(&pl->waitqueue, timeout))
+		return &pl->event;
+
+	// Timeout - clear the waiting flag.
+	// We know this is safe as any other thread will still think there is someone waiting.
+	gfxMutexEnter(&geventMutex);
+	pl->flags &= ~GLISTENER_WAITING;
+	gfxMutexExit(&geventMutex);
+	return 0;
 }
 
 void geventEventComplete(GListener *pl) {
-	// The listener is done with the buffer
-	pl->flags &= ~GLISTENER_WITHLISTENER;
+	pl->flags &= ~GLISTENER_EVENTBUSY;
 }
 
 void geventRegisterCallback(GListener *pl, GEventCallbackFn fn, void *param) {
@@ -155,7 +160,7 @@ void geventRegisterCallback(GListener *pl, GEventCallbackFn fn, void *param) {
 		pl->param = param;						// Set the param
 		pl->callback = fn;						// Set the callback function
 		if (fn)
-			pl->flags &= ~GLISTENER_WITHLISTENER;	// The event buffer is immediately available
+			pl->flags &= ~GLISTENER_EVENTBUSY;	// The event buffer is immediately available
 		gfxMutexExit(&geventMutex);
 	}
 }
@@ -171,7 +176,7 @@ GSourceListener *geventGetSourceListener(GSourceHandle gsh, GSourceListener *las
 
 	// Unlock the last listener event buffer if it wasn't used.
 	if (lastlr && lastlr->pListener && (lastlr->pListener->flags & GLISTENER_WITHSOURCE))
-		lastlr->pListener->flags &= ~GLISTENER_WITHSOURCE;
+		lastlr->pListener->flags &= ~(GLISTENER_WITHSOURCE|GLISTENER_EVENTBUSY);
 		
 	// Loop through the table looking for attachments to this source
 	for(psl = lastlr ? (lastlr+1) : Assignments; psl < Assignments+GEVENT_MAX_SOURCE_LISTENERS; psl++) {
@@ -186,13 +191,14 @@ GSourceListener *geventGetSourceListener(GSourceHandle gsh, GSourceListener *las
 
 GEvent *geventGetEventBuffer(GSourceListener *psl) {
 	gfxMutexEnter(&geventMutex);
-	if ((psl->pListener->flags & (GLISTENER_WITHLISTENER|GLISTENER_WITHSOURCE))) {
+	if ((psl->pListener->flags & GLISTENER_EVENTBUSY)) {
+		// Oops - event buffer is still in use
 		gfxMutexExit(&geventMutex);
 		return 0;
 	}
 
-	// Allocate the event buffer to the source
-	psl->pListener->flags |= GLISTENER_WITHSOURCE;
+	// Allocate the event buffer
+	psl->pListener->flags |= (GLISTENER_WITHSOURCE|GLISTENER_EVENTBUSY);
 	gfxMutexExit(&geventMutex);
 	return &psl->pListener->event;
 }
@@ -203,7 +209,7 @@ void geventSendEvent(GSourceListener *psl) {
 
 		// Mark it back as free and as sent. This is early to be marking as free but it protects
 		//	if the callback alters the listener in any way
-		psl->pListener->flags = 0;
+		psl->pListener->flags &= ~(GLISTENER_WITHSOURCE|GLISTENER_EVENTBUSY|GLISTENER_PENDING);
 		gfxMutexExit(&geventMutex);
 
 		// Do the callback
@@ -211,8 +217,14 @@ void geventSendEvent(GSourceListener *psl) {
 
 	} else {
 		// Wake up the listener
-		psl->pListener->flags = GLISTENER_WITHLISTENER;
-		gfxSemSignal(&psl->pListener->waitqueue);
+		psl->pListener->flags &= ~GLISTENER_WITHSOURCE;
+		if ((psl->pListener->flags & GLISTENER_WAITING)) {
+			psl->pListener->flags &= ~(GLISTENER_WAITING|GLISTENER_PENDING);
+			gfxSemSignal(&psl->pListener->waitqueue);
+		} else
+			psl->pListener->flags |= GLISTENER_PENDING;
+
+		// The listener thread will free the event buffer when ready
 		gfxMutexExit(&geventMutex);
 	}
 }

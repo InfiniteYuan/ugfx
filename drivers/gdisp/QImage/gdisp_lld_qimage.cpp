@@ -3,17 +3,17 @@
 #include "../../../src/gdisp/gdisp_driver.h"
 #include "gdisp_lld_qimage.h"
 
-gBool qimage_init(GDisplay* g, gCoord width, gCoord height)
+bool_t qimage_init(GDisplay* g, coord_t width, coord_t height)
 {
     QImage* qimage = new QImage(width, height, QImage::Format_RGB888);
     if (!qimage) {
-        return gFalse;
+        return FALSE;
     }
     qimage->fill(Qt::gray);
 
     g->priv = qimage;
 
-    return gTrue;
+    return TRUE;
 }
 
 void qimage_setPixel(GDisplay* g)
@@ -27,12 +27,12 @@ void qimage_setPixel(GDisplay* g)
     qimage->setPixel(g->p.x, g->p.y, rgbVal);
 }
 
-gColor qimage_getPixel(GDisplay* g)
+color_t qimage_getPixel(GDisplay* g)
 {
     const QImage* qimage = static_cast<const QImage*>(g->priv);
     if (!qimage) {
         return 0;
     }
 
-    return static_cast<gColor>(qimage->pixel(g->p.x, g->p.y));
+    return static_cast<color_t>(qimage->pixel(g->p.x, g->p.y));
 }

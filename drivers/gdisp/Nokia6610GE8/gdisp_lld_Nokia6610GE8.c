@@ -34,21 +34,20 @@
  *
  * Some of the more modern controllers have a broken command set. If you have one of these
  * you will recognise it by the colors being off on anything drawn after an odd (as opposed to
- * even) pixel count area being drawn. If so then set GDISP_GE8_BROKEN_CONTROLLER to GFXON
+ * even) pixel count area being drawn. If so then set GDISP_GE8_BROKEN_CONTROLLER to TRUE
  * on your gdisp_lld_board.h file. The price is that streaming calls that are completed
  * without exactly the window size write operations and where the number of write operations
  * is odd (rather than even), it will draw an extra pixel. If this is important to you, turn on
  * orientation support and the streaming operations will be emulated (as described above).
  */
 
-#if defined(GDISP_SCREEN_HEIGHT) || defined(GDISP_SCREEN_HEIGHT)
-	#if GFX_COMPILER_WARNING_TYPE == GFX_COMPILER_WARNING_DIRECT
-		#warning "GDISP: This low level driver does not support setting a screen size. It is being ignored."
-	#elif GFX_COMPILER_WARNING_TYPE == GFX_COMPILER_WARNING_MACRO
-		COMPILER_WARNING("GDISP: This low level driver does not support setting a screen size. It is being ignored.")
-	#endif
-	#undef GDISP_SCREEN_WIDTH
+#if defined(GDISP_SCREEN_HEIGHT)
+	#warning "GDISP: This low level driver does not support setting a screen size. It is being ignored."
 	#undef GDISP_SCREEN_HEIGHT
+#endif
+#if defined(GDISP_SCREEN_WIDTH)
+	#warning "GDISP: This low level driver does not support setting a screen size. It is being ignored."
+	#undef GDISP_SCREEN_WIDTH
 #endif
 
 #define GDISP_DRIVER_VMT			GDISPVMT_Nokia6610GE8
@@ -67,7 +66,7 @@
 
 // Set parameters if they are not already set
 #ifndef GDISP_GE8_BROKEN_CONTROLLER
-	#define GDISP_GE8_BROKEN_CONTROLLER		GFXON
+	#define GDISP_GE8_BROKEN_CONTROLLER		TRUE
 #endif
 #ifndef GDISP_SCREEN_HEIGHT
 	#define GDISP_SCREEN_HEIGHT		130
@@ -134,19 +133,19 @@
 		#if GDISP_NOKIA_ORIENTATION && GDISP_NEED_CONTROL
 			switch(g->g.Orientation) {
 			default:
-			case gOrientation0:
+			case GDISP_ROTATE_0:
 				write_cmd2(g, CASET, GDISP_RAM_X_OFFSET+g->p.x, GDISP_RAM_X_OFFSET+g->p.x);			// Column address set
 				write_cmd2(g, PASET, GDISP_RAM_Y_OFFSET+g->p.y, GDISP_RAM_Y_OFFSET+g->p.y);			// Page address set
 				break;
-			case gOrientation90:
+			case GDISP_ROTATE_90:
 				write_cmd2(g, CASET, GDISP_RAM_X_OFFSET+g->p.y, GDISP_RAM_X_OFFSET+g->p.y);
 				write_cmd2(g, PASET, GDISP_RAM_Y_OFFSET-1+g->g.Width-g->p.x, GDISP_RAM_Y_OFFSET-1+g->g.Width-g->p.x);
 				break;
-			case gOrientation180:
+			case GDISP_ROTATE_180:
 				write_cmd2(g, CASET, GDISP_RAM_X_OFFSET-1+g->g.Width-g->p.x, GDISP_RAM_X_OFFSET-1+g->g.Width-g->p.x);
 				write_cmd2(g, PASET, GDISP_RAM_Y_OFFSET-1+g->g.Height-g->p.y, GDISP_RAM_Y_OFFSET-1+g->g.Height-g->p.y);
 				break;
-			case gOrientation270:
+			case GDISP_ROTATE_270:
 				write_cmd2(g, CASET, GDISP_RAM_X_OFFSET-1+g->g.Height-g->p.y, GDISP_RAM_X_OFFSET-1+g->g.Height-g->p.y);
 				write_cmd2(g, PASET, GDISP_RAM_Y_OFFSET+g->p.x, GDISP_RAM_Y_OFFSET+g->p.x);
 				break;
@@ -163,19 +162,19 @@ static GFXINLINE void set_viewport(GDisplay* g) {
 	#if GDISP_NOKIA_ORIENTATION && GDISP_NEED_CONTROL
 		switch(g->g.Orientation) {
 		default:
-		case gOrientation0:
+		case GDISP_ROTATE_0:
 			write_cmd2(g, CASET, GDISP_RAM_X_OFFSET+g->p.x, GDISP_RAM_X_OFFSET+g->p.x+g->p.cx-1);			// Column address set
 			write_cmd2(g, PASET, GDISP_RAM_Y_OFFSET+g->p.y, GDISP_RAM_Y_OFFSET+g->p.y+g->p.cy-1);			// Page address set
 			break;
-		case gOrientation90:
+		case GDISP_ROTATE_90:
 			write_cmd2(g, CASET, GDISP_RAM_X_OFFSET+g->p.y, GDISP_RAM_X_OFFSET+g->p.y+g->p.cy-1);
 			write_cmd2(g, PASET, GDISP_RAM_Y_OFFSET+g->g.Width-g->p.x-g->p.cx, GDISP_RAM_Y_OFFSET-1+g->g.Width-g->p.x);
 			break;
-		case gOrientation180:
+		case GDISP_ROTATE_180:
 			write_cmd2(g, CASET, GDISP_RAM_X_OFFSET+g->g.Width-g->p.x-g->p.cx, GDISP_RAM_X_OFFSET-1+g->g.Width-g->p.x);
 			write_cmd2(g, PASET, GDISP_RAM_Y_OFFSET+g->g.Height-g->p.y-g->p.cy, GDISP_RAM_Y_OFFSET-1+g->g.Height-g->p.y);
 			break;
-		case gOrientation270:
+		case GDISP_ROTATE_270:
 			write_cmd2(g, CASET, GDISP_RAM_X_OFFSET+g->g.Height-g->p.y-g->p.cy, GDISP_RAM_X_OFFSET-1+g->g.Height-g->p.y);
 			write_cmd2(g, PASET, GDISP_RAM_Y_OFFSET+g->p.x, GDISP_RAM_Y_OFFSET+g->p.x+g->p.cx-1);
 			break;
@@ -190,7 +189,7 @@ static GFXINLINE void set_viewport(GDisplay* g) {
 /* Driver exported functions.                                                */
 /*===========================================================================*/
 
-LLDSPEC gBool gdisp_lld_init(GDisplay *g) {
+LLDSPEC bool_t gdisp_lld_init(GDisplay *g) {
 	#if GDISP_HARDWARE_STREAM_WRITE
 		g->priv = gfxAlloc(sizeof(dvrPriv));
 	#else
@@ -201,9 +200,9 @@ LLDSPEC gBool gdisp_lld_init(GDisplay *g) {
 	init_board(g);
 
 	// Hardware reset
-	setpin_reset(g, gTrue);
+	setpin_reset(g, TRUE);
 	delayms(20);
-	setpin_reset(g, gFalse);
+	setpin_reset(g, FALSE);
 	delayms(20);
 
 	// Get the bus for the following initialisation commands
@@ -239,13 +238,13 @@ LLDSPEC gBool gdisp_lld_init(GDisplay *g) {
 	set_backlight(g, GDISP_INITIAL_BACKLIGHT);
 
 	/* Initialise the GDISP structure to match */
-	g->g.Orientation = gOrientation0;
-	g->g.Powermode = gPowerOn;
+	g->g.Orientation = GDISP_ROTATE_0;
+	g->g.Powermode = powerOn;
 	g->g.Backlight = GDISP_INITIAL_BACKLIGHT;
 	g->g.Contrast = GDISP_INITIAL_CONTRAST;
 	g->g.Width = GDISP_SCREEN_WIDTH;
 	g->g.Height = GDISP_SCREEN_HEIGHT;
-	return gTrue;
+	return TRUE;
 }
 
 #if GDISP_HARDWARE_STREAM_WRITE
@@ -342,19 +341,19 @@ LLDSPEC gBool gdisp_lld_init(GDisplay *g) {
 
 #if GDISP_HARDWARE_BITFILLS
 	LLDSPEC void gdisp_lld_blit_area(GDisplay *g) {
-		gCoord			lg, x, y;
+		coord_t			lg, x, y;
 		uint16_t		c1, c2;
 		unsigned		tuples;
-		const gPixel	*buffer;
+		const pixel_t	*buffer;
 		#if GDISP_PACKED_PIXELS
 			unsigned		pnum, pstart;
 			const uint8_t	*p;
 		#else
-			const gPixel	*p;
+			const pixel_t	*p;
 		#endif
 
 		tuples = (g->p.cx * g->p.cy + 1)>>1;
-		buffer = (const gPixel *)g->p.ptr;
+		buffer = (const pixel_t *)g->p.ptr;
 
 		/* Set up the data window to transfer */
 		acquire_bus(g);
@@ -373,10 +372,10 @@ LLDSPEC gBool gdisp_lld_init(GDisplay *g) {
 		 */
 		switch(g->g.Orientation) {
 		default:
-		case gOrientation0:		x = 0;			y = 0;			break;
-		case gOrientation90:		x = g->p.cx-1;	y = 0;			break;
-		case gOrientation180:		x = g->p.cx-1;	y = g->p.cy-1;	break;
-		case gOrientation270:		x = 0;			y = g->p.cy-1;	break;
+		case GDISP_ROTATE_0:		x = 0;			y = 0;			break;
+		case GDISP_ROTATE_90:		x = g->p.cx-1;	y = 0;			break;
+		case GDISP_ROTATE_180:		x = g->p.cx-1;	y = g->p.cy-1;	break;
+		case GDISP_ROTATE_270:		x = 0;			y = g->p.cy-1;	break;
 		}
 
 		#if !GDISP_PACKED_PIXELS
@@ -428,7 +427,7 @@ LLDSPEC gBool gdisp_lld_init(GDisplay *g) {
 				srccx = (g->p.x2 + 1) & ~1;
 			#endif
 			pstart = g->p.y1 * g->p.x2 + g->p.x1;										// The starting pixel number
-			buffer = (const gPixel)(((const uint8_t *)buffer) + ((pstart>>1) * 3));	// The buffer start position
+			buffer = (const pixel_t)(((const uint8_t *)buffer) + ((pstart>>1) * 3));	// The buffer start position
 			lg = ((g->p.x2-g->p.cx)>>1)*3;												// The buffer gap between lines
 			pnum = pstart + g->p.x2*y + x;												// Adjustment for controller craziness
 			p = ((const uint8_t *)buffer) + (((g->p.x2*y + x)>>1)*3);					// Adjustment for controller craziness
@@ -436,8 +435,8 @@ LLDSPEC gBool gdisp_lld_init(GDisplay *g) {
 			while (tuples--) {
 				/* Get a pixel */
 				switch(pnum++ & 1) {
-				case 0:		c1 = (((gColor)p[0]) << 4)|(((gColor)p[1])>>4);				break;
-				case 1:		c1 = (((gColor)p[1]&0x0F) << 8)|((gColor)p[1]);	p += 3;		break;
+				case 0:		c1 = (((color_t)p[0]) << 4)|(((color_t)p[1])>>4);				break;
+				case 1:		c1 = (((color_t)p[1]&0x0F) << 8)|((color_t)p[1]);	p += 3;		break;
 				}
 
 				/* Check for line or buffer wrapping */
@@ -454,8 +453,8 @@ LLDSPEC gBool gdisp_lld_init(GDisplay *g) {
 
 				/* Get the next pixel */
 				switch(pnum++ & 1) {
-				case 0:		c2 = (((gColor)p[0]) << 4)|(((gColor)p[1])>>4);				break;
-				case 1:		c2 = (((gColor)p[1]&0x0F) << 8)|((gColor)p[1]);	p += 3;		break;
+				case 0:		c2 = (((color_t)p[0]) << 4)|(((color_t)p[1])>>4);				break;
+				case 1:		c2 = (((color_t)p[1]&0x0F) << 8)|((color_t)p[1]);	p += 3;		break;
 				}
 
 				/* Check for line or buffer wrapping */
@@ -493,18 +492,18 @@ LLDSPEC gBool gdisp_lld_init(GDisplay *g) {
 		 */
 		switch(g->p.x) {
 		case GDISP_CONTROL_POWER:
-			if (g->g.Powermode == (gPowermode)g->p.ptr)
+			if (g->g.Powermode == (powermode_t)g->p.ptr)
 				return;
 			acquire_bus(g);
-			switch((gPowermode)g->p.ptr) {
-				case gPowerOff:
+			switch((powermode_t)g->p.ptr) {
+				case powerOff:
 					set_backlight(g, 0);									// Turn off the backlight
 					write_index(g, DISOFF);									// Turn off the display
 					write_cmd1(g, PWRCTR, 0x00);							// Power control - all off
 					write_index(g, SLPIN);									// Sleep in
 					write_index(g, OSCOFF);									// Internal oscillator off
 					break;
-				case gPowerOn:
+				case powerOn:
 					write_index(g, OSCON);									// Internal oscillator on
 					write_index(g, SLPOUT);									// Sleep out
 					write_cmd1(g, PWRCTR, 0x0F);							// Power control - reference voltage regulator on, circuit voltage follower on, BOOST ON
@@ -514,7 +513,7 @@ LLDSPEC gBool gdisp_lld_init(GDisplay *g) {
 					write_index(g, PTLOUT);									// Remove sleep window
 					set_backlight(g, g->g.Backlight);						// Turn on the backlight
 					break;
-				case gPowerSleep:
+				case powerSleep:
 					write_index(g, OSCON);									// Internal oscillator on
 					write_index(g, SLPOUT);									// Sleep out
 					write_cmd1(g, PWRCTR, 0x0F);							// Power control - reference voltage regulator on, circuit voltage follower on, BOOST ON
@@ -524,7 +523,7 @@ LLDSPEC gBool gdisp_lld_init(GDisplay *g) {
 					write_cmd2(g, PTLIN, GDISP_SLEEP_POS/4, (GDISP_SLEEP_POS+GDISP_SLEEP_SIZE)/4);	// Sleep Window
 					set_backlight(g, g->g.Backlight);						// Turn on the backlight
 					break;
-				case gPowerDeepSleep:
+				case powerDeepSleep:
 					write_index(g, OSCON);									// Internal oscillator on
 					write_index(g, SLPOUT);									// Sleep out
 					write_cmd1(g, PWRCTR, 0x0F);							// Power control - reference voltage regulator on, circuit voltage follower on, BOOST ON
@@ -539,30 +538,30 @@ LLDSPEC gBool gdisp_lld_init(GDisplay *g) {
 					return;
 			}
 			release_bus(g);
-			g->g.Powermode = (gPowermode)g->p.ptr;
+			g->g.Powermode = (powermode_t)g->p.ptr;
 			return;
 		#if GDISP_NOKIA_ORIENTATION
 			case GDISP_CONTROL_ORIENTATION:
-				if (g->g.Orientation == (gOrientation)g->p.ptr)
+				if (g->g.Orientation == (orientation_t)g->p.ptr)
 					return;
 				acquire_bus(g);
-				switch((gOrientation)g->p.ptr) {
-				case gOrientation0:
+				switch((orientation_t)g->p.ptr) {
+				case GDISP_ROTATE_0:
 					write_cmd3(g, DATCTL, 0x00, 0x00, 0x02);	// P1: page normal, column normal, scan in column direction
 					g->g.Height = GDISP_SCREEN_HEIGHT;
 					g->g.Width = GDISP_SCREEN_WIDTH;
 					break;
-				case gOrientation90:
+				case GDISP_ROTATE_90:
 					write_cmd3(g, DATCTL, 0x05, 0x00, 0x02);	// P1: page reverse, column normal, scan in page direction
 					g->g.Height = GDISP_SCREEN_WIDTH;
 					g->g.Width = GDISP_SCREEN_HEIGHT;
 					break;
-				case gOrientation180:
+				case GDISP_ROTATE_180:
 					write_cmd3(g, DATCTL, 0x03, 0x00, 0x02);	// P1: page reverse, column reverse, scan in column direction
 					g->g.Height = GDISP_SCREEN_HEIGHT;
 					g->g.Width = GDISP_SCREEN_WIDTH;
 					break;
-				case gOrientation270:
+				case GDISP_ROTATE_270:
 					write_cmd3(g, DATCTL, 0x06, 0x00, 0x02);	// P1: page normal, column reverse, scan in page direction
 					g->g.Height = GDISP_SCREEN_WIDTH;
 					g->g.Width = GDISP_SCREEN_HEIGHT;
@@ -572,7 +571,7 @@ LLDSPEC gBool gdisp_lld_init(GDisplay *g) {
 					return;
 				}
 				release_bus(g);
-				g->g.Orientation = (gOrientation)g->p.ptr;
+				g->g.Orientation = (orientation_t)g->p.ptr;
 				return;
 		#endif
 		case GDISP_CONTROL_BACKLIGHT:

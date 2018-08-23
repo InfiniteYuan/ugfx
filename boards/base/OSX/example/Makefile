@@ -26,7 +26,7 @@
 
 ARCH     =
 SRCFLAGS = -ggdb -O0
-CFLAGS   = $(sdl2-config --cflags)
+CFLAGS   =
 CXXFLAGS =
 ASFLAGS  =
 LDFLAGS  =
@@ -34,9 +34,9 @@ LDFLAGS  =
 SRC      =
 OBJS     =
 DEFS     =
-LIBS     = $(sdl2-config --libs)
-INCPATH  =
-LIBPATH  =
+LIBS     =
+INCPATH  = /opt/X11/include
+LIBPATH  = /opt/X11/lib
 
 ##############################################################################################
 # These should be at the end

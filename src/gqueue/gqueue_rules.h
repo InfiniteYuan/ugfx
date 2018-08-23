@@ -19,14 +19,10 @@
 #if GFX_USE_GQUEUE
 	#if GQUEUE_NEED_BUFFERS && !GQUEUE_NEED_GSYNC
 		#if GFX_DISPLAY_RULE_WARNINGS
-			#if GFX_COMPILER_WARNING_TYPE == GFX_COMPILER_WARNING_DIRECT
-				#warning "GQUEUE: GQUEUE_NEED_GSYNC is required if GQUEUE_NEED_BUFFERS is GFXON. It has been turned on for you."
-			#elif GFX_COMPILER_WARNING_TYPE == GFX_COMPILER_WARNING_MACRO
-				COMPILER_WARNING("GQUEUE: GQUEUE_NEED_GSYNC is required if GQUEUE_NEED_BUFFERS is GFXON. It has been turned on for you.")
-			#endif
+			#warning "GQUEUE: GQUEUE_NEED_GSYNC is required if GQUEUE_NEED_BUFFERS is TRUE. It has been turned on for you."
 		#endif
 		#undef GQUEUE_NEED_GSYNC
-		#define	GQUEUE_NEED_GSYNC		GFXON
+		#define	GQUEUE_NEED_GSYNC		TRUE
 	#endif
 #endif
 

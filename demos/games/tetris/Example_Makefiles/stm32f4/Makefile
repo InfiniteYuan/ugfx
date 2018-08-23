@@ -176,7 +176,7 @@ CPPWARN = -Wall -Wextra
 #
 
 # List all default C defines here, like -D_DEBUG=1
-DDEFS = -DGFX_USE_OS_CHIBIOS=GFXON
+DDEFS = -DGFX_USE_OS_CHIBIOS=TRUE
 
 # List all default ASM defines here, like -D_DEBUG=1
 DADEFS =

@@ -9,4 +9,3 @@
 #include "gmisc_arrayops.c"
 #include "gmisc_matrix2d.c"
 #include "gmisc_trig.c"
-#include "gmisc_hittest.c"

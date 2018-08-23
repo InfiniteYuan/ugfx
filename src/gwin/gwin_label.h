@@ -19,10 +19,10 @@
  *				dimensions of the label will change every time the text is changed
  *				through gwinSetText().
  *
- * @pre			GFX_USE_GDISP must be set to GFXON in your gfxconf.h
- * @pre			GFX_USE_GWIN must be set to GFXON in your gfxconf.h
- * @pre			GDISP_NEED_TEXT must be set to GFXON in your gfxconf.h
- * @pre			GWIN_NEED_LABEL must be set to GFXON in your gfxconf.h
+ * @pre			GFX_USE_GDISP must be set to TRUE in your gfxconf.h
+ * @pre			GFX_USE_GWIN must be set to TRUE in your gfxconf.h
+ * @pre			GDISP_NEED_TEXT must be set to TRUE in your gfxconf.h
+ * @pre			GWIN_NEED_LABEL must be set to TRUE in your gfxconf.h
  * @pre			The fonts you want to use must be enabled in your gfxconf.h
  *
  * @{
@@ -48,10 +48,14 @@ typedef struct GLabelObject {
 	GWidgetObject	w;
 
 	#if GWIN_LABEL_ATTRIBUTE
-		gCoord         tab;
+		coord_t         tab;
 		const char*		attr;
 	#endif
 } GLabelObject;
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /**
  * @brief				Create a label widget.
@@ -76,7 +80,7 @@ GHandle gwinGLabelCreate(GDisplay *g, GLabelObject *widget, GWidgetInit *pInit);
  *
  * @api
  */
-void gwinLabelSetBorder(GHandle gh, gBool border);
+void gwinLabelSetBorder(GHandle gh, bool_t border);
 
 #if GWIN_LABEL_ATTRIBUTE || defined(__DOXYGEN__)
 	/**
@@ -102,7 +106,7 @@ void gwinLabelSetBorder(GHandle gh, gBool border);
 	 *
 	 * @api
 	 */
-	void gwinLabelSetAttribute(GHandle gh, gCoord tab, const char* attr);
+	void gwinLabelSetAttribute(GHandle gh, coord_t tab, const char* attr);
 #endif
 
 /**
@@ -154,6 +158,10 @@ void gwinLabelDrawJustifiedRight(GWidgetObject *gw, void *param);
 void gwinLabelDrawJustifiedCenter(GWidgetObject *gw, void *param);
 
 /** @} */
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // _GWIN_LABEL_H
 /** @} */

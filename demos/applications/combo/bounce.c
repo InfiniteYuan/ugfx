@@ -33,9 +33,9 @@
 
 #include "tasks.h"
 
-static volatile gBool	run;
+static volatile bool_t	run;
 static GHandle			gh;
-static gThread	thread;
+static gfxThreadHandle	thread;
 
 /**
  * NOTE:
@@ -48,25 +48,25 @@ static gThread	thread;
  * your processor.
  *
  * You can modify the implementation of invsqrt() by firstly defining
- * 		#define GMISC_INVSQRT_MIXED_ENDIAN	GFXON
+ * 		#define GMISC_INVSQRT_MIXED_ENDIAN	TRUE
  * in your gfxconf.h file.
  *
  * If it still doesn't work then instead define
- * 		#define GMISC_INVSQRT_REAL_SLOW		GFXON
+ * 		#define GMISC_INVSQRT_REAL_SLOW		TRUE
  * in your gfxconf.h file. This should always work although it will probably be slow.
  */
-#define BALLCOLOR1		GFX_RED
-#define BALLCOLOR2		GFX_YELLOW
+#define BALLCOLOR1		Red
+#define BALLCOLOR2		Yellow
 #define WALLCOLOR		HTML2COLOR(0x303030)
 #define BACKCOLOR		HTML2COLOR(0xC0C0C0)
 #define FLOORCOLOR		HTML2COLOR(0x606060)
 #define SHADOWALPHA		(255-255*0.2)
 
 static DECLARE_THREAD_FUNCTION(task, param) {
-	gCoord		width, height, x, y, radius, ballx, bally, dx, floor;
-	gCoord		minx, miny, maxx, maxy, winx, winy;
-	gCoord		ballcx, ballcy;
-	gColor		colour;
+	coord_t		width, height, x, y, radius, ballx, bally, dx, floor;
+	coord_t		minx, miny, maxx, maxy, winx, winy;
+	coord_t		ballcx, ballcy;
+	color_t		colour;
 	float		ii, spin, dy, spinspeed, h, f, g;
 	(void)		param;
 
@@ -117,7 +117,7 @@ static DECLARE_THREAD_FUNCTION(task, param) {
 
 					// The ball shadow is darker
 					if (g*(g+.4)+h*(h+.1) < 1)
-						colour = gdispBlendColor(colour, GFX_BLACK, SHADOWALPHA);
+						colour = gdispBlendColor(colour, Black, SHADOWALPHA);
 				}
 				gdispStreamColor(colour);	/* pixel to the LCD */
 			}
@@ -149,13 +149,13 @@ static DECLARE_THREAD_FUNCTION(task, param) {
 	return 0;
 }
 
-void doBounce(GHandle parent, gBool start) {
+void doBounce(GHandle parent, bool_t start) {
 	if (start) {
-		run = gTrue;
+		run = TRUE;
 		gh = parent;
-		thread = gfxThreadCreate(0, 0x200, gThreadpriorityLow, task, 0);
+		thread = gfxThreadCreate(0, 0x200, LOW_PRIORITY, task, 0);
 	} else if (run) {
-		run = gFalse;
+		run = FALSE;
 		gfxThreadWait(thread);
 		gfxYield();
 	}

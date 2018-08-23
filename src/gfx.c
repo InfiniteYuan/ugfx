@@ -11,15 +11,14 @@
  */
 
 /* Display various warnings from gfx_rules.h */
-#define GFX_DISPLAY_RULE_WARNINGS	GFXON
+#define GFX_DISPLAY_RULE_WARNINGS	TRUE
 
 #include "../gfx.h"
 
-static gBool gfxInitDone = gFalse;
+static bool_t gfxInitDone = FALSE;
 
 /* These init functions are defined by each module but not published */
 extern void _gosInit(void);
-extern void _gosPostInit(void);
 extern void _gosDeinit(void);
 #ifdef GFX_OS_PRE_INIT_FUNCTION
 		extern void GFX_OS_PRE_INIT_FUNCTION(void);
@@ -84,7 +83,7 @@ void gfxInit(void)
 	/* Ensure we only initialise once */
 	if (gfxInitDone)
 		return;
-	gfxInitDone = gTrue;
+	gfxInitDone = TRUE;
 
 	// These must be initialised in the order of their dependancies
 
@@ -131,17 +130,13 @@ void gfxInit(void)
 	#if GFX_USE_GWIN
 		_gwinInit();
 	#endif
-	_gosPostInit();
-	#if GFX_OS_CALL_UGFXMAIN
-		uGFXMain(0);
-	#endif
 }
 
 void gfxDeinit(void)
 {
 	if (!gfxInitDone)
 		return;
-	gfxInitDone = gFalse;
+	gfxInitDone = FALSE;
 
 	// We deinitialise the opposite way as we initialised
 	#if GFX_USE_GWIN

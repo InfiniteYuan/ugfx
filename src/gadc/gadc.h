@@ -12,7 +12,7 @@
  *
  * @brief	Module to abstract the very variable ADC interfaces of the underlying systems
  *
- * @details	The reason why uGFX has it's own ADC abstraction is because
+ * @details	The reason why ChibiOS/GFX has it's own ADC abstraction is because
  *			the Chibi-OS drivers are very CPU specific and do not
  *			provide a way across all hardware platforms to create periodic
  *			ADC conversions. There are also issues with devices with different
@@ -94,6 +94,10 @@ typedef void (*GADCISRCallbackFunction)(void);
 /* External declarations.                                                    */
 /*===========================================================================*/
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
  * @brief				Initialise the high speed ADC.
  * @details				Initialises but does not start the conversions.
@@ -172,7 +176,7 @@ void gadcHighSpeedSetISRCallback(GADCISRCallbackFunction isrfn);
  * @api
  * @{
  */
-GDataBuffer *gadcHighSpeedGetData(gDelay ms);
+GDataBuffer *gadcHighSpeedGetData(delaytime_t ms);
 GDataBuffer *gadcHighSpeedGetDataI(void);
 /** @} */
 
@@ -215,14 +219,14 @@ void gadcLowSpeedGet(uint32_t physdev, adcsample_t *buffer);
 
 /**
  * @brief	Perform a low speed ADC conversion with callback (in a thread context)
- * @details	Returns gFalse if internal memory allocation fails
+ * @details	Returns FALSE if internal memory allocation fails
  *
  * @param[in] physdev		A value passed to describe which physical ADC devices/channels to use.
  * @param[in] buffer		The static buffer to put the ADC samples into.
  * @param[in] fn			The callback function to call when the conversion is complete.
  * @param[in] param			A parameter to pass to the callback function.
  *
- * @return					gFalse if no free low speed ADC slots.
+ * @return					FALSE if no free low speed ADC slots.
  *
  * @note	This may be safely called from within a GTimer callback.
  * @note	The callback may take a while to occur if the high speed ADC is running as the
@@ -236,7 +240,11 @@ void gadcLowSpeedGet(uint32_t physdev, adcsample_t *buffer);
  *
  * @api
  */
-gBool gadcLowSpeedStart(uint32_t physdev, adcsample_t *buffer, GADCCallbackFunction fn, void *param);
+bool_t gadcLowSpeedStart(uint32_t physdev, adcsample_t *buffer, GADCCallbackFunction fn, void *param);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* GFX_USE_GADC */
 

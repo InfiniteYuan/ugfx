@@ -20,14 +20,14 @@
 // Do we wish to use old style socket calls. Some socket libraries only support the old version.
 // It is better to use the new version where possible however as it also supports IPv6.
 #ifndef OLD_STYLE_SOCKETS
-	#define OLD_STYLE_SOCKETS		GFXOFF
+	#define OLD_STYLE_SOCKETS		FALSE
 #endif
 
 // Which operating systems support a command line
 #if defined(WIN32) || GFX_USE_OS_WIN32 || GFX_USE_OS_OSX || GFX_USE_OS_LINUX
-	#define EMBEDED_OS	GFXOFF
+	#define EMBEDED_OS	FALSE
 #else
-	#define EMBEDED_OS	GFXON
+	#define EMBEDED_OS	TRUE
 #endif
 
 #if GNETCODE_VERSION != GNETCODE_VERSION_1_0
@@ -81,7 +81,7 @@
 		#define StartSockets()		Start_LWIP();
 	#else
 		#include "lwipthread.h"
-		#define StartSockets()		gfxThreadClose(gfxThreadCreate(wa_lwip_thread, LWIP_THREAD_STACK_SIZE, gThreadpriorityNormal, lwip_thread, 0))
+		#define StartSockets()		gfxThreadClose(gfxThreadCreate(wa_lwip_thread, LWIP_THREAD_STACK_SIZE, NORMAL_PRIORITY, lwip_thread, 0))
 	#endif
 
 	#if !LWIP_SOCKET
@@ -97,13 +97,9 @@
 
 	// Mutex protection is required for LWIP
 	#if !GDISP_GFXNET_UNSAFE_SOCKETS
-		#if GFX_COMPILER_WARNING_TYPE == GFX_COMPILER_WARNING_DIRECT
-			#warning "GDISP: uGFXnet - LWIP sockets are not thread-safe. GDISP_GFXNET_UNSAFE_SOCKETS has been turned on for you."
-		#elif GFX_COMPILER_WARNING_TYPE == GFX_COMPILER_WARNING_MACRO
-			COMPILER_WARNING("GDISP: uGFXnet - LWIP sockets are not thread-safe. GDISP_GFXNET_UNSAFE_SOCKETS has been turned on for you.")
-		#endif
+		#warning "GDISP: uGFXnet - LWIP sockets are not thread-safe. GDISP_GFXNET_UNSAFE_SOCKETS has been turned on for you."
 		#undef GDISP_GFXNET_UNSAFE_SOCKETS
-		#define GDISP_GFXNET_UNSAFE_SOCKETS	GFXON
+		#define GDISP_GFXNET_UNSAFE_SOCKETS	TRUE
 	#endif
 #endif
 
@@ -111,7 +107,7 @@
 	static GListener				gl;
 #endif
 static SOCKET_TYPE				netfd = (SOCKET_TYPE)-1;
-static gFont					font;
+static font_t					font;
 
 #define STRINGOF_RAW(s)		#s
 #define STRINGOF(s)			STRINGOF_RAW(s)
@@ -135,9 +131,9 @@ static gFont					font;
 /**
  * Get a whole packet of data.
  * Len is specified in the number of uint16_t's we want as our protocol only talks uint16_t's.
- * If the connection closes before we get all the data - the call returns gFalse.
+ * If the connection closes before we get all the data - the call returns FALSE.
  */
-static gBool getpkt(uint16_t *pkt, int len) {
+static bool_t getpkt(uint16_t *pkt, int len) {
 	int		got;
 	int		have;
 
@@ -149,22 +145,22 @@ static gBool getpkt(uint16_t *pkt, int len) {
 		len -= got;
 	}
 	if (len)
-		return gFalse;
+		return FALSE;
 
 	// Convert each uint16_t to host order
 	for(got = 0, have /= 2; got < have; got++)
 		pkt[got] = ntohs(pkt[got]);
 
-	return gTrue;
+	return TRUE;
 }
 
 /**
  * Send a whole packet of data.
  * Len is specified in the number of uint16_t's we want to send as our protocol only talks uint16_t's.
  * Note that contents of the packet are modified to ensure it will cross the wire in the correct format.
- * If the connection closes before we send all the data - the call returns gFalse.
+ * If the connection closes before we send all the data - the call returns FALSE.
  */
-static gBool sendpkt(uint16_t *pkt, int len) {
+static bool_t sendpkt(uint16_t *pkt, int len) {
 	int		i;
 
 	// Convert each uint16_t to network order
@@ -187,7 +183,7 @@ static gBool sendpkt(uint16_t *pkt, int len) {
 		GEventMouse				*pem;
 		uint16_t				cmd[2];
 		uint16_t				lbuttons;
-		gCoord					lx, ly;
+		coord_t					lx, ly;
 		(void)					param;
 
 		// Initialize the mouse and the listener.
@@ -198,7 +194,7 @@ static gBool sendpkt(uint16_t *pkt, int len) {
 
 		while(1) {
 			// Get a (mouse) event
-			pem = (GEventMouse *)geventEventWait(&gl, gDelayForever);
+			pem = (GEventMouse *)geventEventWait(&gl, TIME_INFINITE);
 			if (pem->type != GEVENT_MOUSE && pem->type != GEVENT_TOUCH)
 				continue;
 
@@ -336,12 +332,12 @@ int main(proto_args) {
 	font = gdispOpenFont("UI2");
 
 	// Open the connection
-	gdispDrawStringBox(0, 0, gdispGetWidth(), gdispGetHeight(), "Connecting to host...", font, GFX_WHITE, gJustifyCenter);
+	gdispDrawStringBox(0, 0, gdispGetWidth(), gdispGetHeight(), "Connecting to host...", font, White, justifyCenter);
 	StartSockets();
 	netfd = doConnect(cmd_args);
 	if (netfd == (SOCKET_TYPE)-1)
 		gfxHalt("Could not connect to the specified server");
-	gdispClear(GFX_BLACK);
+	gdispClear(Black);
 
 	// Get the initial packet from the host
 	if (!getpkt(cmd, 2)) goto alldone;
@@ -358,7 +354,7 @@ int main(proto_args) {
 	#if GFX_USE_GINPUT && GINPUT_NEED_MOUSE
 		// Start the mouse thread if needed
 		if (cmd[3])
-			gfxThreadClose(gfxThreadCreate(waNetThread, sizeof(waNetThread), gThreadpriorityHigh, NetThread, 0));
+			gfxThreadClose(gfxThreadCreate(waNetThread, sizeof(waNetThread), HIGH_PRIORITY, NetThread, 0));
 	#endif
 
 	// Process incoming instructions
@@ -395,7 +391,7 @@ int main(proto_args) {
 		#if GDISP_NEED_SCROLL
 			case GNETCODE_SCROLL:
 				if (!getpkt(cmd, 5)) goto alldone;				// cmd[] = x, y, cx, cy, lines
-				gdispVerticalScroll(cmd[0], cmd[1], cmd[2], cmd[3], cmd[4], GFX_BLACK);
+				gdispVerticalScroll(cmd[0], cmd[1], cmd[2], cmd[3], cmd[4], Black);
 				break;
 		#endif
 		case GNETCODE_CONTROL:

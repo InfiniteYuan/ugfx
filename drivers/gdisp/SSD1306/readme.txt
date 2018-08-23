@@ -10,7 +10,7 @@ Know restictions:
 To use this driver:
 
 1. 	Add in your gfxconf.h:
-	a) #define GFX_USE_GDISP	GFXON
+	a) #define GFX_USE_GDISP	TRUE
 
 	b) Any optional high level driver defines (see gdisp.h) eg: GDISP_NEED_MULTITHREAD
 

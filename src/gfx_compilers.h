@@ -25,12 +25,12 @@
  */
  	/**
 	 * @brief	Should various inline ugfx functions be non-inline.
-	 * @details	Defaults to GFXOFF
-	 * @note	Generally there is no need to set this to GFXON as it will have huge performance impacts
+	 * @details	Defaults to FALSE
+	 * @note	Generally there is no need to set this to TRUE as it will have huge performance impacts
 	 *			in the driver level.
 	 */
 	#ifndef GFX_NO_INLINE
-		#define GFX_NO_INLINE			GFXOFF
+		#define GFX_NO_INLINE			FALSE
 	#endif
 
 	// Set the no inline value
@@ -38,13 +38,6 @@
 		#define GFXINLINE
 	#endif
 
-	/**
-	 * @brief	Show which compiler we detected as a compiler warning message
-	 */
-	#ifndef GFX_SHOW_COMPILER
-		#define GFX_SHOW_COMPILER		GFXOFF
-	#endif
-	
 	/**
 	 * @brief	Enable compiler specific code
 	 * @details	Auto detected by default but it can be overridden in gfxconf.h
@@ -285,28 +278,15 @@
 	 *
 	 *  Please keep this list in alphabetical order to keep it easier to maintain
 	 */
-	
 	#undef GFX_COMPILER_NAME
 	#undef GFX_COMPILER_TESTED
 	#undef GFX_COMPILER_VERSION_MAJOR
 	#undef GFX_COMPILER_VERSION_MINOR
 	#undef GFX_COMPILER_VERSION_PATCH
 	#undef GFX_COMPILER_VERSION_BUILD
-	#undef GFX_COMPILER_WARNING_TYPE
-		#define GFX_COMPILER_WARNING_NONE			0		/* Don't display warnings */
-		#define GFX_COMPILER_WARNING_DIRECT			1		/* Use #warning text, no macro expansion possible */
-		#define GFX_COMPILER_WARNING_MACRO			2		/* Use COMPILER_WARNING(text), macro expansion possible */
-		#define GFX_COMPILER_WARNING_GCC			3		/* Use GCC style warnings - converted to GFX_COMPILER_WARNING_MACRO */
-	
 	#if GFX_COMPILER ==  GFX_COMPILER_ACC
-		#if GFX_SHOW_COMPILER && GFX_DISPLAY_RULE_WARNINGS
-			#warning "Compiler: ACC"
-		#endif
 		#define GFX_COMPILER_NAME					"ACC"
 	#elif GFX_COMPILER ==  GFX_COMPILER_ALTIUM
-		#if GFX_SHOW_COMPILER && GFX_DISPLAY_RULE_WARNINGS
-			#warning "Compiler: ALTIUM"
-		#endif
 		#define GFX_COMPILER_NAME					"Altium MicroBlaze C"
 		#ifdef __BUILD__
 			#define GFX_COMPILER_VERSION_MAJOR		((__BUILD__)/1000000)
@@ -318,9 +298,6 @@
 			#define GFX_COMPILER_VERSION_PATCH		(__REVISION__)
 		#endif
 	#elif GFX_COMPILER ==  GFX_COMPILER_ALTIUMHW
-		#if GFX_SHOW_COMPILER && GFX_DISPLAY_RULE_WARNINGS
-			#warning "Compiler: ALTIUMHW"
-		#endif
 		#define GFX_COMPILER_NAME					"Altium C-to-Hardware"
 		#ifdef __BUILD__
 			#define GFX_COMPILER_VERSION_MAJOR		((__BUILD__)/1000000)
@@ -332,87 +309,54 @@
 			#define GFX_COMPILER_VERSION_PATCH		(__REVISION__)
 		#endif
 	#elif GFX_COMPILER ==  GFX_COMPILER_AMSTERDAM
-		#if GFX_SHOW_COMPILER && GFX_DISPLAY_RULE_WARNINGS
-			#warning "Compiler: AMSTERDAM"
-		#endif
 		#define GFX_COMPILER_NAME					"Amsterdam Compiler Kit"
 	#elif GFX_COMPILER == GFX_COMPILER_ARMCC
-		#if GFX_SHOW_COMPILER && GFX_DISPLAY_RULE_WARNINGS
-			#warning "Compiler: ARMCC"
-		#endif
 		#define GFX_COMPILER_NAME					"ARMCC"
 		#define GFX_COMPILER_VERSION_MAJOR			((__ARMCC_VERSION)/100000)
 		#define GFX_COMPILER_VERSION_MINOR			(((__ARMCC_VERSION)/10000)%10)
 		#define GFX_COMPILER_VERSION_PATCH			(((__ARMCC_VERSION)/1000)%10)
 		#define GFX_COMPILER_VERSION_BUILD			((__ARMCC_VERSION)%1000)
-		#pragma anon_unions							// Allow anonymous unions
 		#define __LITTLE_IF_NOT_BIG__				// Oops - Defines __BIG_ENDIAN but not __LITTLE_ENDIAN
 	#elif GFX_COMPILER == GFX_COMPILER_AZTEC
-		#if GFX_SHOW_COMPILER && GFX_DISPLAY_RULE_WARNINGS
-			#warning "Compiler: AZTEC"
-		#endif
 		#define GFX_COMPILER_NAME					"Aztec"
 		#define GFX_COMPILER_VERSION_MAJOR			((__VERSION)/100)
 		#define GFX_COMPILER_VERSION_MINOR			((__VERSION)%100)
 	#elif GFX_COMPILER == GFX_COMPILER_BORLAND
-		#if GFX_SHOW_COMPILER && GFX_DISPLAY_RULE_WARNINGS
-			#warning "Compiler: BORLAND"
-		#endif
 		#define GFX_COMPILER_NAME					"Borland C++"
 		#define GFX_COMPILER_VERSION_MAJOR			((__BORLANDC__)/0x100)
 		#define GFX_COMPILER_VERSION_MINOR			(((((__BORLANDC__)%0x100)/0x10)*10) + ((__BORLANDC__)%0x10))
 	#elif GFX_COMPILER == GFX_COMPILER_CC65
-		#if GFX_SHOW_COMPILER && GFX_DISPLAY_RULE_WARNINGS
-			#warning "Compiler: CC65"
-		#endif
 		#define GFX_COMPILER_NAME					"CC65"
 		#define GFX_COMPILER_VERSION_MAJOR			((__CC65__)/0x100)
 		#define GFX_COMPILER_VERSION_MINOR			(((__CC65__)/0x10)%0x10)
 		#define GFX_COMPILER_VERSION_PATCH			((__CC65__)%0x10)
 	#elif GFX_COMPILER == GFX_COMPILER_CLANG
 		#define GFX_COMPILER_NAME					"CLang (LLVM)"
-		#define GFX_COMPILER_TESTED					GFXON
-		#define GFX_COMPILER_WARNING_TYPE			GFX_COMPILER_WARNING_GCC
+		#define GFX_COMPILER_TESTED					TRUE
 		#define GFX_COMPILER_VERSION_MAJOR			(__clang_major__)
 		#define GFX_COMPILER_VERSION_MINOR			(__clang_minor__)
 		#define GFX_COMPILER_VERSION_PATCH			(__clang_patchlevel__)
-		#define DEPRECATED(msg)						__attribute__((deprecated(msg)))
+		#define DEPRECATED(msg)						__attribute__((deprecated(msg)));
 	#elif GFX_COMPILER == GFX_COMPILER_COMEAU
-		#if GFX_SHOW_COMPILER && GFX_DISPLAY_RULE_WARNINGS
-			#warning "Compiler: COMEAU"
-		#endif
 		#define GFX_COMPILER_NAME					"Comeau C++"
 		#define GFX_COMPILER_VERSION_MAJOR			((__COMO_VERSION__)/100)
 		#define GFX_COMPILER_VERSION_MINOR			((__COMO_VERSION__)%100)
 	#elif GFX_COMPILER == GFX_COMPILER_COMPAQ
-		#if GFX_SHOW_COMPILER && GFX_DISPLAY_RULE_WARNINGS
-			#warning "Compiler: COMPAQ"
-		#endif
 		#define GFX_COMPILER_NAME					"Compaq C"
 		#define GFX_COMPILER_VERSION_MAJOR			((__DECC_VER)/10000000)
 		#define GFX_COMPILER_VERSION_MINOR			(((__DECC_VER)/100000)%100)
 		#define GFX_COMPILER_VERSION_PATCH			((__DECC_VER)%10000)
 	#elif GFX_COMPILER == GFX_COMPILER_COMPCERT
-		#if GFX_SHOW_COMPILER && GFX_DISPLAY_RULE_WARNINGS
-			#warning "Compiler: COMPCERT"
-		#endif
 		#define GFX_COMPILER_NAME					"Compcert"
 	#elif GFX_COMPILER == GFX_COMPILER_CONVEX
-		#if GFX_SHOW_COMPILER && GFX_DISPLAY_RULE_WARNINGS
-			#warning "Compiler: CONVEX"
-		#endif
 		#define GFX_COMPILER_NAME					"Convex C"
 	#elif GFX_COMPILER == GFX_COMPILER_CRAY
-		#if GFX_SHOW_COMPILER && GFX_DISPLAY_RULE_WARNINGS
-			#warning "Compiler: CRAY"
-		#endif
 		#define GFX_COMPILER_NAME					"Cray C/C++"
 		#define GFX_COMPILER_VERSION_MAJOR			(_RELEASE)
 		#define GFX_COMPILER_VERSION_MINOR			(_RELEASE_MINOR)
 	#elif GFX_COMPILER == GFX_COMPILER_CYGWIN
 		#define GFX_COMPILER_NAME					"Cygwin"
-		#define GFX_COMPILER_TESTED					GFXON
-		#define GFX_COMPILER_WARNING_TYPE			GFX_COMPILER_WARNING_GCC
+		#define GFX_COMPILER_TESTED					TRUE
 		#define GFX_COMPILER_VERSION_MAJOR			(__GNUC__)
 		#define GFX_COMPILER_VERSION_MINOR			(__GNUC_MINOR__)
 		#ifdef __GNUC_PATCHLEVEL__
@@ -420,35 +364,20 @@
 		#endif
 		#define DEPRECATED(msg)						__attribute__((deprecated(msg)))
 	#elif GFX_COMPILER == GFX_COMPILER_DAIB
-		#if GFX_SHOW_COMPILER && GFX_DISPLAY_RULE_WARNINGS
-			#warning "Compiler: DAIB"
-		#endif
 		#define GFX_COMPILER_NAME					"Diab C/C++"
 		#define GFX_COMPILER_VERSION_MAJOR			((__VERSION_NUMBER__)/1000)
 		#define GFX_COMPILER_VERSION_MINOR			(((__VERSION_NUMBER__)/100)%10)
 		#define GFX_COMPILER_VERSION_PATCH			((__VERSION_NUMBER__)%100)
 	#elif GFX_COMPILER == GFX_COMPILER_DEC
-		#if GFX_SHOW_COMPILER && GFX_DISPLAY_RULE_WARNINGS
-			#warning "Compiler: DEC"
-		#endif
 		#define GFX_COMPILER_NAME					"DEC"
 	#elif GFX_COMPILER == GFX_COMPILER_DICE
-		#if GFX_SHOW_COMPILER && GFX_DISPLAY_RULE_WARNINGS
-			#warning "Compiler: DICE"
-		#endif
 		#define GFX_COMPILER_NAME					"DICE C"
 	#elif GFX_COMPILER == GFX_COMPILER_DIGNUS
-		#if GFX_SHOW_COMPILER && GFX_DISPLAY_RULE_WARNINGS
-			#warning "Compiler: DIGNUS"
-		#endif
 		#define GFX_COMPILER_NAME					"Dignus Systems C++"
 		#define GFX_COMPILER_VERSION_MAJOR			((__SYSC_VER__)/10000)
 		#define GFX_COMPILER_VERSION_MINOR			(((__SYSC_VER__)/100)%100)
 		#define GFX_COMPILER_VERSION_PATCH			((__SYSC_VER__)%100)
 	#elif GFX_COMPILER == GFX_COMPILER_DJGPP
-		#if GFX_SHOW_COMPILER && GFX_DISPLAY_RULE_WARNINGS
-			#warning "Compiler: DJGPP"
-		#endif
 		#define GFX_COMPILER_NAME					"DJGPP"
 		#ifdef __DJGPP__
 			#define GFX_COMPILER_VERSION_MAJOR		(__DJGPP__)
@@ -457,19 +386,13 @@
 			#define GFX_COMPILER_VERSION_MAJOR		(1)
 		#endif
 	#elif GFX_COMPILER == GFX_COMPILER_DMARS
-		#if GFX_SHOW_COMPILER && GFX_DISPLAY_RULE_WARNINGS
-			#warning "Compiler: DMARS"
-		#endif
 		#define GFX_COMPILER_NAME					"Digital Mars"
 		#define GFX_COMPILER_VERSION_MAJOR			((__DMC__)/0x100)
 		#define GFX_COMPILER_VERSION_MINOR			(((__DMC__)/0x10)%0x10)
 		#define GFX_COMPILER_VERSION_PATCH			((__DMC__)%0x10)
 	#elif GFX_COMPILER == GFX_COMPILER_EDG
-		#if GFX_SHOW_COMPILER && GFX_DISPLAY_RULE_WARNINGS
-			#warning "Compiler: EDG"
-		#endif
 		#define GFX_COMPILER_NAME					"EDG C++"
-		#define GFX_COMPILER_TESTED					GFXON
+		#define GFX_COMPILER_TESTED					TRUE
 		#define GFX_COMPILER_VERSION_MAJOR			((__EDG_VERSION__)/100)
 		#define GFX_COMPILER_VERSION_MINOR			((__EDG_VERSION__)%100)
 		#pragma diag_remark = Pe301
@@ -480,22 +403,15 @@
 		#pragma diag_remark = Pe068
 		#pragma diag_remark = Pa050
 	#elif GFX_COMPILER == GFX_COMPILER_EKOPATH
-		#if GFX_SHOW_COMPILER && GFX_DISPLAY_RULE_WARNINGS
-			#warning "Compiler: EKOPATH"
-		#endif
 		#define GFX_COMPILER_NAME					"EKOPath"
 		#define GFX_COMPILER_VERSION_MAJOR			(__PATHCC__)
 		#define GFX_COMPILER_VERSION_MINOR			(__PATHCC_MINOR__)
 		#define GFX_COMPILER_VERSION_PATCH			(__PATHCC_PATCHLEVEL__)
 	#elif GFX_COMPILER == GFX_COMPILER_FUJITSU
-		#if GFX_SHOW_COMPILER && GFX_DISPLAY_RULE_WARNINGS
-			#warning "Compiler: FUJITSU"
-		#endif
 		#define GFX_COMPILER_NAME					"Fujitsu C++"
 	#elif GFX_COMPILER == GFX_COMPILER_GCC
 		#define GFX_COMPILER_NAME					"GCC"
-		#define GFX_COMPILER_TESTED					GFXON
-		#define GFX_COMPILER_WARNING_TYPE			GFX_COMPILER_WARNING_GCC
+		#define GFX_COMPILER_TESTED					TRUE
 		#define GFX_COMPILER_VERSION_MAJOR			(__GNUC__)
 		#define GFX_COMPILER_VERSION_MINOR			(__GNUC_MINOR__)
 		#ifdef __GNUC_PATCHLEVEL__
@@ -503,22 +419,13 @@
 		#endif
 		#define DEPRECATED(msg)						__attribute__((deprecated(msg)))
 	#elif GFX_COMPILER == GFX_COMPILER_GREENHILL
-		#if GFX_SHOW_COMPILER && GFX_DISPLAY_RULE_WARNINGS
-			#warning "Compiler: GREENHILL"
-		#endif
 		#define GFX_COMPILER_NAME					"Green Hill C/C++"
 		#define GFX_COMPILER_VERSION_MAJOR			((__GHS_VERSION_NUMBER__)/100)
 		#define GFX_COMPILER_VERSION_MINOR			(((__GHS_VERSION_NUMBER__)/10)%10)
 		#define GFX_COMPILER_VERSION_PATCH			((__GHS_VERSION_NUMBER__)%10)
 	#elif GFX_COMPILER == GFX_COMPILER_HIGHC
-		#if GFX_SHOW_COMPILER && GFX_DISPLAY_RULE_WARNINGS
-			#warning "Compiler: HIGHC"
-		#endif
 		#define GFX_COMPILER_NAME					"Metaware High C/C++"
 	#elif GFX_COMPILER == GFX_COMPILER_HP
-		#if GFX_SHOW_COMPILER && GFX_DISPLAY_RULE_WARNINGS
-			#warning "Compiler: HP"
-		#endif
 		#define GFX_COMPILER_NAME					"HP C/aC++"
 		#ifdef __HP_aCC
 			#if __HP_aCC == 1
@@ -531,11 +438,8 @@
 			#endif
 		#endif
 	#elif GFX_COMPILER == GFX_COMPILER_IAR
-		#if GFX_SHOW_COMPILER && GFX_DISPLAY_RULE_WARNINGS
-			#warning "Compiler: IAR"
-		#endif
 		#define GFX_COMPILER_NAME					"IAR C++"
-		#define GFX_COMPILER_TESTED					GFXON
+		#define GFX_COMPILER_TESTED					TRUE
 		#define GFX_COMPILER_VERSION_MAJOR			((__VER__)/100)
 		#define GFX_COMPILER_VERSION_MINOR			((__VER__)%100)
 		#pragma diag_remark = Pe301
@@ -546,9 +450,6 @@
 		#pragma diag_remark = Pe068
 		#pragma diag_remark = Pa050
 	#elif GFX_COMPILER == GFX_COMPILER_IBMXL
-		#if GFX_SHOW_COMPILER && GFX_DISPLAY_RULE_WARNINGS
-			#warning "Compiler: IBMXL"
-		#endif
 		#define GFX_COMPILER_NAME					"IBM XL C/C++"
 		#ifdef __xlC__
 			#define GFX_COMPILER_VERSION_MAJOR		((__xlC__)/0x100)
@@ -569,14 +470,8 @@
 			#define GFX_COMPILER_VERSION_PATCH		((__IBMCPP__)%10)
 		#endif
 	#elif GFX_COMPILER == GFX_COMPILER_IMAGECRAFT
-		#if GFX_SHOW_COMPILER && GFX_DISPLAY_RULE_WARNINGS
-			#warning "Compiler: IMAGECRAFT"
-		#endif
 		#define GFX_COMPILER_NAME					"Imagecraft C"
 	#elif GFX_COMPILER == GFX_COMPILER_INTEL
-		#if GFX_SHOW_COMPILER && GFX_DISPLAY_RULE_WARNINGS
-			#warning "Compiler: INTEL"
-		#endif
 		#define GFX_COMPILER_NAME					"Intel ICC/ICPC"
 		#ifdef __INTEL_COMPILER
 			#define GFX_COMPILER_VERSION_MAJOR		((__INTEL_COMPILER)/100)
@@ -587,19 +482,13 @@
 			#endif
 		#endif
 	#elif GFX_COMPILER == GFX_COMPILER_KAI
-		#if GFX_SHOW_COMPILER && GFX_DISPLAY_RULE_WARNINGS
-			#warning "Compiler: KAI"
-		#endif
 		#define GFX_COMPILER_NAME					"Kai C++"
 		#define GFX_COMPILER_VERSION_MAJOR			((__KCC_VERSION)/0x1000)
 		#define GFX_COMPILER_VERSION_MINOR			(((__KCC_VERSION)/0x100)%0x10)
 		#define GFX_COMPILER_VERSION_PATCH			((__KCC_VERSION)%0x100)
 	#elif GFX_COMPILER == GFX_COMPILER_KEIL
-		#if GFX_SHOW_COMPILER && GFX_DISPLAY_RULE_WARNINGS
-			#warning "Compiler: KEIL"
-		#endif
 		#define GFX_COMPILER_NAME					"Keil"
-		#define GFX_COMPILER_TESTED					GFXON
+		#define GFX_COMPILER_TESTED					TRUE
 		#if defined(__ARMCC_VERSION)
 			#define GFX_COMPILER_VERSION_MAJOR		((__ARMCC_VERSION)/1000000)
 			#define GFX_COMPILER_VERSION_MINOR		(((__ARMCC_VERSION)/10000)%100)
@@ -626,39 +515,24 @@
 		#pragma diag_remark 83						// Turn off warning: type qualifier specified more than once
 		#pragma diag_remark 767						// Turn off warning: conversion from pointer to smaller integer
 		#pragma diag_remark 188						// Turn off warning: enumerated type mixed with another type
-		#pragma diag_remark 68						// Turn off warning: integer conversion resulted in a change of sign
-		#pragma diag_remark 111						// Turn off warning: statement is unreachable
 		#ifndef GFXINLINE							// Get the Keil definition for inline
 			#define GFXINLINE	__inline
 		#endif
 		#define __LITTLE_IF_NOT_BIG__				// Oops - Defines __BIG_ENDIAN but not __LITTLE_ENDIAN
 	#elif GFX_COMPILER == GFX_COMPILER_LCC
-		#if GFX_SHOW_COMPILER && GFX_DISPLAY_RULE_WARNINGS
-			#warning "Compiler: LCC"
-		#endif
 		#define GFX_COMPILER_NAME					"LCC"
 	#elif GFX_COMPILER == GFX_COMPILER_METROWORKS
-		#if GFX_SHOW_COMPILER && GFX_DISPLAY_RULE_WARNINGS
-			#warning "Compiler: METROWORKS"
-		#endif
 		#define GFX_COMPILER_NAME					"Metroworks CodeWarrior"
 		#define GFX_COMPILER_VERSION_MAJOR			((__MWERKS__)/0x1000)
 		#define GFX_COMPILER_VERSION_MINOR			(((__MWERKS__)/0x100)%0x10)
 		#define GFX_COMPILER_VERSION_PATCH			((__MWERKS__)%100)
 	#elif GFX_COMPILER == GFX_COMPILER_MICROTEC
-		#if GFX_SHOW_COMPILER && GFX_DISPLAY_RULE_WARNINGS
-			#warning "Compiler: MICROTEC"
-		#endif
 		#define GFX_COMPILER_NAME					"Microtec C/C++"
 	#elif GFX_COMPILER == GFX_COMPILER_MICROWAY
-		#if GFX_SHOW_COMPILER && GFX_DISPLAY_RULE_WARNINGS
-			#warning "Compiler: MICROWAY"
-		#endif
 		#define GFX_COMPILER_NAME					"Microway NDP C"
 	#elif GFX_COMPILER == GFX_COMPILER_MINGW32
 		#define GFX_COMPILER_NAME					"MingW32"
-		#define GFX_COMPILER_TESTED					GFXON
-		#define GFX_COMPILER_WARNING_TYPE			GFX_COMPILER_WARNING_GCC
+		#define GFX_COMPILER_TESTED					TRUE
 		#define GFX_COMPILER_VERSION_MAJOR			(__GNUC__)
 		#define GFX_COMPILER_VERSION_MINOR			(__GNUC_MINOR__)
 		#ifdef __GNUC_PATCHLEVEL__
@@ -667,7 +541,6 @@
 		#define DEPRECATED(msg)						__attribute__((deprecated(msg)))
 	#elif GFX_COMPILER == GFX_COMPILER_MINGW64
 		#define GFX_COMPILER_NAME					"MingW64"
-		#define GFX_COMPILER_WARNING_TYPE			GFX_COMPILER_WARNING_GCC
 		#define GFX_COMPILER_VERSION_MAJOR			(__GNUC__)
 		#define GFX_COMPILER_VERSION_MINOR			(__GNUC_MINOR__)
 		#ifdef __GNUC_PATCHLEVEL__
@@ -675,9 +548,6 @@
 		#endif
 		#define DEPRECATED(msg)						__attribute__((deprecated(msg)))
 	#elif GFX_COMPILER == GFX_COMPILER_MIPSPRO
-		#if GFX_SHOW_COMPILER && GFX_DISPLAY_RULE_WARNINGS
-			#warning "Compiler: MIPSPRO"
-		#endif
 		#define GFX_COMPILER_NAME					"MIPS Pro"
 		#ifdef _SGI_COMPILER_VERSION
 			#define GFX_COMPILER_VERSION_MAJOR		((_SGI_COMPILER_VERSION)/100)
@@ -689,38 +559,20 @@
 			#define GFX_COMPILER_VERSION_PATCH		((_COMPILER_VERSION)%10)
 		#endif
 	#elif GFX_COMPILER == GFX_COMPILER_MIRACLE
-		#if GFX_SHOW_COMPILER && GFX_DISPLAY_RULE_WARNINGS
-			#warning "Compiler: MIRACLE"
-		#endif
 		#define GFX_COMPILER_NAME					"Miracle C"
 	#elif GFX_COMPILER == GFX_COMPILER_MPW
-		#if GFX_SHOW_COMPILER && GFX_DISPLAY_RULE_WARNINGS
-			#warning "Compiler: MPW"
-		#endif
 		#define GFX_COMPILER_NAME					"MPW C++"
 		#define GFX_COMPILER_VERSION_MAJOR			((__MRC__)/0x100)
 		#define GFX_COMPILER_VERSION_MINOR			((__MRC__)%0x100)
 	#elif GFX_COMPILER == GFX_COMPILER_NORCROFT
-		#if GFX_SHOW_COMPILER && GFX_DISPLAY_RULE_WARNINGS
-			#warning "Compiler: NORCROFT"
-		#endif
 		#define GFX_COMPILER_NAME					"Norcroft C"
 	#elif GFX_COMPILER == GFX_COMPILER_NWCC
-		#if GFX_SHOW_COMPILER && GFX_DISPLAY_RULE_WARNINGS
-			#warning "Compiler: NWCC"
-		#endif
 		#define GFX_COMPILER_NAME					"NWCC"
 	#elif GFX_COMPILER == GFX_COMPILER_OPEN64
-		#if GFX_SHOW_COMPILER && GFX_DISPLAY_RULE_WARNINGS
-			#warning "Compiler: OPEN64"
-		#endif
 		#define GFX_COMPILER_NAME					"Open64"
 		#define GFX_COMPILER_VERSION_MAJOR			(__OPENCC__)
 		#define GFX_COMPILER_VERSION_MINOR			(__OPENCC_MINOR__)
 	#elif GFX_COMPILER == GFX_COMPILER_OSS
-		#if GFX_SHOW_COMPILER && GFX_DISPLAY_RULE_WARNINGS
-			#warning "Compiler: OSS"
-		#endif
 		#define GFX_COMPILER_NAME					"Oracle Solaris Studio"
 		#ifdef __SUNPRO_C >= 0x1000
 			#define GFX_COMPILER_VERSION_MAJOR		((__SUNPRO_C)/0x1000)
@@ -732,38 +584,23 @@
 			#define GFX_COMPILER_VERSION_PATCH		((__SUNPRO_C)%0x10)
 		#endif
 	#elif GFX_COMPILER == GFX_COMPILER_PACIFIC
-		#if GFX_SHOW_COMPILER && GFX_DISPLAY_RULE_WARNINGS
-			#warning "Compiler: PACIFIC"
-		#endif
 		#define GFX_COMPILER_NAME					"Pacific C"
 	#elif GFX_COMPILER == GFX_COMPILER_PALM
-		#if GFX_SHOW_COMPILER && GFX_DISPLAY_RULE_WARNINGS
-			#warning "Compiler: PALM"
-		#endif
 		#define GFX_COMPILER_NAME					"Palm C/C++"
 		#define GFX_COMPILER_VERSION_MAJOR			((_PACC_VER)/0x10000000)
 		#define GFX_COMPILER_VERSION_MINOR			(((_PACC_VER)/0x100000)%0x100)
 		#define GFX_COMPILER_VERSION_PATCH			(((_PACC_VER)/0x1000)%0x100)
 		#define GFX_COMPILER_VERSION_BUILD			((_PACC_VER)%0x1000)
 	#elif GFX_COMPILER == GFX_COMPILER_PELLES
-		#if GFX_SHOW_COMPILER && GFX_DISPLAY_RULE_WARNINGS
-			#warning "Compiler: PELLES"
-		#endif
 		#define GFX_COMPILER_NAME					"Pelles C"
 		#define GFX_COMPILER_VERSION_MAJOR			((__POCC__)/100)
 		#define GFX_COMPILER_VERSION_MINOR			((__POCC__)%100)
 	#elif GFX_COMPILER == GFX_COMPILER_PGCC
-		#if GFX_SHOW_COMPILER && GFX_DISPLAY_RULE_WARNINGS
-			#warning "Compiler: PGCC"
-		#endif
 		#define GFX_COMPILER_NAME					"Portland PGCC/PGCPP"
 		#define GFX_COMPILER_VERSION_MAJOR			(__PGIC__)
 		#define GFX_COMPILER_VERSION_MINOR			(__PGIC_MINOR__)
 		#define GFX_COMPILER_VERSION_PATCH			(__PGIC_PATCHLEVEL__)
 	#elif GFX_COMPILER == GFX_COMPILER_RENESAS
-		#if GFX_SHOW_COMPILER && GFX_DISPLAY_RULE_WARNINGS
-			#warning "Compiler: RENESAS"
-		#endif
 		#define GFX_COMPILER_NAME					"Renesas C/C++"
 		#ifdef __HITACHI_VERSION__
 			#define GFX_COMPILER_VERSION_MAJOR		((__HITACHI_VERSION__)/0x100)
@@ -778,9 +615,6 @@
 			#define GFX_COMPILER_VERSION_BUILD		((__RENESAS_VERSION__)%0x100)
 		#endif
 	#elif GFX_COMPILER == GFX_COMPILER_SASC
-		#if GFX_SHOW_COMPILER && GFX_DISPLAY_RULE_WARNINGS
-			#warning "Compiler: SASC"
-		#endif
 		#define GFX_COMPILER_NAME					"SAS/C"
 		#ifdef __SASC__
 			#define GFX_COMPILER_VERSION_MAJOR		((__SASC__)/100)
@@ -790,45 +624,24 @@
 			#define GFX_COMPILER_VERSION_MINOR		(__REVISION__)
 		#endif
 	#elif GFX_COMPILER == GFX_COMPILER_SCO
-		#if GFX_SHOW_COMPILER && GFX_DISPLAY_RULE_WARNINGS
-			#warning "Compiler: SCO"
-		#endif
 		#define GFX_COMPILER_NAME					"SCO OpenServer"
 	#elif GFX_COMPILER == GFX_COMPILER_SDCC
-		#if GFX_SHOW_COMPILER && GFX_DISPLAY_RULE_WARNINGS
-			#warning "Compiler: SDCC"
-		#endif
 		#define GFX_COMPILER_NAME					"Small Device C"
 		#define GFX_COMPILER_VERSION_MAJOR			((SDCC)/100)
 		#define GFX_COMPILER_VERSION_MINOR			(((SDCC)/10)%10)
 		#define GFX_COMPILER_VERSION_PATCH			((SDCC)%10)
 	#elif GFX_COMPILER == GFX_COMPILER_SN
-		#if GFX_SHOW_COMPILER && GFX_DISPLAY_RULE_WARNINGS
-			#warning "Compiler: SN"
-		#endif
 		#define GFX_COMPILER_NAME					"SN"
 	#elif GFX_COMPILER == GFX_COMPILER_STRATUS
-		#if GFX_SHOW_COMPILER && GFX_DISPLAY_RULE_WARNINGS
-			#warning "Compiler: STRATUS"
-		#endif
 		#define GFX_COMPILER_NAME					"Stratus VOS C"
 		#define GFX_COMPILER_VERSION_MAJOR			(__VOSC__)
 	#elif GFX_COMPILER == GFX_COMPILER_SYMANTEC
-		#if GFX_SHOW_COMPILER && GFX_DISPLAY_RULE_WARNINGS
-			#warning "Compiler: SYMANTEC"
-		#endif
 		#define GFX_COMPILER_NAME					"Symantec C++"
 		#define GFX_COMPILER_VERSION_MAJOR			((__SC__)/0x100)
 		#define GFX_COMPILER_VERSION_MINOR			((__SC__)%0x100)
 	#elif GFX_COMPILER == GFX_COMPILER_TENDRA
-		#if GFX_SHOW_COMPILER && GFX_DISPLAY_RULE_WARNINGS
-			#warning "Compiler: TENDRA"
-		#endif
 		#define GFX_COMPILER_NAME					"TenDRA C/C++"
 	#elif GFX_COMPILER == GFX_COMPILER_THINK
-		#if GFX_SHOW_COMPILER && GFX_DISPLAY_RULE_WARNINGS
-			#warning "Compiler: THINK"
-		#endif
 		#define GFX_COMPILER_NAME					"Think C"
 		#ifdef THINKC4
 			#define GFX_COMPILER_VERSION_MAJOR		(4)
@@ -836,23 +649,14 @@
 			#define GFX_COMPILER_VERSION_MAJOR		(3)
 		#endif
 	#elif GFX_COMPILER == GFX_COMPILER_TI
-		#if GFX_SHOW_COMPILER && GFX_DISPLAY_RULE_WARNINGS
-			#warning "Compiler: TI"
-		#endif
 		#define GFX_COMPILER_NAME					"Texas Instruments C/C++"
 		#define GFX_COMPILER_VERSION_MAJOR			((SDCC)/1000000)
 		#define GFX_COMPILER_VERSION_MINOR			(((SDCC)/1000)%1000)
 		#define GFX_COMPILER_VERSION_PATCH			((SDCC)%1000)
 	#elif GFX_COMPILER == GFX_COMPILER_TINYC
-		#if GFX_SHOW_COMPILER && GFX_DISPLAY_RULE_WARNINGS
-			#warning "Compiler: TINYC"
-		#endif
 		#define GFX_COMPILER_NAME					"Tiny C"
-		#define GFX_COMPILER_TESTED					GFXON
+		#define GFX_COMPILER_TESTED					TRUE
 	#elif GFX_COMPILER == GFX_COMPILER_TURBOC
-		#if GFX_SHOW_COMPILER && GFX_DISPLAY_RULE_WARNINGS
-			#warning "Compiler: TURBOC"
-		#endif
 		#define GFX_COMPILER_NAME					"Borland Turbo C/C++"
 		#if __TURBOC__ < 0x295 || __TURBOC__ >= 0x400
 			#define GFX_COMPILER_VERSION_MAJOR		((__TURBOC__)/0x100)
@@ -868,24 +672,15 @@
 			#define GFX_COMPILER_VERSION_MINOR		(0)
 		#endif
 	#elif GFX_COMPILER == GFX_COMPILER_ULTIMATE
-		#if GFX_SHOW_COMPILER && GFX_DISPLAY_RULE_WARNINGS
-			#warning "Compiler: ULTIMATE"
-		#endif
 		#define GFX_COMPILER_NAME					"Ultimate C/C++"
 		#define GFX_COMPILER_VERSION_MAJOR			(_MAJOR_REV)
 		#define GFX_COMPILER_VERSION_MINOR			(_MINOR_REV)
 	#elif GFX_COMPILER == GFX_COMPILER_USL
-		#if GFX_SHOW_COMPILER && GFX_DISPLAY_RULE_WARNINGS
-			#warning "Compiler: USL"
-		#endif
 		#define GFX_COMPILER_NAME					"USL C"
 		#define GFX_COMPILER_VERSION_MAJOR			((__SCO_VERSION__)/100000000)
 		#define GFX_COMPILER_VERSION_MINOR			(((__SCO_VERSION__)/1000000)%100)
 		#define GFX_COMPILER_VERSION_BUILD			((__SCO_VERSION__)%1000000)
 	#elif GFX_COMPILER == GFX_COMPILER_VBCC
-		#if GFX_SHOW_COMPILER && GFX_DISPLAY_RULE_WARNINGS
-			#warning "Compiler: VBCC"
-		#endif
 		#define GFX_COMPILER_NAME					"VBCC"
 	#elif GFX_COMPILER == GFX_COMPILER_VS
 		#define GFX_COMPILER_NAME					"Microsoft Visual Studio"
@@ -907,36 +702,18 @@
 			#define GFX_COMPILER_VERSION_BUILD		(_MSC_BUILD)
 		#endif
 		#define DEPRECATED(msg)						__declspec(deprecated(msg))
-
-		#define GFX_COMPILER_WARNING_TYPE			GFX_COMPILER_WARNING_MACRO
-		#define COMPILER_WARNING(desc)				__pragma(message(__FILE__ "(" GFXSTRX(__LINE__) "): warning uGFX: " desc))
 	#elif GFX_COMPILER == GFX_COMPILER_WATCOM
-		#if GFX_SHOW_COMPILER && GFX_DISPLAY_RULE_WARNINGS
-			#warning "Compiler: WATCOM"
-		#endif
 		#define GFX_COMPILER_NAME					"Watcom C"
 		#define GFX_COMPILER_VERSION_MAJOR			((__WATCOMC__)/100)
 		#define GFX_COMPILER_VERSION_MINOR			((__WATCOMC__)%100)
 	#elif GFX_COMPILER == GFX_COMPILER_ZTC
-		#if GFX_SHOW_COMPILER && GFX_DISPLAY_RULE_WARNINGS
-			#warning "Compiler: ZTC"
-		#endif
 		#define GFX_COMPILER_NAME					"Zortech C++"
 		#define GFX_COMPILER_VERSION_MAJOR			((__ZTC__)/0x100)
 		#define GFX_COMPILER_VERSION_MINOR			(((__ZTC__)/0x10)%0x10)
 		#define GFX_COMPILER_VERSION_PATCH			((__ZTC__)%0x10)
 	#endif
-
 	#ifndef GFX_COMPILER_TESTED
-		#define GFX_COMPILER_TESTED					GFXOFF
-	#endif
-	#ifndef GFX_COMPILER_WARNING_TYPE
-		#define GFX_COMPILER_WARNING_TYPE				GFX_COMPILER_WARNING_DIRECT
-	#elif GFX_COMPILER_WARNING_TYPE == GFX_COMPILER_WARNING_GCC
-		#undef GFX_COMPILER_WARNING_TYPE
-		#define GFX_COMPILER_WARNING_TYPE				GFX_COMPILER_WARNING_MACRO
-		#define COMPILER_PRAGMA(x)					_Pragma(#x)
-		#define COMPILER_WARNING(desc)				COMPILER_PRAGMA(GCC warning desc)
+		#define GFX_COMPILER_TESTED		FALSE
 	#endif
 	/************************************ End Compiler Settings *************************/
 
@@ -951,11 +728,6 @@
 		#define GFX_COMPILER_NAME		"Unknown"
 		#warning "You are using an unknown compiler. Please report this on the ugfx forum"
 	#endif
-	#if GFX_SHOW_COMPILER && GFX_DISPLAY_RULE_WARNINGS
-		#if GFX_COMPILER_WARNING_TYPE == GFX_COMPILER_WARNING_MACRO
-				COMPILER_WARNING(GFXSTRX(Compiler: GFX_COMPILER_NAME))
-		#endif
-	#endif
 
 	/**
 	 * @brief	This compiler is tested with ugfx
@@ -967,12 +739,8 @@
 	 * 			tested with a different compiler version. Please report any problems
 	 * 			on the ugfx forum.
 	 */
-	#if !GFX_COMPILER_TESTED && GFX_DISPLAY_RULE_WARNINGS
-		#if GFX_COMPILER_WARNING_TYPE == GFX_COMPILER_WARNING_DIRECT
-			#warning "You are using an un-tested compiler. Please report any compile errors or warnings on the ugfx forum"
-		#elif GFX_COMPILER_WARNING_TYPE == GFX_COMPILER_WARNING_MACRO
-			COMPILER_WARNING(GFXSTRX(You are using the un-tested GFX_COMPILER_NAME compiler. Please report any compile errors or warnings on the ugfx forum))
-		#endif
+	#if !GFX_COMPILER_TESTED
+		#warning "You are using an un-tested compiler. Please report any compile errors or warnings on the ugfx forum"
 	#endif
 
 	/**
@@ -1071,7 +839,7 @@
 	/************************************ Start CPU Settings *****************************/
 	#if GFX_CPU == GFX_CPU_X86
 		#undef GFX_CPU_NO_ALIGNMENT_FAULTS
-		#define GFX_CPU_NO_ALIGNMENT_FAULTS		GFXON
+		#define GFX_CPU_NO_ALIGNMENT_FAULTS		TRUE
 		#undef GFX_CPU_ENDIAN
 		#define GFX_CPU_ENDIAN					GFX_CPU_ENDIAN_LITTLE
 	#elif GFX_CPU == GFX_CPU_X64
@@ -1082,16 +850,16 @@
 
 	/**
 	 * @brief   Does this CPU automatically handle alignment faults
-	 * @details	Defaults to GFXOFF
-	 * @note	Setting this to GFXON can decrease code size and increase speed but
+	 * @details	Defaults to FALSE
+	 * @note	Setting this to TRUE can decrease code size and increase speed but
 	 * 			it should not be turned on with a CPU that can generate
 	 * 			alignment segfaults.
-	 * @note	If you are unsure leave this as GFXOFF as that generates
+	 * @note	If you are unsure leave this as FALSE as that generates
 	 * 			the more conservative code.
 	 * @note	For some CPU's this can be auto-detected.
 	 */
 	#ifndef GFX_CPU_NO_ALIGNMENT_FAULTS
-		#define GFX_CPU_NO_ALIGNMENT_FAULTS		GFXOFF
+		#define GFX_CPU_NO_ALIGNMENT_FAULTS		FALSE
 	#endif
 
 	/**

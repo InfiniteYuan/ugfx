@@ -124,7 +124,7 @@ static GFXINLINE void post_init_board(GDisplay *g) {
   (void) g;
 }
 
-static GFXINLINE void setpin_reset(GDisplay *g, gBool state) {
+static GFXINLINE void setpin_reset(GDisplay *g, bool_t state) {
   (void) g;
 
   if(state) {}
@@ -169,7 +169,7 @@ static GFXINLINE uint16_t read_data(GDisplay *g) {
 }
 
 #if defined(GDISP_USE_DMA) || defined(__DOXYGEN__)
-static GFXINLINE void dma_with_noinc(GDisplay *g, gColor *buffer, int area) {
+static GFXINLINE void dma_with_noinc(GDisplay *g, color_t *buffer, int area) {
   (void) g;
   dmaStreamSetPeripheral(GDISP_DMA_STREAM, buffer);
   dmaStreamSetMode(GDISP_DMA_STREAM, STM32_DMA_CR_PL(0) |                      \
@@ -182,7 +182,7 @@ static GFXINLINE void dma_with_noinc(GDisplay *g, gColor *buffer, int area) {
   }
 }
 
-static GFXINLINE void dma_with_inc(GDisplay *g, gColor *buffer, int area) {
+static GFXINLINE void dma_with_inc(GDisplay *g, color_t *buffer, int area) {
   (void) g;
   dmaStreamSetPeripheral(GDISP_DMA_STREAM, buffer);
   dmaStreamSetMode(GDISP_DMA_STREAM, STM32_DMA_CR_PL(0) | STM32_DMA_CR_PINC |  \

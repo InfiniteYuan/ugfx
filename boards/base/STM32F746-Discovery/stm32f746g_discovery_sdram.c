@@ -1,9 +1,7 @@
 #include "../../../gfx.h"
-#if GFX_COMPAT_V2 && GFX_COMPAT_OLDCOLORS
-	#undef Red
-	#undef Green
-	#undef Blue
-#endif
+#undef Red
+#undef Green
+#undef Blue
 #include "stm32f746g_discovery_sdram.h"
 #include "stm32f7xx_hal_rcc.h"
 #include "stm32f7xx_hal_dma.h"
@@ -259,7 +257,7 @@ static HAL_StatusTypeDef _HAL_SDRAM_SendCommand(SDRAM_HandleTypeDef *hsdram, FMC
 static HAL_StatusTypeDef _FMC_SDRAM_SendCommand(FMC_SDRAM_TypeDef *Device, FMC_SDRAM_CommandTypeDef *Command, uint32_t Timeout)
 {
   __IO uint32_t tmpr = 0;
-  gTicks tickstart = 0;
+  systemticks_t tickstart = 0;
 
   /* Set command register */
   tmpr = (uint32_t)((Command->CommandMode)                  |\
@@ -512,7 +510,9 @@ static void BSP_SDRAM_Initialization_sequence(SDRAM_HandleTypeDef *hsdram, uint3
 static void BSP_SDRAM_MspInit(SDRAM_HandleTypeDef  *hsdram)
 {  
   static DMA_HandleTypeDef dma_handle;
+#if !GFX_USE_OS_CHIBIOS
   GPIO_InitTypeDef gpio_init_structure;
+#endif
   
   /* Enable FMC clock */
   __HAL_RCC_FMC_CLK_ENABLE();
@@ -529,6 +529,7 @@ static void BSP_SDRAM_MspInit(SDRAM_HandleTypeDef  *hsdram)
   __HAL_RCC_GPIOH_CLK_ENABLE();
   
   /* Common GPIO configuration - some are already setup by ChibiOS Init */
+#if !GFX_USE_OS_CHIBIOS
   gpio_init_structure.Mode      = GPIO_MODE_AF_PP;
   gpio_init_structure.Pull      = GPIO_PULLUP;
   gpio_init_structure.Speed     = GPIO_SPEED_FAST;
@@ -563,6 +564,7 @@ static void BSP_SDRAM_MspInit(SDRAM_HandleTypeDef  *hsdram)
   /* GPIOH configuration */  
   gpio_init_structure.Pin   = GPIO_PIN_3 | GPIO_PIN_5;
   HAL_GPIO_Init(GPIOH, &gpio_init_structure); 
+#endif
   
   /* Configure common DMA parameters */
   dma_handle.Init.Channel             = SDRAM_DMAx_CHANNEL;

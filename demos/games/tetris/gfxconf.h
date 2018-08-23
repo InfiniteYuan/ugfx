@@ -31,38 +31,38 @@
 #define _GFXCONF_H
 
 /* The operating system to use. One of these must be defined - preferably in your Makefile */
-//#define GFX_USE_OS_CHIBIOS		GFXOFF
-//#define GFX_USE_OS_WIN32		GFXOFF
-//#define GFX_USE_OS_LINUX		GFXOFF
-//#define GFX_USE_OS_OSX		GFXOFF
+//#define GFX_USE_OS_CHIBIOS		FALSE
+//#define GFX_USE_OS_WIN32		FALSE
+//#define GFX_USE_OS_LINUX		FALSE
+//#define GFX_USE_OS_OSX		FALSE
 
 /* GFX sub-systems to turn on */
-#define GFX_USE_GDISP			GFXON
-#define GFX_USE_GEVENT			GFXON
-#define GFX_USE_GTIMER			GFXON
-#define GFX_USE_GINPUT			GFXON
+#define GFX_USE_GDISP			TRUE
+#define GFX_USE_GEVENT			TRUE
+#define GFX_USE_GTIMER			TRUE
+#define GFX_USE_GINPUT			TRUE
 
 /* Features for the GDISP sub-system. */
-#define GDISP_USE_DMA			GFXON
-#define GDISP_NEED_CONTROL		GFXON
-#define GDISP_NEED_VALIDATION	GFXON
-#define GDISP_NEED_CLIP			GFXON
-#define GDISP_NEED_TEXT			GFXON
-#define GDISP_NEED_CIRCLE		GFXON
-#define GDISP_NEED_MULTITHREAD	GFXON
+#define GDISP_USE_DMA			TRUE
+#define GDISP_NEED_CONTROL		TRUE
+#define GDISP_NEED_VALIDATION	TRUE
+#define GDISP_NEED_CLIP			TRUE
+#define GDISP_NEED_TEXT			TRUE
+#define GDISP_NEED_CIRCLE		TRUE
+#define GDISP_NEED_MULTITHREAD	TRUE
 
 /* Comment these out if it conflicts with your hardware */
-#define GDISP_NEED_CONTROL		GFXON
-#define GDISP_DEFAULT_ORIENTATION    gOrientationPortrait
+#define GDISP_NEED_CONTROL		TRUE
+#define GDISP_DEFAULT_ORIENTATION    GDISP_ROTATE_PORTRAIT
 #define GDISP_SCREEN_WIDTH      240
 #define GDISP_SCREEN_HEIGHT     320
 
 /* Builtin Fonts */
-#define GDISP_INCLUDE_FONT_DEJAVUSANS12		GFXON
-#define GDISP_INCLUDE_FONT_DEJAVUSANS16		GFXON
-#define GDISP_NEED_ANTIALIAS				GFXOFF
+#define GDISP_INCLUDE_FONT_DEJAVUSANS12		TRUE
+#define GDISP_INCLUDE_FONT_DEJAVUSANS16		TRUE
+#define GDISP_NEED_ANTIALIAS				FALSE
 
 /* Features for the GINPUT sub-system. */
-#define GINPUT_NEED_MOUSE		GFXON
+#define GINPUT_NEED_MOUSE		TRUE
 
 #endif /* _GFXCONF_H */
