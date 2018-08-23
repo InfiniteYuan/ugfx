@@ -26,11 +26,7 @@ void _gosInit(void)
 	 * getting here!
 	 */
 	#if !GFX_OS_INIT_NO_WARNING
-		#if GFX_COMPILER_WARNING_TYPE == GFX_COMPILER_WARNING_DIRECT
-			#warning "GOS: Raw32 - Make sure you initialize your hardware and the C runtime before calling gfxInit() in your application!"
-		#elif GFX_COMPILER_WARNING_TYPE == GFX_COMPILER_WARNING_MACRO
-			COMPILER_WARNING("GOS: Raw32 - Make sure you initialize your hardware and the C runtime before calling gfxInit() in your application!")
-		#endif
+		#warning "GOS: Raw32 - Make sure you initialize your hardware and the C runtime before calling gfxInit() in your application!"
 	#endif
 
 	// Set up the heap allocator
@@ -38,10 +34,6 @@ void _gosInit(void)
 
 	// Start the scheduler
 	_gosThreadsInit();
-}
-
-void _gosPostInit(void)
-{
 }
 
 void _gosDeinit(void)
@@ -59,23 +51,19 @@ void _gosDeinit(void)
 	#ifndef _WIN32_WINNT
 		#define _WIN32_WINNT 0x0501			// Windows XP and up
 	#endif
-	#if GFX_COMPAT_V2 && GFX_COMPAT_OLDCOLORS
-		#undef Red
-		#undef Green
-		#undef Blue
-	#endif
+	#undef Red
+	#undef Green
+	#undef Blue
 	#define WIN32_LEAN_AND_MEAN
 	#include <windows.h>
 	#undef WIN32_LEAN_AND_MEAN
-	#if GFX_COMPAT_V2 && GFX_COMPAT_OLDCOLORS
-		#define Red			GFX_RED
-		#define Green		GFX_GREEN
-		#define Blue		GFX_BLUE
-	#endif
+	#define Blue			HTML2COLOR(0x0000FF)
+	#define Red				HTML2COLOR(0xFF0000)
+	#define Green			HTML2COLOR(0x008000)
 
 	#include <stdio.h>
-	gTicks gfxSystemTicks(void)						{ return GetTickCount(); }
-	gTicks gfxMillisecondsToTicks(gDelay ms)	{ return ms; }
+	systemticks_t gfxSystemTicks(void)						{ return GetTickCount(); }
+	systemticks_t gfxMillisecondsToTicks(delaytime_t ms)	{ return ms; }
 #endif
 
 /*********************************************************

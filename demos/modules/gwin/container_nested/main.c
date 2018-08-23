@@ -10,7 +10,7 @@ static void createWidgets(void) {
 
     // Apply some default values for GWIN
     gwinWidgetClearInit(&wi);
-    wi.g.show = gFalse;
+    wi.g.show = FALSE;
 
     // Container 1
     wi.g.width = 300;
@@ -20,7 +20,7 @@ static void createWidgets(void) {
     wi.text = "Container 1";
     ghContainer1 = gwinContainerCreate(0, &wi, GWIN_CONTAINER_BORDER);
 
-    wi.g.show = gTrue;
+    wi.g.show = TRUE;
 
     // Container 2
     wi.g.width = 100;
@@ -117,8 +117,8 @@ int main(void) {
 
     // Set the widget defaults
     gwinSetDefaultFont(gdispOpenFont("*"));
-    gwinSetDefaultStyle(&WhiteWidgetStyle, gFalse);
-    gdispClear(GFX_WHITE);
+    gwinSetDefaultStyle(&WhiteWidgetStyle, FALSE);
+    gdispClear(White);
 
     // Create the widget
     createWidgets();
@@ -128,13 +128,13 @@ int main(void) {
     gwinAttachListener(&gl);
 
     // Set the initial state of the checkboxes
-    gwinCheckboxCheck(ghCheckbox1, gTrue);
-    gwinCheckboxCheck(ghCheckbox2, gTrue);
-    gwinCheckboxCheck(ghCheckbox3, gTrue);
+    gwinCheckboxCheck(ghCheckbox1, TRUE);
+    gwinCheckboxCheck(ghCheckbox2, TRUE);
+    gwinCheckboxCheck(ghCheckbox3, TRUE);
 
     while(1) {
         // Get an Event
-        pe = geventEventWait(&gl, gDelayForever);
+        pe = geventEventWait(&gl, TIME_INFINITE);
 
         switch(pe->type) {
             case GEVENT_GWIN_CHECKBOX:

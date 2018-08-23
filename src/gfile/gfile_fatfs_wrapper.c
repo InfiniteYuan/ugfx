@@ -12,8 +12,8 @@
 #include "gfile_fatfs_wrapper.h"
 
 // Include the source we want
-#include "../../3rdparty/fatfs-0.13/source/ff.c"
-#include "../../3rdparty/fatfs-0.13/source/ffunicode.c"
+#include "../../3rdparty/fatfs-0.10b/src/ff.c"
+#include "../../3rdparty/fatfs-0.10b/src/option/unicode.c"
 
 // Extra operating system support
 #if _FS_REENTRANT
@@ -48,9 +48,9 @@
 	/*------------------------------------------------------------------------*/
 	int ff_req_grant(_SYNC_t sobj)
 	{
-		if (gfxSemWait( (gfxSem*)&sobj, (gDelay)_FS_TIMEOUT) )
-			return gTrue;
-		return gFalse;
+		if (gfxSemWait( (gfxSem*)&sobj, (delaytime_t)_FS_TIMEOUT) )
+			return TRUE;
+		return FALSE;
 	}
 
 	/*------------------------------------------------------------------------*/

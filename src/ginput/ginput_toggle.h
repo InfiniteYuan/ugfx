@@ -16,8 +16,8 @@
  * @details	GINPUT allows it to interface toggle buttons easily to your
  *			application.
  *
- * @pre		GFX_USE_GINPUT must be set to GFXON in your gfxconf.h
- * @pre		GINPUT_NEED_TOGGLE must be set to GFXON in your gfxconf.h
+ * @pre		GFX_USE_GINPUT must be set to TRUE in your gfxconf.h
+ * @pre		GINPUT_NEED_TOGGLE must be set to TRUE in your gfxconf.h
  *
  * @{
  */
@@ -48,7 +48,7 @@
 typedef struct GEventToggle_t {
 	GEventType		type;				// The type of this event (GEVENT_TOGGLE)
 	uint16_t		instance;			// The toggle instance
-	gBool			on;					// True if the toggle/button is on
+	bool_t			on;					// True if the toggle/button is on
 	} GEventToggle;
 
 // Toggle Listen Flags - passed to geventAddSourceToListener()
@@ -59,32 +59,40 @@ typedef struct GEventToggle_t {
 /* External declarations.                                                    */
 /*===========================================================================*/
 
-/**
- * @brief	Create a toggle input instance
- *
- * @param[in] instance	The ID of the toggle input instance (from 0 to 9999)
- *
- * @return	The source handle of the created instance
- */
-GSourceHandle ginputGetToggle(uint16_t instance);	
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-/** 
- * @brief	Can be used to invert the sense of a toggle
- *
- * @param[in] instance	The ID of the toggle input instance
- * @param[in] invert	If gTrue, will be inverted
- */
-void ginputInvertToggle(uint16_t instance, gBool invert);
+	/**
+	 * @brief	Create a toggle input instance
+	 *
+	 * @param[in] instance	The ID of the toggle input instance (from 0 to 9999)
+	 *
+	 * @return	The source handle of the created instance
+	 */
+	GSourceHandle ginputGetToggle(uint16_t instance);	
 
-/**
- * @brief	Get the current toggle status
- *
- * @param[in] instance	The ID of the toggle input instance
- * @param[in] ptoggle	The toggle event struct
- *
- * @return Returns gFalse on an error (eg invalid instance)
- */
-gBool ginputGetToggleStatus(uint16_t instance, GEventToggle *ptoggle);
+	/** 
+	 * @brief	Can be used to invert the sense of a toggle
+	 *
+	 * @param[in] instance	The ID of the toggle input instance
+	 * @param[in] invert	If TRUE, will be inverted
+	 */
+	void ginputInvertToggle(uint16_t instance, bool_t invert);
+
+	/**
+	 * @brief	Get the current toggle status
+	 *
+	 * @param[in] instance	The ID of the toggle input instance
+	 * @param[in] ptoggle	The toggle event struct
+	 *
+	 * @return Returns FALSE on an error (eg invalid instance)
+	 */
+	bool_t ginputGetToggleStatus(uint16_t instance, GEventToggle *ptoggle);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* GINPUT_NEED_TOGGLE */
 

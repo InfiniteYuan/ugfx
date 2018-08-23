@@ -13,11 +13,7 @@
  */
 
 #if CORTEX_USE_FPU
-	#if GFX_COMPILER_WARNING_TYPE == GFX_COMPILER_WARNING_DIRECT
-		#warning "GOS Threads: You have specified GFX_CPU=GFX_CPU_CORTX_M? with no hardware floating point support but CORTEX_USE_FPU is GFXON. Try using GFX_CPU_GFX_CPU_CORTEX_M?_FP instead"
-	#elif GFX_COMPILER_WARNING_TYPE == GFX_COMPILER_WARNING_MACRO
-		COMPILER_WARNING("GOS Threads: You have specified GFX_CPU=GFX_CPU_CORTX_M? with no hardware floating point support but CORTEX_USE_FPU is GFXON. Try using GFX_CPU_GFX_CPU_CORTEX_M?_FP instead")
-	#endif
+	#warning "GOS Threads: You have specified GFX_CPU=GFX_CPU_CORTX_M? with no hardware floating point support but CORTEX_USE_FPU is TRUE. Try using GFX_CPU_GFX_CPU_CORTEX_M?_FP instead"
 #endif
 
 #if GFX_COMPILER == GFX_COMPILER_GCC || GFX_COMPILER == GFX_COMPILER_CYGWIN || GFX_COMPILER == GFX_COMPILER_MINGW32 || GFX_COMPILER == GFX_COMPILER_MINGW64
@@ -132,9 +128,5 @@
 	}
 
 #else
-	#if GFX_COMPILER_WARNING_TYPE == GFX_COMPILER_WARNING_DIRECT
-		#warning "GOS Threads: You have specified a specific CPU but your compiler is not supported. Defaulting to CLIB switching"
-	#elif GFX_COMPILER_WARNING_TYPE == GFX_COMPILER_WARNING_MACRO
-		COMPILER_WARNING("GOS Threads: You have specified a specific CPU but your compiler is not supported. Defaulting to CLIB switching")
-	#endif
+	#warning "GOS: Threads: You have specified a specific CPU but your compiler is not supported. Defaulting to CLIB switching"
 #endif

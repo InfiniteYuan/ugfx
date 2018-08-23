@@ -10,19 +10,32 @@
 
 #if GFX_USE_OS_NIOS
 
+#include <stdint.h>
+#include <stddef.h>
+#include <stdbool.h>
 #include <sys/alt_alarm.h>
 
-typedef alt_u32 gTicks;
-typedef alt_u32 gDelay;
+typedef alt_u32 systemticks_t;
+typedef alt_u32 delaytime_t;
+typedef unsigned char bool_t;
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 void gfxHalt(const char* msg);
 void gfxExit(void);
-gTicks gfxSystemTicks(void);
-gTicks gfxMillisecondsToTicks(gDelay ms);
+systemticks_t gfxSystemTicks(void);
+systemticks_t gfxMillisecondsToTicks(delaytime_t ms);
+
+#ifdef __cplusplus
+}
+#endif
+
 
 // Use the generic thread handling and heap handling
-#define GOS_NEED_X_THREADS	GFXON
-#define GOS_NEED_X_HEAP		GFXON
+#define GOS_NEED_X_THREADS	TRUE
+#define GOS_NEED_X_HEAP		TRUE
 
 #include "gos_x_threads.h"
 #include "gos_x_heap.h"

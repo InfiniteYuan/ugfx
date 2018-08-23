@@ -17,77 +17,77 @@
 #define _GFXCONF_H
 
 /* The operating system to use. One of these must be defined - preferably in your Makefile */
-//#define GFX_USE_OS_CHIBIOS                         GFXON
-//#define GFX_USE_OS_WIN32                           GFXON
-//#define GFX_USE_OS_LINUX                           GFXON
-//#define GFX_USE_OS_OSX                             GFXON
+//#define GFX_USE_OS_CHIBIOS                         TRUE
+//#define GFX_USE_OS_WIN32                           TRUE
+//#define GFX_USE_OS_LINUX                           TRUE
+//#define GFX_USE_OS_OSX                             TRUE
 
 
 ///////////////////////////////////////////////////////////////////////////
 // GDISP                                                                 //
 ///////////////////////////////////////////////////////////////////////////
-#define GFX_USE_GDISP                                GFXON
+#define GFX_USE_GDISP                                TRUE
 
-#define GDISP_NEED_VALIDATION                        GFXON
-#define GDISP_NEED_CLIP                              GFXON
-#define GDISP_NEED_CONVEX_POLYGON                    GFXON
-#define GDISP_NEED_TEXT                              GFXON
-    #define GDISP_INCLUDE_FONT_UI2                   GFXON
-#define GDISP_NEED_IMAGE                             GFXON
-    #define GDISP_NEED_IMAGE_GIF                     GFXON
+#define GDISP_NEED_VALIDATION                        TRUE
+#define GDISP_NEED_CLIP                              TRUE
+#define GDISP_NEED_CONVEX_POLYGON                    TRUE
+#define GDISP_NEED_TEXT                              TRUE
+    #define GDISP_INCLUDE_FONT_UI2                   TRUE
+#define GDISP_NEED_IMAGE                             TRUE
+    #define GDISP_NEED_IMAGE_GIF                     TRUE
 
 ///////////////////////////////////////////////////////////////////////////
 // GWIN                                                                  //
 ///////////////////////////////////////////////////////////////////////////
-#define GFX_USE_GWIN                                 GFXON
+#define GFX_USE_GWIN                                 TRUE
 
-#define GWIN_NEED_WINDOWMANAGER                      GFXON
-#define GWIN_NEED_WIDGET                             GFXON
-    #define GWIN_NEED_LABEL                          GFXON
-    #define GWIN_NEED_LIST                           GFXON
-        #define GWIN_NEED_LIST_IMAGES                GFXOFF
+#define GWIN_NEED_WINDOWMANAGER                      TRUE
+#define GWIN_NEED_WIDGET                             TRUE
+    #define GWIN_NEED_LABEL                          TRUE
+    #define GWIN_NEED_LIST                           TRUE
+        #define GWIN_NEED_LIST_IMAGES                FALSE
 
 
 ///////////////////////////////////////////////////////////////////////////
 // GEVENT                                                                //
 ///////////////////////////////////////////////////////////////////////////
-#define GFX_USE_GEVENT                               GFXON
+#define GFX_USE_GEVENT                               TRUE
 
 ///////////////////////////////////////////////////////////////////////////
 // GTIMER                                                                //
 ///////////////////////////////////////////////////////////////////////////
-#define GFX_USE_GTIMER                               GFXON
+#define GFX_USE_GTIMER                               TRUE
 
 ///////////////////////////////////////////////////////////////////////////
 // GQUEUE                                                                //
 ///////////////////////////////////////////////////////////////////////////
-#define GFX_USE_GQUEUE                               GFXOFF
+#define GFX_USE_GQUEUE                               FALSE
 
 ///////////////////////////////////////////////////////////////////////////
 // GINPUT                                                                //
 ///////////////////////////////////////////////////////////////////////////
-#define GFX_USE_GINPUT                               GFXON
-#define GINPUT_NEED_MOUSE                            GFXON
+#define GFX_USE_GINPUT                               TRUE
+#define GINPUT_NEED_MOUSE                            TRUE
 
 
 ///////////////////////////////////////////////////////////////////////////
 // GADC                                                                  //
 ///////////////////////////////////////////////////////////////////////////
-#define GFX_USE_GADC                                 GFXOFF
+#define GFX_USE_GADC                                 FALSE
 
 ///////////////////////////////////////////////////////////////////////////
 // GAUDIN                                                                //
 ///////////////////////////////////////////////////////////////////////////
-#define GFX_USE_GAUDIN                               GFXOFF
+#define GFX_USE_GAUDIN                               FALSE
 
 ///////////////////////////////////////////////////////////////////////////
 // GAUDOUT                                                               //
 ///////////////////////////////////////////////////////////////////////////
-#define GFX_USE_GAUDOUT                              GFXOFF
+#define GFX_USE_GAUDOUT                              FALSE
 
 ///////////////////////////////////////////////////////////////////////////
 // GMISC                                                                 //
 ///////////////////////////////////////////////////////////////////////////
-#define GFX_USE_GMISC                                GFXOFF
+#define GFX_USE_GMISC                                FALSE
 
 #endif /* _GFXCONF_H */

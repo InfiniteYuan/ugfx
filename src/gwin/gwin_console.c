@@ -18,9 +18,9 @@
 
 #include "gwin_class.h"
 
-#define GWIN_CONSOLE_USE_CLEAR_LINES			GFXON			// Clear each line before using it
-#define GWIN_CONSOLE_USE_FILLED_CHARS			GFXOFF			// Use filled characters instead of drawn characters
-#define GWIN_CONSOLE_BUFFER_SCROLLING			GFXON			// Use the history buffer to scroll when it is available
+#define GWIN_CONSOLE_USE_CLEAR_LINES			TRUE			// Clear each line before using it
+#define GWIN_CONSOLE_USE_FILLED_CHARS			FALSE			// Use filled characters instead of drawn characters
+#define GWIN_CONSOLE_BUFFER_SCROLLING			TRUE			// Use the history buffer to scroll when it is available
 
 // Our control flags
 #define GCONSOLE_FLG_NOSTORE					(GWIN_FIRST_CONTROL_FLAG<<0)
@@ -79,7 +79,7 @@
 
 #if GWIN_CONSOLE_ESCSEQ
 	// Convert escape sequences to attributes
-	static gBool ESCtoAttr(char c, uint8_t *pattr) {
+	static bool_t ESCtoAttr(char c, uint8_t *pattr) {
 		uint8_t		attr;
 
 		attr = pattr[0];
@@ -105,32 +105,32 @@
 			attr &= ~ESC_BOLD;
 			break;
 		default:
-			return gFalse;
+			return FALSE;
 		}
 		if (attr == pattr[0])
-			return gFalse;
+			return FALSE;
 		pattr[0] = attr;
-		return gTrue;
+		return TRUE;
 	}
 
-	static gColor ESCPrintColor(GConsoleObject *gcw) {
+	static color_t ESCPrintColor(GConsoleObject *gcw) {
 		switch(gcw->currattr & (ESC_REDBIT|ESC_GREENBIT|ESC_BLUEBIT|ESC_USECOLOR)) {
 		case (ESC_USECOLOR):
-			return GFX_BLACK;
+			return Black;
 		case (ESC_USECOLOR|ESC_REDBIT):
-			return GFX_RED;
+			return Red;
 		case (ESC_USECOLOR|ESC_GREENBIT):
-			return GFX_GREEN;
+			return Green;
 		case (ESC_USECOLOR|ESC_REDBIT|ESC_GREENBIT):
-			return GFX_YELLOW;
+			return Yellow;
 		case (ESC_USECOLOR|ESC_BLUEBIT):
-			return GFX_BLUE;
+			return Blue;
 		case (ESC_USECOLOR|ESC_REDBIT|ESC_BLUEBIT):
-			return GFX_MAGENTA;
+			return Magenta;
 		case (ESC_USECOLOR|ESC_GREENBIT|ESC_BLUEBIT):
-			return GFX_CYAN;
+			return Cyan;
 		case (ESC_USECOLOR|ESC_REDBIT|ESC_GREENBIT|ESC_BLUEBIT):
-			return GFX_WHITE;
+			return White;
 		default:
 			return gcw->g.color;
 		}
@@ -152,59 +152,12 @@
 		#undef gcw
 	}
 
-	/**
-	 * Scroll the history buffer by one line
-	 */
-	static void scrollBuffer(GConsoleObject *gcw) {
-		char	*p, *ep;
-		size_t	dp;
-
-		// Only scroll if we need to
-		if (!gcw->buffer || (gcw->g.flags & GCONSOLE_FLG_NOSTORE))
-			return;
-
-		// If a buffer overrun has been marked don't scroll as we have already
-		if ((gcw->g.flags & GCONSOLE_FLG_OVERRUN)) {
-			gcw->g.flags &= ~GCONSOLE_FLG_OVERRUN;
-			return;
-		}
-
-		// Remove one line from the start
-		ep = gcw->buffer+gcw->bufpos;
-		for(p = gcw->buffer; p < ep && *p != '\n'; p++) {
-			#if GWIN_CONSOLE_ESCSEQ
-				if (*p == 27)
-					ESCtoAttr(p[1], &gcw->startattr);
-			#endif
-		}
-
-		// Was there a newline, if not delete everything.
-		if (*p != '\n') {
-			gcw->bufpos = 0;
-			return;
-		}
-
-		// Delete the data
-		dp = ++p - gcw->buffer;						// Calculate the amount to to be removed
-		gcw->bufpos -= dp;							// Calculate the new size
-		if (gcw->bufpos)
-			memcpy(gcw->buffer, p, gcw->bufpos);	// Move the rest of the data
-	}
-
 	static void HistoryRedraw(GWindowObject *gh) {
 		#define gcw		((GConsoleObject *)gh)
-		gCoord fy;
 
 		// No redrawing if there is no history
 		if (!gcw->buffer)
 			return;
-
-		// Handle vertical size decrease - We have to scroll out first lines of the log 
-		fy = gdispGetFontMetric(gh->font, gFontHeight);
-		while (gcw->cy > gh->height) {
-			scrollBuffer(gcw);
-			gcw->cy -= fy;
-		}
 
 		// We are printing the buffer - don't store it again
 		gh->flags |= GCONSOLE_FLG_NOSTORE;
@@ -229,11 +182,11 @@
 		#if GWIN_CONSOLE_USE_CLEAR_LINES
 			// Clear the remaining space
 			{
-				gCoord		y;
+				coord_t		y;
 
 				y = gcw->cy;
 				if (gcw->cx)
-					y += gdispGetFontMetric(gh->font, gFontHeight);
+					y += gdispGetFontMetric(gh->font, fontHeight);
 				if (y < gh->height)
 					gdispGFillArea(gh->display, gh->x, gh->y+y, gh->width, gh->height-y, gh->bgcolor);
 			}
@@ -296,6 +249,45 @@
 	}
 
 	/**
+	 * Scroll the history buffer by one line
+	 */
+	static void scrollBuffer(GConsoleObject *gcw) {
+		char	*p, *ep;
+		size_t	dp;
+
+		// Only scroll if we need to
+		if (!gcw->buffer || (gcw->g.flags & GCONSOLE_FLG_NOSTORE))
+			return;
+
+		// If a buffer overrun has been marked don't scroll as we have already
+		if ((gcw->g.flags & GCONSOLE_FLG_OVERRUN)) {
+			gcw->g.flags &= ~GCONSOLE_FLG_OVERRUN;
+			return;
+		}
+
+		// Remove one line from the start
+		ep = gcw->buffer+gcw->bufpos;
+		for(p = gcw->buffer; p < ep && *p != '\n'; p++) {
+			#if GWIN_CONSOLE_ESCSEQ
+				if (*p == 27)
+					ESCtoAttr(p[1], &gcw->startattr);
+			#endif
+		}
+
+		// Was there a newline, if not delete everything.
+		if (*p != '\n') {
+			gcw->bufpos = 0;
+			return;
+		}
+
+		// Delete the data
+		dp = ++p - gcw->buffer;						// Calculate the amount to to be removed
+		gcw->bufpos -= dp;							// Calculate the new size
+		if (gcw->bufpos)
+			memcpy(gcw->buffer, p, gcw->bufpos);	// Move the rest of the data
+	}
+
+	/**
 	 * Clear the history buffer
 	 */
 	static void clearBuffer(GConsoleObject *gcw) {
@@ -348,7 +340,7 @@ GHandle gwinGConsoleCreate(GDisplay *g, GConsoleObject *gc, const GWindowInit *p
 	#if GWIN_CONSOLE_USE_HISTORY
 		gc->buffer = 0;
 		#if GWIN_CONSOLE_HISTORY_ATCREATE
-			gwinConsoleSetBuffer(&gc->g, gTrue);
+			gwinConsoleSetBuffer(&gc->g, TRUE);
 		#endif
 	#endif
 
@@ -376,11 +368,11 @@ GHandle gwinGConsoleCreate(GDisplay *g, GConsoleObject *gc, const GWindowInit *p
 #endif
 
 #if GWIN_CONSOLE_USE_HISTORY
-	gBool gwinConsoleSetBuffer(GHandle gh, gBool onoff) {
+	bool_t gwinConsoleSetBuffer(GHandle gh, bool_t onoff) {
 		#define gcw		((GConsoleObject *)gh)
 
 		if (gh->vmt != &consoleVMT)
-			return gFalse;
+			return FALSE;
 
 		// Do we want the buffer turned off?
 		if (!onoff) {
@@ -388,32 +380,32 @@ GHandle gwinGConsoleCreate(GDisplay *g, GConsoleObject *gc, const GWindowInit *p
 				gfxFree(gcw->buffer);
 				gcw->buffer = 0;
 			}
-			return gFalse;
+			return FALSE;
 		}
 
 		// Is the buffer already on?
 		if (gcw->buffer)
-			return gTrue;
+			return TRUE;
 
 		// Get the number of characters that fit in the x direction
 		#if GWIN_CONSOLE_HISTORY_AVERAGING
-			gcw->bufsize = gh->width / ((2*gdispGetFontMetric(gh->font, gFontMinWidth)+gdispGetFontMetric(gh->font, gFontMaxWidth))/3);
+			gcw->bufsize = gh->width / ((2*gdispGetFontMetric(gh->font, fontMinWidth)+gdispGetFontMetric(gh->font, fontMaxWidth))/3);
 		#else
-			gcw->bufsize = gh->width / gdispGetFontMetric(gh->font, gFontMinWidth);
+			gcw->bufsize = gh->width / gdispGetFontMetric(gh->font, fontMinWidth);
 		#endif
 		gcw->bufsize++;				// Allow space for a newline on each line.
 
 		// Multiply by the number of lines
-		gcw->bufsize *= gh->height / gdispGetFontMetric(gh->font, gFontHeight);
+		gcw->bufsize *= gh->height / gdispGetFontMetric(gh->font, fontHeight);
 
 		// Allocate the buffer
 		if (!(gcw->buffer = gfxAlloc(gcw->bufsize)))
-			return gFalse;
+			return FALSE;
 
 		// All good!
 		gh->flags &= ~GCONSOLE_FLG_OVERRUN;
 		gcw->bufpos = 0;
-		return gTrue;
+		return TRUE;
 		
 		#undef gcw
 	}
@@ -438,7 +430,7 @@ void gwinPutChar(GHandle gh, char c) {
 	if (gh->vmt != &consoleVMT || !gh->font)
 		return;
 
-	fy = gdispGetFontMetric(gh->font, gFontHeight);
+	fy = gdispGetFontMetric(gh->font, fontHeight);
 
 	#if GWIN_CONSOLE_ESCSEQ
 		/**
@@ -540,10 +532,6 @@ void gwinPutChar(GHandle gh, char c) {
 	if (gcw->cy + fy > gh->height) {
 		#if GWIN_CONSOLE_USE_HISTORY && GWIN_CONSOLE_BUFFER_SCROLLING
 			if (gcw->buffer) {
-				// If flag GCONSOLE_FLG_NOSTORE is set, then do not recursivly call HistoryRedraw - just drop the buffer
-				if (gh->flags & GCONSOLE_FLG_NOSTORE)
-					gcw->bufpos = 0;
-					
 				// Scroll the buffer and then redraw using the buffer
 				scrollBuffer(gcw);
 				if (DrawStart(gh)) {
@@ -563,7 +551,7 @@ void gwinPutChar(GHandle gh, char c) {
 
 				// Set the cursor to the start of the last line
 				gcw->cx = 0;
-				gcw->cy = (((gCoord)(gh->height/fy))-1)*fy;
+				gcw->cy = (((coord_t)(gh->height/fy))-1)*fy;
 			}
 		#else
 			{
@@ -603,8 +591,8 @@ void gwinPutChar(GHandle gh, char c) {
 		#if GWIN_CONSOLE_ESCSEQ
 			// Draw the underline
 			if ((gcw->currattr & ESC_UNDERLINE))
-				gdispGDrawLine(gh->display, gh->x + gcw->cx, gh->y + gcw->cy + fy - gdispGetFontMetric(gh->font, gFontDescendersHeight),
-											gh->x + gcw->cx + width + gdispGetFontMetric(gh->font, gFontCharPadding), gh->y + gcw->cy + fy - gdispGetFontMetric(gh->font, gFontDescendersHeight),
+				gdispGDrawLine(gh->display, gh->x + gcw->cx, gh->y + gcw->cy + fy - gdispGetFontMetric(gh->font, fontDescendersHeight),
+											gh->x + gcw->cx + width + gdispGetFontMetric(gh->font, fontCharPadding), gh->y + gcw->cy + fy - gdispGetFontMetric(gh->font, fontDescendersHeight),
 											ESCPrintColor(gcw));
 			// Bold (very crude)
 			if ((gcw->currattr & ESC_BOLD))
@@ -615,7 +603,7 @@ void gwinPutChar(GHandle gh, char c) {
 	}
 
 	// Update the cursor
-	gcw->cx += width + gdispGetFontMetric(gh->font, gFontCharPadding);
+	gcw->cx += width + gdispGetFontMetric(gh->font, fontCharPadding);
 
 	#undef gcw
 }
@@ -676,7 +664,7 @@ void gwinPrintf(GHandle gh, const char *fmt, ...) {
 	va_list ap;
 	char *p, *s, c, filler;
 	int i, precision, width;
-	gBool is_long, left_align;
+	bool_t is_long, left_align;
 	long l;
 	#if GWIN_CONSOLE_USE_FLOAT
 		float f;
@@ -689,7 +677,7 @@ void gwinPrintf(GHandle gh, const char *fmt, ...) {
 		return;
 
 	va_start(ap, fmt);
-	while (gTrue) {
+	while (TRUE) {
 		c = *fmt++;
 		if (c == 0) {
 			va_end(ap);
@@ -702,10 +690,10 @@ void gwinPrintf(GHandle gh, const char *fmt, ...) {
 
 		p = tmpbuf;
 		s = tmpbuf;
-		left_align = gFalse;
+		left_align = FALSE;
 		if (*fmt == '-') {
 			fmt++;
-			left_align = gTrue;
+			left_align = TRUE;
 		}
 		filler = ' ';
 		if (*fmt == '0') {
@@ -714,7 +702,7 @@ void gwinPrintf(GHandle gh, const char *fmt, ...) {
 		}
 		width = 0;
 
-		while (gTrue) {
+		while (TRUE) {
 			c = *fmt++;
 			if (c >= '0' && c <= '9')
 				c -= '0';
@@ -726,7 +714,7 @@ void gwinPrintf(GHandle gh, const char *fmt, ...) {
 		}
 		precision = 0;
 		if (c == '.') {
-			while (gTrue) {
+			while (TRUE) {
 				c = *fmt++;
 				if (c >= '0' && c <= '9')
 					c -= '0';
@@ -739,7 +727,7 @@ void gwinPrintf(GHandle gh, const char *fmt, ...) {
 		}
 		/* Long modifier.*/
 		if (c == 'l' || c == 'L') {
-			is_long = gTrue;
+			is_long = TRUE;
 			if (*fmt)
 				c = *fmt++;
 		}
@@ -808,7 +796,7 @@ void gwinPrintf(GHandle gh, const char *fmt, ...) {
 		i = (int)(p - s);
 		if ((width -= i) < 0)
 			width = 0;
-		if (!left_align)
+		if (left_align == FALSE)
 			width = -width;
 		if (width < 0) {
 			if (*s == '-' && filler == '0') {

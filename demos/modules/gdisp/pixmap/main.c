@@ -33,11 +33,11 @@
 #define PIXMAP_HEIGHT	10
 
 static GDisplay* pixmap;
-static gPixel* surface;
+static pixel_t* surface;
 
 int main(void) {
-	gCoord		width, height;
-	gCoord		i, j;
+	coord_t		width, height;
+	coord_t		i, j;
 
     // Initialize and clear the display
     gfxInit();
@@ -59,12 +59,12 @@ int main(void) {
     		surface[j*PIXMAP_WIDTH + i] = RGB2COLOR(0, 255-i*(256/PIXMAP_WIDTH), j*(256/PIXMAP_HEIGHT));
 
     // Secondly, show drawing a line on it like a virtual display
-    gdispGDrawLine(pixmap, 0, 0, gdispGGetWidth(pixmap)-1, gdispGGetHeight(pixmap)-1, GFX_WHITE);
+    gdispGDrawLine(pixmap, 0, 0, gdispGGetWidth(pixmap)-1, gdispGGetHeight(pixmap)-1, White);
     
     i = j = 0;
-    while(1) {
+    while(TRUE) {
     	// Clear the old position
-    	gdispFillArea(i, j, PIXMAP_WIDTH, PIXMAP_HEIGHT, GFX_BLACK);
+    	gdispFillArea(i, j, PIXMAP_WIDTH, PIXMAP_HEIGHT, Black);
 
     	// Change the position
     	i += PIXMAP_WIDTH/2;

@@ -19,7 +19,7 @@ static const struct mf_font_list_s *fontList;
 /**
  * Match a pattern against the font name.
  */
-static gBool matchfont(const char *pattern, const char *name) {
+static bool_t matchfont(const char *pattern, const char *name) {
 	while(1) {
 		switch (pattern[0]) {
 		case '*':
@@ -34,7 +34,7 @@ static gBool matchfont(const char *pattern, const char *name) {
 			return name[0] == 0;
 		default:
 			if (name[0] != pattern[0])
-				return gFalse;
+				return FALSE;
 			pattern++;
 			name++;
 			break;
@@ -42,7 +42,7 @@ static gBool matchfont(const char *pattern, const char *name) {
 	}
 }
 
-gFont gdispOpenFont(const char *name) {
+font_t gdispOpenFont(const char *name) {
 	const struct mf_font_list_s *fp;
 	
 	if (!fontList)
@@ -64,7 +64,7 @@ gFont gdispOpenFont(const char *name) {
 	return mf_get_font_list()->font;
 }
 
-void gdispCloseFont(gFont font) {
+void gdispCloseFont(font_t font) {
 	if ((font->flags & (FONT_FLAG_DYNAMIC|FONT_FLAG_UNLISTED)) == (FONT_FLAG_DYNAMIC|FONT_FLAG_UNLISTED)) {
 		/* Make sure that no-one can successfully use font after closing */
 		((struct mf_font_s *)font)->render_character = 0;
@@ -74,7 +74,7 @@ void gdispCloseFont(gFont font) {
 	}
 }
 
-gFont gdispScaleFont(gFont font, uint8_t scale_x, uint8_t scale_y)
+font_t gdispScaleFont(font_t font, uint8_t scale_x, uint8_t scale_y)
 {
 	struct mf_scaledfont_s *newfont;
 	
@@ -83,21 +83,21 @@ gFont gdispScaleFont(gFont font, uint8_t scale_x, uint8_t scale_y)
 	
 	mf_scale_font(newfont, font, scale_x, scale_y);
 	((struct mf_font_s *)newfont)->flags |= FONT_FLAG_DYNAMIC|FONT_FLAG_UNLISTED;
-	return (gFont)newfont;
+	return (font_t)newfont;
 }
 
-const char *gdispGetFontName(gFont font) {
+const char *gdispGetFontName(font_t font) {
 	return font->short_name;
 }
 
-gBool gdispAddFont(gFont font) {
+bool_t gdispAddFont(font_t font) {
 	struct mf_font_list_s *hdr;
 
 	if ((font->flags & (FONT_FLAG_DYNAMIC|FONT_FLAG_UNLISTED)) != (FONT_FLAG_DYNAMIC|FONT_FLAG_UNLISTED))
-		return gFalse;
+		return FALSE;
 		
 	if (!(hdr = gfxAlloc(sizeof(struct mf_font_list_s))))
-		return gFalse;
+		return FALSE;
 
 	if (!fontList)
 		fontList = mf_get_font_list();
@@ -105,7 +105,7 @@ gBool gdispAddFont(gFont font) {
 	hdr->next = fontList;
 	((struct mf_font_s *)font)->flags &= ~FONT_FLAG_UNLISTED;
 	fontList = hdr;
-	return gTrue;
+	return TRUE;
 }
 
 #endif /* GFX_USE_GDISP && GDISP_NEED_TEXT */

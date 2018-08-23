@@ -22,12 +22,12 @@
  */
 	/**
 	 * @brief   Should routines assert() if they run out of resources.
-	 * @details	Defaults to GFXOFF.
-	 * @details	If GFXOFF the application must be prepared to handle these
+	 * @details	Defaults to FALSE.
+	 * @details	If FALSE the application must be prepared to handle these
 	 *			failures.
 	 */
 	#ifndef GEVENT_ASSERT_NO_RESOURCE
-		#define GEVENT_ASSERT_NO_RESOURCE		GFXOFF
+		#define GEVENT_ASSERT_NO_RESOURCE		FALSE
 	#endif
 /**
  * @}

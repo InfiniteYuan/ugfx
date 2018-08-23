@@ -24,7 +24,7 @@ static void board_reset(void) {
 }
 
 // Returns the state of the dreq pin
-static gBool board_dreq(void) {
+static bool board_dreq(void) {
 
 }
 

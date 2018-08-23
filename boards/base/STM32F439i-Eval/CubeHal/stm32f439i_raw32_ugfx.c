@@ -1,10 +1,8 @@
 #include "../../../gfx.h"
 
-#if GFX_COMPAT_V2 && GFX_COMPAT_OLDCOLORS
-	#undef Red
-	#undef Green
-	#undef Blue
-#endif
+#undef Red
+#undef Green
+#undef Blue
 
 #include "stm32f4xx_hal.h"
 
@@ -13,12 +11,12 @@
 	{
 	}
 
-	gTicks gfxSystemTicks(void)
+	systemticks_t gfxSystemTicks(void)
 	{
 		return HAL_GetTick();
 	}
 
-	gTicks gfxMillisecondsToTicks(gDelay ms)
+	systemticks_t gfxMillisecondsToTicks(delaytime_t ms)
 	{
 		return ms;
 	}

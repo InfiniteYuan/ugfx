@@ -21,11 +21,11 @@
 #define gdispImageGetVar(type, p, idx)				(*(type *)(((uint8_t *)(p))+(idx)))
 #define gdispImageGetByte(type, p, idx, shift)		(((type)gdispImageGetVar(uint8_t, p, idx))<<(shift))
 #define gdispImageSwap16(w)							((((uint16_t)(w))>>8)|(((uint16_t)(w))<<8))
-#define gdispImageSwap32(dw)						((((uint32_t)(dw))>>24)|((((uint32_t)(dw))&0x00FF0000)>>8)\
-													 |((((uint32_t)(dw))&0x0000FF00)<<8)|(((uint32_t)(dw))<<24))
-#define gdispImageSwapWords32(dw)					((((uint32_t)(dw))>>16)|(((uint32_t)(dw))<<16))
-#define gdispImageSwapBytes32(dw)					(((((uint32_t)(dw))&0xFF000000)>>8)|((((uint32_t)(dw))&0x00FF0000)<<8)\
-													 |((((uint32_t)(dw))&0x0000FF00)>>8)|(((uint32_t)(dw))<<8))
+#define gdispImageSwap32(dw)						((((uint32_t)(w))>>24)|((((uint32_t)(w))&0x00FF0000)>>8)\
+													 |((((uint32_t)(w))&0x0000FF00)<<8)|(((uint32_t)(w))<<24))
+#define gdispImageSwapWords32(dw)					((((uint32_t)(w))>>16)|(((uint32_t)(w))<<16))
+#define gdispImageSwapBytes32(dw)					(((((uint32_t)(w))&0xFF000000)>>8)|((((uint32_t)(w))&0x00FF0000)<<8)\
+													 |((((uint32_t)(w))&0x0000FF00)>>8)|(((uint32_t)(w))<<8))
 
 /*
  * Get a uint16_t/uint32_t from memory in the required endianness.
@@ -120,11 +120,20 @@
 #endif
 
 
-void *gdispImageAlloc(gdispImage *img, size_t sz);
-void gdispImageFree(gdispImage *img, void *ptr, size_t sz);
+	
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-#if GFX_CPU_ENDIAN == GFX_CPU_ENDIAN_UNKNOWN
-	extern const uint8_t gdispImageEndianArray[4];
+	void *gdispImageAlloc(gdispImage *img, size_t sz);
+	void gdispImageFree(gdispImage *img, void *ptr, size_t sz);
+
+	#if GFX_CPU_ENDIAN == GFX_CPU_ENDIAN_UNKNOWN
+		extern const uint8_t gdispImageEndianArray[4];
+	#endif
+
+#ifdef __cplusplus
+}
 #endif
 
 #endif /* _GDISP_IMAGE_SUPPORT_H */

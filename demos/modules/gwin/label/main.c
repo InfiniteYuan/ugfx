@@ -37,7 +37,7 @@ static void createWidgets(void) {
 
 	// Apply some default values for GWIN
 	gwinWidgetClearInit(&wi);
-	wi.g.show = gTrue;
+	wi.g.show = TRUE;
 
 	// Create the IP label
 	wi.g.width = 200; wi.g.height = 20; wi.g.x = 10, wi.g.y = 80;
@@ -60,8 +60,8 @@ int main(void) {
 
 	// Set the widget defaults
 	gwinSetDefaultFont(gdispOpenFont("*"));
-	gwinSetDefaultStyle(&WhiteWidgetStyle, gFalse);
-	gdispClear(GFX_WHITE);
+	gwinSetDefaultStyle(&WhiteWidgetStyle, FALSE);
+	gdispClear(White);
 
 	// create the widget
 	createWidgets();
@@ -72,7 +72,7 @@ int main(void) {
 
 	while(1) {
 		// Get an Event
-		pe = geventEventWait(&gl, gDelayForever);
+		pe = geventEventWait(&gl, TIME_INFINITE);
 	}
 
 	return 0;

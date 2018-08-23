@@ -17,10 +17,10 @@
  * @note		Due to the modularity of the @p GINPUT module, the text input can either come from a real physical
  *				keyboard or from a vritual on-screen keyboard such as the @p KeyboardWidget.
  *
- * @pre			GFX_USE_GDISP must be set to GFXON in your gfxconf.h
- * @pre			GFX_USE_GWIN must be set to GFXON in your gfxconf.h
- * @pre			GDISP_NEED_TEXT must be set to GFXON in your gfxconf.h
- * @pre			GWIN_NEED_TEXTEDIT must be set to GFXON in your gfxconf.h
+ * @pre			GFX_USE_GDISP must be set to TRUE in your gfxconf.h
+ * @pre			GFX_USE_GWIN must be set to TRUE in your gfxconf.h
+ * @pre			GDISP_NEED_TEXT must be set to TRUE in your gfxconf.h
+ * @pre			GWIN_NEED_TEXTEDIT must be set to TRUE in your gfxconf.h
  * @pre			The fonts you want to use must be enabled in your gfxconf.h
  *
  * @{
@@ -40,6 +40,10 @@ typedef struct GTexteditObject {
 	uint16_t		cursorPos;
 } GTexteditObject;
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
  * @brief				Create a TextEdit widget
  * @details				A TextEdit widget is a rectangular box which allows the user to input data through a keyboard.
@@ -58,32 +62,6 @@ typedef struct GTexteditObject {
  */
 GHandle gwinGTexteditCreate(GDisplay* g, GTexteditObject* wt, GWidgetInit* pInit, size_t maxSize);
 #define gwinTexteditCreate(wt, pInit, maxSize)			gwinGTexteditCreate(GDISP, wt, pInit, maxSize)
-
-/**
- * @brief				Send a special key to the textedit such as GKEY_LEFT, GKEY_RIGHT, GKEY_HOME, GKEY_END
- *
- * @param[in] gh		The window handle (must be a textedit window)
- * @param[in] key		The special key to send.
- * @pre					Requires GINPUT_NEED_KEYBOARD or GWIN_NEED_KEYBOARD to be on
- * @api
- */
-void gwinTextEditSendSpecialKey(GHandle gh, uint8_t key);
-
-/**
- * @brief				Send a normal utf8 character to the textedit
- *
- * @param[in] gh		The window handle (must be a textedit window)
- * @param[in] pkey		The pointer to the utf8 character to send.
- * @param[in] len		The length of the utf8 character in bytes.
- * @note				This must ONLY be called with a single utf8 character at a time. Don't attempt to
- *						send a string of characters in the one call.
- * @note				Characters are interpreted as if they came directly from a keyboard ie a backspace
- *						character will perform the backspace operation, a tab will send the focus to the next
- *						control etc.
- * @pre					Requires GINPUT_NEED_KEYBOARD or GWIN_NEED_KEYBOARD to be on
- * @api
- */
-void gwinTextEditSendKey(GHandle gh, char *pkey, unsigned len);
 
 /**
  * @defgroup Renderings_Textedit Renderings
@@ -111,6 +89,10 @@ void gwinTextEditSendKey(GHandle gh, char *pkey, unsigned len);
 void gwinTexteditDefaultDraw(GWidgetObject* gw, void* param);
 
 /** @} */
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // _GWIN_TEXTEDIT_H
 /** @} */

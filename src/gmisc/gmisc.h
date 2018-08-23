@@ -26,7 +26,7 @@
 /*===========================================================================*/
 
 // Forward definition
-typedef struct gPoint gPoint;
+typedef struct point point;
 
 /**
  * @brief	Sample data formats
@@ -89,6 +89,10 @@ typedef int32_t	fixed;
 /*===========================================================================*/
 
 #if GFX_USE_GMISC || defined(__DOXYGEN__)
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #if GMISC_NEED_ARRAYOPS || defined(__DOXYGEN__)
 	/**
@@ -249,7 +253,7 @@ typedef int32_t	fixed;
 	 *
 	 * @api
 	 */
-	void gmiscMatrixFloat2DApplyToPoints(gPoint *dst, const gPoint *src, const MatrixFloat2D *m, int cnt);
+	void gmiscMatrixFloat2DApplyToPoints(point *dst, const point *src, const MatrixFloat2D *m, int cnt);
 
 	/**
 	 * @brief	Set the 2D matrix to the identity matrix
@@ -367,7 +371,7 @@ typedef int32_t	fixed;
 	 *
 	 * @api
 	 */
-	void gmiscMatrixFixed2DApplyToPoints(gPoint *dst, const gPoint *src, const MatrixFixed2D *m, int cnt);
+	void gmiscMatrixFixed2DApplyToPoints(point *dst, const point *src, const MatrixFixed2D *m, int cnt);
 
 	/**
 	 * @brief	Set the 2D matrix to the identity matrix
@@ -472,12 +476,16 @@ typedef int32_t	fixed;
 	 * @param[in] cnt			The number of points in the point array @p pntarray
 	 * @param[in] p				The point to test
 	 *
-	 * @return	@p gTrue if the point @p p is inside or on the edge of the polygon @p pntarray, @p gFalse otherwise.
+	 * @return	@p TRUE if the point @p p is inside or on the edge of the polygon @p pntarray, @p FALSE otherwise.
 	 *
 	 * @api
 	 */
-	gBool gmiscHittestPoly(const gPoint *pntarray, unsigned cnt, const gPoint *p);
+	bool_t gmiscHittestPoly(const point *pntarray, unsigned cnt, const point *p);
 #endif // GMISC_NEED_HITTEST_POLY
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* GFX_USE_MISC */
 

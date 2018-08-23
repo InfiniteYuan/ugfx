@@ -26,7 +26,7 @@
 
 ARCH     =
 SRCFLAGS = -ggdb -O0
-CFLAGS   = $(sdl2-config --cflags)
+CFLAGS   = `sdl2-config --libs --cflags`
 CXXFLAGS =
 ASFLAGS  =
 LDFLAGS  =
@@ -34,7 +34,7 @@ LDFLAGS  =
 SRC      =
 OBJS     =
 DEFS     =
-LIBS     = $(sdl2-config --libs)
+LIBS     =
 INCPATH  =
 LIBPATH  =
 

@@ -9,14 +9,13 @@
 
 #if GFX_USE_GDISP
 
-#if defined(GDISP_SCREEN_HEIGHT) || defined(GDISP_SCREEN_HEIGHT)
-	#if GFX_COMPILER_WARNING_TYPE == GFX_COMPILER_WARNING_DIRECT
-		#warning "GDISP: This low level driver does not support setting a screen size. It is being ignored."
-	#elif GFX_COMPILER_WARNING_TYPE == GFX_COMPILER_WARNING_MACRO
-		COMPILER_WARNING("GDISP: This low level driver does not support setting a screen size. It is being ignored.")
-	#endif
+#if defined(GDISP_SCREEN_HEIGHT)
+	#warning "GDISP: This low level driver does not support setting a screen size. It is being ignored."
+	#undef GISP_SCREEN_HEIGHT
+#endif
+#if defined(GDISP_SCREEN_WIDTH)
+	#warning "GDISP: This low level driver does not support setting a screen size. It is being ignored."
 	#undef GDISP_SCREEN_WIDTH
-	#undef GDISP_SCREEN_HEIGHT
 #endif
 
 #define GDISP_DRIVER_VMT			GDISPVMT_S6D1121
@@ -58,19 +57,19 @@ static GFXINLINE void set_cursor(GDisplay *g) {
      */
     switch(g->g.Orientation) {
     	default:
-        case gOrientation0:
+        case GDISP_ROTATE_0:
             write_reg(g, 0x20, g->p.x & 0x00FF);
             write_reg(g, 0x21, g->p.y & 0x01FF);
             break;
-        case gOrientation90:
+        case GDISP_ROTATE_90:
             write_reg(g, 0x20, g->p.y & 0x00FF);
             write_reg(g, 0x21, (GDISP_SCREEN_HEIGHT - 1 - g->p.x) & 0x01FF);
             break;
-        case gOrientation180:
+        case GDISP_ROTATE_180:
             write_reg(g, 0x20, (GDISP_SCREEN_WIDTH - 1 - g->p.x) & 0x00FF);
             write_reg(g, 0x21, (GDISP_SCREEN_HEIGHT - 1 - g->p.y) & 0x01FF);
             break;
-        case gOrientation270:
+        case GDISP_ROTATE_270:
             write_reg(g, 0x20, (GDISP_SCREEN_WIDTH - 1 - g->p.y) & 0x00FF);
             write_reg(g, 0x21, g->p.x & 0x01FF);
             break;
@@ -86,23 +85,23 @@ static GFXINLINE void set_viewport(GDisplay *g) {
 
     switch(g->g.Orientation) {
     	default:
-        case gOrientation0:
+        case GDISP_ROTATE_0:
             write_reg(g, 0x46, (((g->p.x + g->p.cx - 1) << 8) & 0xFF00 ) | (g->p.x & 0x00FF));
             write_reg(g, 0x48, g->p.y & 0x01FF);
             write_reg(g, 0x47, (g->p.y + g->p.cy - 1) & 0x01FF);
             break;
-        case gOrientation90:
+        case GDISP_ROTATE_90:
             write_reg(g, 0x46, (((g->p.y + g->p.cy - 1) << 8) & 0xFF00) | (g->p.y & 0x00FF));
             write_reg(g, 0x48, (GDISP_SCREEN_HEIGHT - (g->p.x + g->p.cx)) & 0x01FF);
             write_reg(g, 0x47, (GDISP_SCREEN_HEIGHT-1 - g->p.x) & 0x01FF);
             break;
-        case gOrientation180:
+        case GDISP_ROTATE_180:
             write_reg(g, 0x46, (((GDISP_SCREEN_WIDTH-1 - g->p.x) & 0x00FF) << 8) |
                                       ((GDISP_SCREEN_WIDTH - (g->p.x + g->p.cx)) & 0x00FF));
             write_reg(g, 0x48, (GDISP_SCREEN_HEIGHT - (g->p.y + g->p.cy)) & 0x01FF);
             write_reg(g, 0x47, (GDISP_SCREEN_HEIGHT-1 - g->p.y) & 0x01FF);
             break;
-        case gOrientation270:
+        case GDISP_ROTATE_270:
             write_reg(g, 0x46, (((GDISP_SCREEN_WIDTH-1 - g->p.y) & 0x00FF) << 8) |
                                       ((GDISP_SCREEN_WIDTH - (g->p.y + g->p.cy)) & 0x00FF));
             write_reg(g, 0x48, g->p.x & 0x01FF);
@@ -111,7 +110,7 @@ static GFXINLINE void set_viewport(GDisplay *g) {
     }   
 }
 
-LLDSPEC gBool gdisp_lld_init(GDisplay *g) {
+LLDSPEC bool_t gdisp_lld_init(GDisplay *g) {
 	// No private area for this controller
 	g->priv = 0;
 
@@ -119,9 +118,9 @@ LLDSPEC gBool gdisp_lld_init(GDisplay *g) {
 	init_board(g);
 
 	/* Hardware reset */
-	setpin_reset(g, gTrue);
+	setpin_reset(g, TRUE);
 	delayms(20);
-	setpin_reset(g, gFalse);
+	setpin_reset(g, TRUE);
 	delayms(20);
 
 	/* Get the bus for the following initialisation commands */
@@ -203,11 +202,11 @@ LLDSPEC gBool gdisp_lld_init(GDisplay *g) {
 	/* Initialise the GDISP structure */
 	g->g.Width = GDISP_SCREEN_WIDTH;
 	g->g.Height = GDISP_SCREEN_HEIGHT;
-	g->g.Orientation = gOrientation0;
-	g->g.Powermode = gPowerOn;
+	g->g.Orientation = GDISP_ROTATE_0;
+	g->g.Powermode = powerOn;
 	g->g.Backlight = GDISP_INITIAL_BACKLIGHT;
 	g->g.Contrast = GDISP_INITIAL_CONTRAST;
-	return gTrue;
+	return TRUE;
 }
 
 #if GDISP_HARDWARE_STREAM_WRITE
@@ -234,7 +233,7 @@ LLDSPEC gBool gdisp_lld_init(GDisplay *g) {
 		setreadmode(g);
 		dummy_read(g);
 	}
-	LLDSPEC	gColor gdisp_lld_read_color(GDisplay *g) {
+	LLDSPEC	color_t gdisp_lld_read_color(GDisplay *g) {
 		uint16_t	data;
 
 		data = read_data(g);
@@ -251,20 +250,20 @@ LLDSPEC gBool gdisp_lld_init(GDisplay *g) {
 		switch(g->p.x) {
 		#if 0
 			case GDISP_CONTROL_POWER:
-				if (g->g.Powermode == (gPowermode)g->p.ptr)
+				if (g->g.Powermode == (powermode_t)g->p.ptr)
 					return;
-				switch((gPowermode)g->p.ptr) {
-				case gPowerOff:
+				switch((powermode_t)g->p.ptr) {
+				case powerOff:
 					acquire_bus(g);
 					// TODO
 					release_bus(g);
 					break;
-				case gPowerOn:
+				case powerOn:
 					acquire_bus(g);
 					// TODO
 					release_bus(g);
 					break;
-				case gPowerSleep:
+				case powerSleep:
 					acquire_bus(g);
 					// TODO
 					release_bus(g);
@@ -272,36 +271,36 @@ LLDSPEC gBool gdisp_lld_init(GDisplay *g) {
 				default:
 					return;
 				}
-				g->g.Powermode = (gPowermode)g->p.ptr;
+				g->g.Powermode = (powermode_t)g->p.ptr;
 				return;
 		#endif
 
 		case GDISP_CONTROL_ORIENTATION:
-			if (g->g.Orientation == (gOrientation)g->p.ptr)
+			if (g->g.Orientation == (orientation_t)g->p.ptr)
 				return;
-			switch((gOrientation)g->p.ptr) {
-			case gOrientation0:
+			switch((orientation_t)g->p.ptr) {
+			case GDISP_ROTATE_0:
 				acquire_bus(g);
 				write_reg(g, 0x03, 0b0011);
 				release_bus(g);
 				g->g.Height = GDISP_SCREEN_HEIGHT;
 				g->g.Width = GDISP_SCREEN_WIDTH;
 				break;
-			case gOrientation90:
+			case GDISP_ROTATE_90:
 				acquire_bus(g);
 				write_reg(g, 0x03, 0b1001);
 				release_bus(g);
 				g->g.Height = GDISP_SCREEN_WIDTH;
 				g->g.Width = GDISP_SCREEN_HEIGHT;
 				break;
-			case gOrientation180:
+			case GDISP_ROTATE_180:
 				acquire_bus(g);
 				write_reg(g, 0x03, 0b0000);
 				release_bus(g);
 				g->g.Height = GDISP_SCREEN_HEIGHT;
 				g->g.Width = GDISP_SCREEN_WIDTH;
 				break;
-			case gOrientation270:
+			case GDISP_ROTATE_270:
 				acquire_bus(g);
 				write_reg(g, 0x03, 0b1010);
 				release_bus(g);
@@ -311,7 +310,7 @@ LLDSPEC gBool gdisp_lld_init(GDisplay *g) {
 			default:
 				return;
 			}
-			g->g.Orientation = (gOrientation)g->p.ptr;
+			g->g.Orientation = (orientation_t)g->p.ptr;
 			return;
 
         case GDISP_CONTROL_BACKLIGHT:

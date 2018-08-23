@@ -88,20 +88,20 @@ static int uitoa(unsigned int value, char * buf, int max) {
 void benchmark(void) {
     uint32_t i, pixels, ms, pps;
     char pps_str[25];
-	gCoord height, width, rx, ry, rcx, rcy;
-    gColor random_color;
-	gFont font;
+	coord_t height, width, rx, ry, rcx, rcy;
+    color_t random_color;
+	font_t font;
 
-    gdispSetOrientation(gOrientation90);
+    gdispSetOrientation(GDISP_ROTATE_90);
 
 	width = gdispGetWidth();
 	height = gdispGetHeight();
     font = gdispOpenFont("UI2 Double");
 
-	gdispDrawStringBox(0, 0, width, 30, "ChibiOS/GFX - Benchmark", font, GFX_WHITE, gJustifyCenter);
+	gdispDrawStringBox(0, 0, width, 30, "ChibiOS/GFX - Benchmark", font, White, justifyCenter);
 
 	font = gdispOpenFont("UI2");
-	gdispDrawStringBox(0, height/2, width, 30, "5000 random rectangles", font, GFX_WHITE, gJustifyCenter);
+	gdispDrawStringBox(0, height/2, width, 30, "5000 random rectangles", font, White, justifyCenter);
 	
 	gfxSleepMilliseconds(3000);
 	
@@ -130,10 +130,10 @@ void benchmark(void) {
 	strcat(pps_str, " Pixels/s");
 
 	font = gdispOpenFont("UI2 Double");
-	gdispClear(GFX_BLACK);
-	gdispDrawStringBox(0, 0, width, 30, "ChibiOS/GFX - Benchmark", font, GFX_WHITE, gJustifyCenter);
-	gdispDrawStringBox(0, height/2, width, 30, pps_str, font, GFX_WHITE, gJustifyCenter);
-	//gdispDrawString(20, height/2, pps_str, font, GFX_WHITE);
+	gdispClear(Black);
+	gdispDrawStringBox(0, 0, width, 30, "ChibiOS/GFX - Benchmark", font, White, justifyCenter);
+	gdispDrawStringBox(0, height/2, width, 30, pps_str, font, White, justifyCenter);
+	//gdispDrawString(20, height/2, pps_str, font, White);
 }
 
 int main(void) {
@@ -141,7 +141,7 @@ int main(void) {
 	
 	benchmark();
     
-	while(1) {
+	while(TRUE) {
 		gfxSleepMilliseconds(500);
 	}
 

@@ -30,10 +30,10 @@
 #include <stdio.h>
 #include "gfx.h"
 
-#define COLOR_BACKGROUND    GFX_SILVER
-#define COLOR_TEXT          GFX_BLACK
+#define COLOR_BACKGROUND    Silver
+#define COLOR_TEXT          Black
 
-gFont font;
+font_t font;
 
 // English Translation
 static const char* EnglishStrings[] = {
@@ -64,18 +64,18 @@ static const transTable FrenchTranslation = { sizeof(FrenchStrings)/sizeof(Frenc
 
 void updateText()
 {
-    gCoord width = 400;
-    gCoord height = 30;
+    coord_t width = 400;
+    coord_t height = 30;
 
     // Translate some basic strings
-    gdispFillStringBox(20,  20, width, height, gt("Welcome"), font, COLOR_TEXT, COLOR_BACKGROUND, gJustifyLeft);
-    gdispFillStringBox(20,  60, width, height, gt("This is a translated uGFX application"), font, COLOR_TEXT, COLOR_BACKGROUND, gJustifyLeft);
-    gdispFillStringBox(20, 100, width, height, gt("Goodbye"), font, COLOR_TEXT, COLOR_BACKGROUND, gJustifyLeft);
+    gdispFillStringBox(20,  20, width, height, gt("Welcome"), font, COLOR_TEXT, COLOR_BACKGROUND, justifyLeft);
+    gdispFillStringBox(20,  60, width, height, gt("This is a translated uGFX application"), font, COLOR_TEXT, COLOR_BACKGROUND, justifyLeft);
+    gdispFillStringBox(20, 100, width, height, gt("Goodbye"), font, COLOR_TEXT, COLOR_BACKGROUND, justifyLeft);
 
     // A more complex example using string formatting
     char buffer[128];
     sprintf(buffer, gt("The temperature is %d degrees"), 18);
-    gdispFillStringBox(20, 140, width, height, buffer, font, COLOR_TEXT, COLOR_BACKGROUND, gJustifyLeft);
+    gdispFillStringBox(20, 140, width, height, buffer, font, COLOR_TEXT, COLOR_BACKGROUND, justifyLeft);
 }
 
 int main(void)
@@ -91,7 +91,7 @@ int main(void)
     gtransSetBaseLanguage(&EnglishTranslation);
 
     // Loop through the languages
-    while (1) {
+    while (TRUE) {
         // English
         gtransSetLanguage(&EnglishTranslation);
         updateText();

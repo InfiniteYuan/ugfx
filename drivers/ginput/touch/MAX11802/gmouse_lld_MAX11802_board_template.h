@@ -22,9 +22,9 @@
 /**
  *	Init the board
  *
- *	Returns gTrue on success, gFalse on failure
+ *	Returns TRUE on success, FALSE on failure
  */
-static GFXINLINE gBool init_board(GMouse* m, unsigned driverinstance) {
+static GFXINLINE bool_t init_board(GMouse* m, unsigned driverinstance) {
 
 }
 

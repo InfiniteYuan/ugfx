@@ -50,7 +50,7 @@ static GFXINLINE void init_board(GDisplay *g) {
 	}
 }
 
-static GFXINLINE void setpin_reset(GDisplay *g, gBool state) {
+static GFXINLINE void setpin_reset(GDisplay *g, bool_t state) {
 	(void) g;
 	(void) state;
 }

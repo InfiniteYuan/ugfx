@@ -19,10 +19,10 @@
 
 /* This mutex protects access to our tables */
 static gfxMutex			mutex;
-static gThread	hThread = 0;
+static gfxThreadHandle	hThread = 0;
 static GTimer			*pTimerHead = 0;
 static gfxSem			waitsem;
-static gTicks	ticks2ms;
+static systemticks_t	ticks2ms;
 static DECLARE_THREAD_STACK(waTimerThread, GTIMER_THREAD_WORKAREA_SIZE);
 
 /*===========================================================================*/
@@ -31,14 +31,14 @@ static DECLARE_THREAD_STACK(waTimerThread, GTIMER_THREAD_WORKAREA_SIZE);
 
 static DECLARE_THREAD_FUNCTION(GTimerThreadHandler, arg) {
 	GTimer			*pt;
-	gTicks	tm;
-	gTicks	nxtTimeout;
-	gTicks	lastTime;
+	systemticks_t	tm;
+	systemticks_t	nxtTimeout;
+	systemticks_t	lastTime;
 	GTimerFunction	fn;
 	void			*param;
 	(void)			arg;
 
-	nxtTimeout = gDelayForever;
+	nxtTimeout = TIME_INFINITE;
 	lastTime = 0;
 	while(1) {
 		/* Wait for work to do. */
@@ -49,7 +49,7 @@ static DECLARE_THREAD_FUNCTION(GTimerThreadHandler, arg) {
 	
 		// Our reference time
 		tm = gfxSystemTicks();
-		nxtTimeout = gDelayForever;
+		nxtTimeout = TIME_INFINITE;
 		
 		/* We need to obtain the mutex */
 		gfxMutexEnter(&mutex);
@@ -61,7 +61,7 @@ static DECLARE_THREAD_FUNCTION(GTimerThreadHandler, arg) {
 				if ((pt->flags & GTIMER_FLG_JABBED) || (!(pt->flags & GTIMER_FLG_INFINITE) && TimeIsWithin(pt->when, lastTime, tm))) {
 				
 					// Is this timer periodic?
-					if ((pt->flags & GTIMER_FLG_PERIODIC) && pt->period != gDelayNone) {
+					if ((pt->flags & GTIMER_FLG_PERIODIC) && pt->period != TIME_IMMEDIATE) {
 						// Yes - Update ready for the next period
 						if (!(pt->flags & GTIMER_FLG_INFINITE)) {
 							// We may have skipped a period.
@@ -136,7 +136,7 @@ void gtimerDeinit(GTimer* pt)
 	gtimerStop(pt);
 }
 
-void gtimerStart(GTimer *pt, GTimerFunction fn, void *param, gBool periodic, gDelay millisec) {
+void gtimerStart(GTimer *pt, GTimerFunction fn, void *param, bool_t periodic, delaytime_t millisec) {
 	gfxMutexEnter(&mutex);
 	
 	// Start our thread if not already going
@@ -164,9 +164,9 @@ void gtimerStart(GTimer *pt, GTimerFunction fn, void *param, gBool periodic, gDe
 	pt->flags = GTIMER_FLG_SCHEDULED;
 	if (periodic)
 		pt->flags |= GTIMER_FLG_PERIODIC;
-	if (millisec == gDelayForever) {
+	if (millisec == TIME_INFINITE) {
 		pt->flags |= GTIMER_FLG_INFINITE;
-		pt->period = gDelayForever;
+		pt->period = TIME_INFINITE;
 	} else {
 		pt->period = gfxMillisecondsToTicks(millisec);
 		pt->when = gfxSystemTicks() + pt->period;
@@ -205,8 +205,8 @@ void gtimerStop(GTimer *pt) {
 	gfxMutexExit(&mutex);
 }
 
-gBool gtimerIsActive(GTimer *pt) {
-	return (pt->flags & GTIMER_FLG_SCHEDULED) ? gTrue : gFalse;
+bool_t gtimerIsActive(GTimer *pt) {
+	return (pt->flags & GTIMER_FLG_SCHEDULED) ? TRUE : FALSE;
 }
 
 void gtimerJab(GTimer *pt) {

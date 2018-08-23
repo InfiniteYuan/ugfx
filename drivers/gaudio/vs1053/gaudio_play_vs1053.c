@@ -23,7 +23,7 @@
 	#define VS1053_CLK		12288000
 #endif
 #ifndef VS1053_FIRMWARE_PATCH
-	#define VS1053_FIRMWARE_PATCH		GFXOFF
+	#define VS1053_FIRMWARE_PATCH		FALSE
 #endif
 #ifndef VS1053_POLL_RATE
 	#define	VS1053_POLL_RATE	5
@@ -61,7 +61,7 @@
 #endif
 
 // Our static variables
-static gBool	vs1053_isinit;
+static bool_t	vs1053_isinit;
 static GTimer	playTimer;
 
 // Some common macro's
@@ -228,7 +228,7 @@ static void FeedData(void *param) {
 /* External declarations.                                                    */
 /*===========================================================================*/
 
-gBool gaudio_play_lld_init(uint16_t channel, uint32_t frequency, ArrayDataFormat format) {
+bool_t gaudio_play_lld_init(uint16_t channel, uint32_t frequency, ArrayDataFormat format) {
 	uint32_t	brate;
 	uint32_t	bps;
 	uint8_t		buf[4];
@@ -246,14 +246,14 @@ gBool gaudio_play_lld_init(uint16_t channel, uint32_t frequency, ArrayDataFormat
 	};
 
 	if (format != ARRAY_DATA_8BITUNSIGNED && format != ARRAY_DATA_16BITSIGNED && format != ARRAY_DATA_UNKNOWN)
-		return gFalse;
+		return FALSE;
 	if (frequency > VS1053_MAX_SAMPLE_RATE)
-		return gFalse;
+		return FALSE;
 
 	// Reset the chip if needed
 	if (!vs1053_isinit) {
 		vs1053_hard_reset();
-		vs1053_isinit = gTrue;
+		vs1053_isinit = TRUE;
 	}
 
 	// Setup
@@ -274,10 +274,10 @@ gBool gaudio_play_lld_init(uint16_t channel, uint32_t frequency, ArrayDataFormat
 		buf[0] = gfxSampleFormatBits(format);				buf[1] = 0;								data_write(buf, 2);
 		data_write(hdr2, sizeof(hdr2));
 	}
-	return gTrue;
+	return TRUE;
 }
 
-gBool gaudio_play_lld_set_volume(uint8_t vol) {
+bool_t gaudio_play_lld_set_volume(uint8_t vol) {
 	uint16_t tmp;
 
 	// Volume is 0xFE -> 0x00. Adjust vol to match
@@ -291,7 +291,7 @@ gBool gaudio_play_lld_set_volume(uint8_t vol) {
 
 	cmd_write(SCI_VOL, tmp);
 
-	return gTrue;
+	return TRUE;
 }
 
 void gaudio_play_lld_start(void) {
@@ -310,7 +310,7 @@ void gaudio_play_lld_start(void) {
 
 	// Start the playing by starting the timer and executing FeedData immediately just to get things started
 	// We really should set the timer to be equivalent to half the available data but that is just too hard to calculate.
-	gtimerStart(&playTimer, FeedData, 0, gTrue, VS1053_POLL_RATE);
+	gtimerStart(&playTimer, FeedData, 0, TRUE, VS1053_POLL_RATE);
 	FeedData(0);
 }
 

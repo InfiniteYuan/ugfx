@@ -25,7 +25,7 @@
 #include "../../../src/gdisp/gdisp_driver.h"
 
 #ifndef GDISP_FORCE_24BIT
-	#define GDISP_FORCE_24BIT			GFXOFF
+	#define GDISP_FORCE_24BIT			FALSE
 #endif
 #ifndef GDISP_SCREEN_WIDTH
 	#define GDISP_SCREEN_WIDTH			640
@@ -40,8 +40,8 @@
 	#include "../../../src/ginput/ginput_driver_mouse.h"
 
 	// Forward definitions
-	static gBool SDL_MouseInit(GMouse *m, unsigned driverinstance);
-	static gBool SDL_MouseRead(GMouse *m, GMouseReading *prd);
+	static bool_t SDL_MouseInit(GMouse *m, unsigned driverinstance);
+	static bool_t SDL_MouseRead(GMouse *m, GMouseReading *prd);
 	const GMouseVMT GMOUSE_DRIVER_VMT[1] = {{
 		{
 			GDRIVER_TYPE_MOUSE,
@@ -78,7 +78,7 @@
 	#include "../../../src/ginput/ginput_driver_keyboard.h"
 
 	// Forward definitions
-	static gBool SDL_KeyboardInit(GKeyboard *k, unsigned driverinstance);
+	static bool_t SDL_KeyboardInit(GKeyboard *k, unsigned driverinstance);
 	static int SDL_KeyboardGetData(GKeyboard *k, uint8_t *pch, int sz);
 
 	const GKeyboardVMT GKEYBOARD_DRIVER_VMT[1] = {{
@@ -161,7 +161,7 @@ struct SDL_UGFXContext {
 	int16_t		need_redraw;
 	int		minx,miny,maxx,maxy;
 #if GINPUT_NEED_MOUSE
-	gCoord 	mousex, mousey;
+	coord_t 	mousex, mousey;
 	uint16_t 	buttons;
 #endif
 #if GINPUT_NEED_KEYBOARD
@@ -366,21 +366,21 @@ void sdl_driver_init (void) {
 }
 
 
-LLDSPEC gBool gdisp_lld_init(GDisplay *g) {
+LLDSPEC bool_t gdisp_lld_init(GDisplay *g) {
 	g->board = 0;					// No board interface for this driver
 
 #if GINPUT_NEED_MOUSE
 	gdriverRegister((const GDriverVMT *)GMOUSE_DRIVER_VMT, g);
 #endif
-	g->g.Orientation = gOrientation0;
-	g->g.Powermode = gPowerOn;
+	g->g.Orientation = GDISP_ROTATE_0;
+	g->g.Powermode = powerOn;
 	g->g.Backlight = 100;
 
 	g->g.Contrast = 50;
 	g->g.Width = GDISP_SCREEN_WIDTH;
 	g->g.Height = GDISP_SCREEN_HEIGHT;
 
-	return gTrue;
+	return TRUE;
 }
 
 
@@ -425,7 +425,7 @@ LLDSPEC void gdisp_lld_draw_pixel(GDisplay *g)
 #endif
 
 #if GDISP_HARDWARE_PIXELREAD
-	LLDSPEC gColor gdisp_lld_get_pixel_color(GDisplay *g) {
+	LLDSPEC color_t gdisp_lld_get_pixel_color(GDisplay *g) {
 		if (context)
 			return gdispNative2Color(context->framebuf[(g->p.y*GDISP_SCREEN_WIDTH)+g->p.x]);
 		return 0;
@@ -433,29 +433,29 @@ LLDSPEC void gdisp_lld_draw_pixel(GDisplay *g)
 #endif
 
 #if GINPUT_NEED_MOUSE
-	static gBool SDL_MouseInit(GMouse *m, unsigned driverinstance) {
+	static bool_t SDL_MouseInit(GMouse *m, unsigned driverinstance) {
 		mouse = m;
 		(void)	driverinstance;
-		return gTrue;
+		return TRUE;
 	}
 
-	static gBool SDL_MouseRead(GMouse *m, GMouseReading *pt) {
+	static bool_t SDL_MouseRead(GMouse *m, GMouseReading *pt) {
 		(void)	m;
 		if (!context)
-			return gFalse;
+			return FALSE;
 		pt->x = context->mousex;
 		pt->y = context->mousey;
 		pt->z = (context->buttons & GINPUT_MOUSE_BTN_LEFT) ? 1 : 0;
 		pt->buttons = context->buttons;
-		return gTrue;
+		return TRUE;
 	}
 #endif /* GINPUT_NEED_MOUSE */
 
 #if GINPUT_NEED_KEYBOARD
-	static gBool SDL_KeyboardInit(GKeyboard *k, unsigned driverinstance) {
+	static bool_t SDL_KeyboardInit(GKeyboard *k, unsigned driverinstance) {
 		keyboard = k;
 		(void)	driverinstance;
-		return gTrue;
+		return TRUE;
 	}
 
 	static int SDL_KeyboardGetData(GKeyboard *k, uint8_t *pch, int sz) {

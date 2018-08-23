@@ -92,9 +92,5 @@
 	}
 
 #else
-	#if GFX_COMPILER_WARNING_TYPE == GFX_COMPILER_WARNING_DIRECT
-		#warning "GOS Threads: You have specified a specific CPU but your compiler is not supported. Defaulting to CLIB switching"
-	#elif GFX_COMPILER_WARNING_TYPE == GFX_COMPILER_WARNING_MACRO
-		COMPILER_WARNING("GOS Threads: You have specified a specific CPU but your compiler is not supported. Defaulting to CLIB switching")
-	#endif
+	#warning "GOS: Threads: You have specified a specific CPU but your compiler is not supported. Defaulting to CLIB switching"
 #endif

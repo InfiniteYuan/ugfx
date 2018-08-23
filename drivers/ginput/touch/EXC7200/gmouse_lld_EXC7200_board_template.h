@@ -19,7 +19,7 @@
 // How much extra data to allocate at the end of the GMouse structure for the board's use
 #define GMOUSE_EXC7200_BOARD_DATA_SIZE			0
 
-static gBool init_board(GMouse* m, unsigned driverinstance)
+static bool_t init_board(GMouse* m, unsigned driverinstance)
 {
 }
 

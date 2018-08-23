@@ -3,7 +3,7 @@
 #include "stm32f7xx.h"
 #include "gfx.h"
 
-gBool i2cInit(I2C_TypeDef* i2c);
+bool_t i2cInit(I2C_TypeDef* i2c);
 
 void i2cSend(I2C_TypeDef* i2c, uint8_t slaveAddr, uint8_t* data, uint16_t length);
 void i2cSendByte(I2C_TypeDef* i2c, uint8_t slaveAddr, uint8_t data);

@@ -22,48 +22,18 @@
 	#error "GOS: configUSE_COUNTING_SEMAPHORES must be defined in FreeRTOSConfig.h"
 #endif
 
-#if !GFX_OS_NO_INIT && INCLUDE_xTaskGetSchedulerState != 1 && configUSE_TIMERS != 1
-	#error "GOS: Either INCLUDE_xTaskGetSchedulerState or configUSE_TIMERS must be defined in FreeRTOSConfig.h"
-#endif
-
-#if !GFX_OS_NO_INIT && !GFX_OS_CALL_UGFXMAIN
-	#error "GOS: Either GFX_OS_NO_INIT or GFX_OS_CALL_UGFXMAIN must be defined for FreeRTOS"
-#endif
-
 void _gosInit(void)
 {
-	#if GFX_OS_NO_INIT && !GFX_OS_INIT_NO_WARNING
-		#if GFX_COMPILER_WARNING_TYPE == GFX_COMPILER_WARNING_DIRECT
-			#warning "GOS: Operating System initialization has been turned off. Make sure you call vTaskStartScheduler()."
-		#elif GFX_COMPILER_WARNING_TYPE == GFX_COMPILER_WARNING_MACRO
-			COMPILER_WARNING("GOS: Operating System initialization has been turned off. Make sure you call vTaskStartScheduler().")
-		#endif
+	#if !GFX_OS_NO_INIT
+		#error "GOS: Operating System initialization for FreeRTOS is not yet implemented in uGFX. Please set GFX_OS_NO_INIT to TRUE in your gfxconf.h"
 	#endif
-}
-
-#if !GFX_OS_NO_INIT && GFX_OS_CALL_UGFXMAIN
-	static DECLARE_THREAD_FUNCTION(startUGFX_FreeRTOS, p) {
-		(void) p;
-		uGFXMain();
-	}
-#endif
-
-void _gosPostInit(void)
-{
-	#if !GFX_OS_NO_INIT && GFX_OS_CALL_UGFXMAIN
-		if (xTaskGetSchedulerState() == taskSCHEDULER_NOT_STARTED) {
-			gfxThreadCreate(0, GFX_OS_UGFXMAIN_STACKSIZE, gThreadpriorityNormal, startUGFX_FreeRTOS, 0);
-			vTaskStartScheduler();
-			gfxHalt("Unable to start FreeRTOS scheduler. Out of memory?");
-		}
+	#if !GFX_OS_INIT_NO_WARNING
+		#warning "GOS: Operating System initialization has been turned off. Make sure you call vTaskStartScheduler() before gfxInit() in your application!"
 	#endif
 }
 
 void _gosDeinit(void)
 {
-	#if !GFX_OS_NO_INIT
-		vTaskDelete(0);
-	#endif
 }
 
 void* gfxRealloc(void *ptr, size_t oldsz, size_t newsz)
@@ -79,96 +49,123 @@ void* gfxRealloc(void *ptr, size_t oldsz, size_t newsz)
 
 	if (oldsz) {
 		memcpy(np, ptr, oldsz);
-		gfxFree(ptr);
+		vPortFree(ptr);
 	}
 
 	return np;
 }
 
-void gfxSleepMilliseconds(gDelay ms)
+void gfxSleepMilliseconds(delaytime_t ms)
 {
-	vTaskDelay(gfxMillisecondsToTicks(ms));
+	const portTickType ticks = ms / portTICK_PERIOD_MS;
+	vTaskDelay(ticks);
 }
 
-void gfxSleepMicroseconds(gDelay ms)
+void gfxSleepMicroseconds(delaytime_t ms)
 {
+	const portTickType ticks = (ms / 1000) / portTICK_PERIOD_MS;
 
-	// delay milli seconds - microsecond resolution delay is not supported in FreeRTOS
-	vTaskDelay(gfxMillisecondsToTicks(ms/1000));
+	// delay milli seconds
+	vTaskDelay(ticks);
+
+	// microsecond resolution delay is not supported in FreeRTOS
 	// vUsDelay(ms%1000);
 }
 
-void gfxMutexInit(gfxMutex *pmutex)
+portTickType MS2ST(portTickType ms)
 {
-	*pmutex = xSemaphoreCreateMutex();
+	return (ms / portTICK_PERIOD_MS);
+}
+
+void gfxMutexInit(xSemaphoreHandle *s)
+{
+	*s = xSemaphoreCreateMutex();
 	#if GFX_FREERTOS_USE_TRACE
-		vTraceSetMutexName(*pmutex,"uGFXMutex");
+		vTraceSetMutexName(*s,"uGFXMutex"); // for FreeRTOS+Trace debug
 	#endif
 }
 
-void gfxSemInit(gfxSem* psem, gSemcount val, gSemcount limit)
+void gfxSemInit(gfxSem* psem, semcount_t val, semcount_t limit)
 {
 	if (val > limit)
 		val = limit;
 
-	*psem = xSemaphoreCreateCounting(limit,val);
+	psem->counter = val;
+	psem->limit = limit;
+	psem->sem = xSemaphoreCreateCounting(limit,val);
+
 	#if GFX_FREERTOS_USE_TRACE
-		vTraceSetSemaphoreName(*psem, "uGFXSema");
+		vTraceSetSemaphoreName(psem->sem, "uGFXSema"); // for FreeRTOS+Trace debug
 	#endif
 }
 
-gBool gfxSemWait(gfxSem* psem, gDelay ms)
+void gfxSemDestroy(gfxSem* psem)
 {
-	if (xSemaphoreTake(*psem, gfxMillisecondsToTicks(ms)) == pdPASS)
-		return gTrue;
-	return gFalse;
+	vSemaphoreDelete(psem->sem);
 }
 
-gBool gfxSemWaitI(gfxSem* psem)
+bool_t gfxSemWait(gfxSem* psem, delaytime_t ms)
+{
+	psem->counter--;
+
+	if (xSemaphoreTake(psem->sem, MS2ST(ms)) == pdPASS)
+		return TRUE;
+
+	psem->counter++;
+
+	return FALSE;
+}
+
+bool_t gfxSemWaitI(gfxSem* psem)
 {
 	portBASE_TYPE xHigherPriorityTaskWoken = pdFALSE;
 
-	if (xSemaphoreTakeFromISR(*psem, &xHigherPriorityTaskWoken) == pdTRUE)
-		return gTrue;
-	return gFalse;
+	psem->counter--;
+
+	if (xSemaphoreTakeFromISR(psem->sem,&xHigherPriorityTaskWoken) == pdTRUE)
+		return TRUE;
+
+	psem->counter++;
+
+	return FALSE;
 }
 
 void gfxSemSignal(gfxSem* psem)
 {
-	xSemaphoreGive(*psem);
+	taskENTER_CRITICAL();
+
+	if (psem->counter < psem->limit) {
+		psem->counter++;
+		xSemaphoreGive(psem->sem);
+	}
+
 	taskYIELD();
+	taskEXIT_CRITICAL();
 }
 
 void gfxSemSignalI(gfxSem* psem)
 {
 	portBASE_TYPE xHigherPriorityTaskWoken = pdFALSE;
 
-	xSemaphoreGiveFromISR(*psem,&xHigherPriorityTaskWoken);
+	if (psem->counter < psem->limit) {
+		psem->counter++;
+		xSemaphoreGiveFromISR(psem->sem,&xHigherPriorityTaskWoken);
+	}
 }
 
-gThread gfxThreadCreate(void *stackarea, size_t stacksz, gThreadpriority prio, DECLARE_THREAD_FUNCTION((*fn),p), void *param)
+gfxThreadHandle gfxThreadCreate(void *stackarea, size_t stacksz, threadpriority_t prio, DECLARE_THREAD_FUNCTION((*fn),p), void *param)
 {
-	gThread task;
-	(void) stackarea;
+	xTaskHandle task = NULL;
+	stacksz = (size_t)stackarea;
 
-	// uGFX expresses stack size in bytes - FreeRTOS in "Stack Words"
-	stacksz /= sizeof(StackType_t);
-	
 	if (stacksz < configMINIMAL_STACK_SIZE)
 		stacksz = configMINIMAL_STACK_SIZE;
 
-	task = 0;
-	if (xTaskCreate(fn, "uGFX_TASK", stacksz, param, prio, &task) != pdPASS)
-		return 0;
+	if (xTaskCreate(fn, "uGFX_TASK", stacksz, param, prio, &task )!= pdPASS) {
+		for (;;);
+	}
 
 	return task;
 }
 
-#if INCLUDE_eTaskGetState == 1
-	gThreadreturn gfxThreadWait(gThread thread) {
-		while (eTaskGetState(thread) != eDeleted)
-			gfxYield();
-	}
-#endif
- 
 #endif /* GFX_USE_OS_FREERTOS */

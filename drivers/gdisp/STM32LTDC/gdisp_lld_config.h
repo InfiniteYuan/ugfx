@@ -14,22 +14,15 @@
 /* Driver hardware support.                                                  */
 /*===========================================================================*/
 
-#define	LTDC_USE_DMA2D						GFXON
-#define GDISP_HARDWARE_DRAWPIXEL			GFXON
-#define GDISP_HARDWARE_PIXELREAD			GFXON
-#define GDISP_HARDWARE_CONTROL				GFXON
+#define	LTDC_USE_DMA2D						TRUE
+#define GDISP_HARDWARE_DRAWPIXEL			TRUE
+#define GDISP_HARDWARE_PIXELREAD			TRUE
+#define GDISP_HARDWARE_CONTROL				TRUE
 
 // Both these pixel formats are supported - pick one.
 // RGB565 obviously is faster and uses less RAM but with lower color resolution than RGB888
-
-#if defined(GDISP_LTDC_USE_RGB565) && GDISP_LTDC_USE_RGB565
-	#define GDISP_LLD_PIXELFORMAT			GDISP_PIXELFORMAT_RGB565
-	#if GDISP_TOTAL_DISPLAYS > 1
-		#error "LTDC: You must use RGB888 pixel format with LTDC when using dual layers as only RGB888 currently supports using alpha"
-	#endif
-#else
-	#define GDISP_LLD_PIXELFORMAT			GDISP_PIXELFORMAT_RGB888
-#endif
+#define GDISP_LLD_PIXELFORMAT				GDISP_PIXELFORMAT_RGB565
+//#define GDISP_LLD_PIXELFORMAT				GDISP_PIXELFORMAT_RGB888
 
 
 /*===========================================================================*/
@@ -38,12 +31,12 @@
 
 #if LTDC_USE_DMA2D
 	// DMA2D supports accelerated fills
- 	#define GDISP_HARDWARE_FILLS		GFXON
+ 	#define GDISP_HARDWARE_FILLS		TRUE
 
-	// Accelerated bitfills are also possible but only for gOrientation0
+	// Accelerated bitfills are also possible but only for GDISP_ROTATE_0
 	//	and if no color translation is required (for now)
-	#if !GDISP_NEED_CONTROL && !defined(GDISP_PIXELFORMAT)
- 		#define GDISP_HARDWARE_BITFILLS	GFXON
+	#if !GDISP_NEED_CONTROL && GDISP_PIXELFORMAT == GDISP_LLD_PIXELFORMAT
+ 		#define GDISP_HARDWARE_BITFILLS	TRUE
 	#endif
 #endif /* GDISP_USE_DMA2D */
 

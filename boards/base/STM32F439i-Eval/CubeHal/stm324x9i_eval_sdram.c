@@ -78,11 +78,9 @@
 ------------------------------------------------------------------------------*/
 
 /* Includes ------------------------------------------------------------------*/
-#if GFX_COMPAT_V2 && GFX_COMPAT_OLDCOLORS
-	#undef Red
-	#undef Green
-	#undef Blue
-#endif
+#undef Red
+#undef Green
+#undef Blue
 #include "stm324x9i_eval_sdram.h"
 
 /** @addtogroup BSP

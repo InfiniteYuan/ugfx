@@ -16,7 +16,7 @@ static void post_init_board(GDisplay *g) {
 	(void) g;
 }
 
-static void setpin_reset(GDisplay *g, gBool state) {
+static void setpin_reset(GDisplay *g, bool_t state) {
 	(void) g;
 	(void) state;
 }

@@ -19,18 +19,18 @@
 // How much extra data to allocate at the end of the GMouse structure for the board's use
 #define GMOUSE_FT5336_BOARD_DATA_SIZE			0
 
-// Set this to GFXON if you want self-calibration.
+// Set this to TRUE if you want self-calibration.
 //	NOTE:	This is not as accurate as real calibration.
 //			It requires the orientation of the touch panel to match the display.
 //			It requires the active area of the touch panel to exactly match the display size.
-#define GMOUSE_FT5336_SELF_CALIBRATE			GFXOFF
+#define GMOUSE_FT5336_SELF_CALIBRATE			FALSE
 
-static gBool init_board(GMouse* m, unsigned instance)
+static bool_t init_board(GMouse* m, unsigned instance)
 {
 	(void)m;
 	(void)instance;
 
-	return gTrue;
+	return TRUE;
 }
 
 static void write_reg(GMouse* m, uint8_t reg, uint8_t val)

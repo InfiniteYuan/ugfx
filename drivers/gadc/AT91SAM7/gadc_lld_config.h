@@ -25,7 +25,7 @@
 /**
  * @brief	ChibiOS has a nasty bug in its _adc_isr_full_code() routine (defined in adc.h as a macro).
  * 			Do we have the version of ChibiOS with this bug.
- * @detail	Set to GFXON if ChibiOS has this bug.
+ * @detail	Set to TRUE if ChibiOS has this bug.
  * @note	Fixed in ChibiOS 2.4.4stable and 2.5.2unstable (and the repository from 18th Feb 2013)
  * @note	This bug prevents us re-calling adcStartConversionI() from with the ISR even though
  * 			it is clearly designed to handle it. For some reason (on this micro) the high speed timer
@@ -35,7 +35,7 @@
  * @note	For the AT91SAM7 ADC driver, it post-dates the finding of the bug so we safely
  * 			say that the bug doesn't exist for this driver.
  */
-#define CHIBIOS_ADC_ISR_FULL_CODE_BUG		GFXOFF
+#define CHIBIOS_ADC_ISR_FULL_CODE_BUG		FALSE
 
 /**
  * @brief	The maximum sample frequency supported by this CPU

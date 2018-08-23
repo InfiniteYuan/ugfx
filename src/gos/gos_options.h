@@ -22,115 +22,94 @@
  */
 	/**
 	 * @brief   Use ChibiOS
-	 * @details	Defaults to GFXOFF
+	 * @details	Defaults to FALSE
 	 */
 	#ifndef GFX_USE_OS_CHIBIOS
-		#define GFX_USE_OS_CHIBIOS		GFXOFF
+		#define GFX_USE_OS_CHIBIOS		FALSE
 	#endif
 	/**
 	 * @brief   Use FreeRTOS
-	 * @details	Defaults to GFXOFF
+	 * @details	Defaults to FALSE
 	 */
 	#ifndef GFX_USE_OS_FREERTOS
-		#define GFX_USE_OS_FREERTOS		GFXOFF
+		#define GFX_USE_OS_FREERTOS		FALSE
 	#endif
 	/**
 	 * @brief   Use Win32
-	 * @details	Defaults to GFXOFF
+	 * @details	Defaults to FALSE
 	 */
 	#ifndef GFX_USE_OS_WIN32
-		#define GFX_USE_OS_WIN32		GFXOFF
+		#define GFX_USE_OS_WIN32		FALSE
 	#endif
 	/**
 	 * @brief   Use a linux based system running X11
-	 * @details	Defaults to GFXOFF
+	 * @details	Defaults to FALSE
 	 */
 	#ifndef GFX_USE_OS_LINUX
-		#define GFX_USE_OS_LINUX		GFXOFF
+		#define GFX_USE_OS_LINUX		FALSE
 	#endif
 	/**
 	 * @brief   Use a Mac OS-X based system
-	 * @details	Defaults to GFXOFF
+	 * @details	Defaults to FALSE
 	 */
 	#ifndef GFX_USE_OS_OSX
-		#define GFX_USE_OS_OSX			GFXOFF
+		#define GFX_USE_OS_OSX			FALSE
 	#endif
 	/**
 	 * @brief   Use a Raw 32-bit CPU based system (Bare Metal)
-	 * @details	Defaults to GFXOFF
+	 * @details	Defaults to FALSE
 	 */
 	#ifndef GFX_USE_OS_RAW32
-		#define GFX_USE_OS_RAW32		GFXOFF
+		#define GFX_USE_OS_RAW32		FALSE
 	#endif
 	/**
 	 * @brief   Use a eCos
-	 * @details	Defaults to GFXOFF
+	 * @details	Defaults to FALSE
 	 */
 	#ifndef GFX_USE_OS_ECOS
-		#define GFX_USE_OS_ECOS			GFXOFF
+		#define GFX_USE_OS_ECOS			FALSE
 	#endif
 	/**
 	 * @brief   Use RAWRTOS
-	 * @details Defaults to GFXOFF
+	 * @details Defaults to FALSE
 	 */
 	#ifndef GFX_USE_OS_RAWRTOS
-		#define GFX_USE_OS_RAWRTOS		GFXOFF
+		#define GFX_USE_OS_RAWRTOS		FALSE
 	#endif
 	/**
 	 * @brief   Use Arduino
-	 * @details	Defaults to GFXOFF
+	 * @details	Defaults to FALSE
 	 */
 	#ifndef GFX_USE_OS_ARDUINO
-		#define GFX_USE_OS_ARDUINO		GFXOFF
+		#define GFX_USE_OS_ARDUINO		FALSE
 	#endif
 	/**
 	 * @brief	Use CMSIS RTOS compatible OS
-	 * @details	Defaults to GFXOFF
+	 * @details	Defaults to FALSE
 	 */
 	#ifndef GFX_USE_OS_CMSIS
-		#define GFX_USE_OS_CMSIS		GFXOFF
+		#define GFX_USE_OS_CMSIS		FALSE
 	#endif
 	/**
-	 * @brief	Use CMSIS2 RTOS compatible OS
-	 * @details	Defaults to GFXOFF
-	 */
-	#ifndef GFX_USE_OS_CMSIS2
-		#define GFX_USE_OS_CMSIS2		GFXOFF
-	#endif
-	/**
-	 * @brief   Use Keil CMSIS 1.x (RTOS, RTX4)
-	 * @details	Defaults to GFXOFF
+	 * @brief   Use Keil CMSIS
+	 * @details	Defaults to FALSE
 	 */
 	#ifndef GFX_USE_OS_KEIL
-		#define GFX_USE_OS_KEIL			GFXOFF
-	#endif
-	/**
-	 * @brief   Use Keil RTX5
-	 * @details	Defaults to GFXOFF
-	 */
-	#ifndef GFX_USE_OS_RTX5
-		#define GFX_USE_OS_RTX5			GFXOFF
+		#define GFX_USE_OS_KEIL			FALSE
 	#endif
 	/**
 	 * @brief   Use NIOS-II
-	 * @details	Defaults to GFXOFF
+	 * @details	Defaults to FALSE
 	 */
 	#ifndef GFX_USE_OS_NIOS
-		#define GFX_USE_OS_NIOS			GFXOFF
-	#endif
-	/**
-	 * @brief   Use Zephyr
-	 * @details	Defaults to GFXOFF
-	 */
-	#ifndef GFX_USE_OS_ZEPHYR
-		#define GFX_USE_OS_ZEPHYR			GFXOFF
+		#define GFX_USE_OS_NIOS			FALSE
 	#endif
 	/**
 	 * @brief   Use Qt
-	 * @details	Defaults to GFXOFF
+	 * @details	Defaults to FALSE
 	 */
 	#ifndef GFX_USE_OS_QT
-		#define GFX_USE_OS_QT			GFXOFF
+		#define GFX_USE_OS_QT			FALSE
 	#endif
 /**
  * @}
@@ -179,7 +158,7 @@
     //#define GFX_OS_EXTRA_DEINIT_FUNCTION             myOSDeInitRoutine
  	/**
  	 * @brief	Should uGFX avoid initializing the operating system
- 	 * @details	Defaults to GFXOFF
+ 	 * @details	Defaults to FALSE
  	 * @note	This is not relevant to all operating systems eg Win32 never initializes the
  	 * 			operating system as uGFX runs as an application outside the boot process.
  	 * @note	Operating system initialization is not necessarily implemented for all
@@ -189,49 +168,24 @@
  	 * 			demo applications will not work without modification.
  	 */
  	#ifndef GFX_OS_NO_INIT
- 		#define GFX_OS_NO_INIT			GFXOFF
+ 		#define GFX_OS_NO_INIT			FALSE
  	#endif
  	/**
  	 * @brief	Turn off warnings about initializing the operating system
- 	 * @details	Defaults to GFXOFF
+ 	 * @details	Defaults to FALSE
  	 * @note	This is only relevant where GOS cannot initialize the operating
  	 * 			system automatically or the operating system initialization has been
  	 * 			explicitly turned off.
  	 */
 	#ifndef GFX_OS_INIT_NO_WARNING
-		#define GFX_OS_INIT_NO_WARNING	GFXOFF
-	#endif
- 	/**
- 	 * @brief	Call uGFXMain() after all initialisation
- 	 * @details	Defaults to GFXOFF
- 	 * @note	uGFXMain() is a function defined by the user in their project
-	 * 			that contains the application main code. This is not expected to return
-	 * 			and thus gfxInit() will also never return. This is required for some
-	 *			operating systems whose main thread never returns after starting the
-	 * 			scheduler.<br>
-	 *			Its prototype is:<br>
-	 *				void uGFXMain(void);<br>
- 	 */
-	#ifndef GFX_OS_CALL_UGFXMAIN
-		#define GFX_OS_CALL_UGFXMAIN		GFXOFF
-	#endif
- 	/**
- 	 * @brief	When uGFXMain() is started as a thread, what stack size should be used
- 	 * @details	Defaults to 0
- 	 * @note	uGFXMain() contains the application main code. Some operating systems
-	 * 			will start this as a thread. eg FreeRTOS. When it is started as a thread
-	 * 			this defines how many bytes should be used for the thread stack.
-	 * @note	0 means to use the operating systems default stack size.
- 	 */
-	#ifndef GFX_OS_UGFXMAIN_STACKSIZE
-		#define GFX_OS_UGFXMAIN_STACKSIZE	0
+		#define GFX_OS_INIT_NO_WARNING	FALSE
 	#endif
  	/**
  	 * @brief	Should uGFX stuff be added to the FreeRTOS+Tracer
- 	 * @details	Defaults to GFXOFF
+ 	 * @details	Defaults to FALSE
  	 */
  	#ifndef GFX_FREERTOS_USE_TRACE
- 		#define GFX_FREERTOS_USE_TRACE	GFXOFF
+ 		#define GFX_FREERTOS_USE_TRACE	FALSE
  	#endif
  	/**
  	 * @brief	How much RAM should uGFX use for the heap when using its own internal heap allocator
@@ -250,7 +204,7 @@
 	#endif
  	/**
  	 * @brief	Enable wrappers for malloc() and free()
- 	 * @details	Defaults to GFXOFF
+ 	 * @details	Defaults to FALSE
  	 * @note	If enabled, malloc() and free() will be implemented as wrappers that call gfxAlloc() and
  	 *			gfxFree() in order to provide portability to libraries using these function.
  	 * @note	Enabling this can solve 'unresolved _sbrk' issues
@@ -258,7 +212,7 @@
  	 *			portability of uGFX applications across all platforms.
  	 */
 	#ifndef GFX_EMULATE_MALLOC
-		#define GFX_EMULATE_MALLOC	GFXOFF
+		#define GFX_EMULATE_MALLOC	FALSE
 	#endif
 /** @} */
 

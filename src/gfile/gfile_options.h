@@ -25,10 +25,10 @@
 	 * @details	The filesystem is normally mounted automatically if the
 	 *			user does not do it manually. This option turns that off
 	 *			so the user must manually mount the file-system first.
-	 * @details	Defaults to GFXOFF
+	 * @details	Defaults to FALSE
 	 */
 	#ifndef GFILE_NEED_NOAUTOMOUNT
-		#define GFILE_NEED_NOAUTOMOUNT	GFXOFF
+		#define GFILE_NEED_NOAUTOMOUNT	FALSE
 	#endif
 	/**
 	 * @brief	Should the filesystem be synced automatically
@@ -38,61 +38,46 @@
 	 *			himself using @p gfileSync()
 	 * @details	Not all filesystems implement the syncing feature. This feature will
 	 *			have no effect in such a case.
-	 * @details	Defaults to GFXOFF
+	 * @details	Defaults to FALSE
 	 */
 	#ifndef GFILE_NEED_NOAUTOSYNC
-		#define GFILE_NEED_NOAUTOSYNC	GFXOFF
+		#define GFILE_NEED_NOAUTOSYNC	FALSE
 	#endif
 	/**
 	 * @brief   Include printg, fprintg etc functions
-	 * @details	Defaults to GFXOFF
+	 * @details	Defaults to FALSE
 	 * @pre		To get the string sprintg functions you also need to define @p GFILE_NEED_STRINGS
 	 */
 	#ifndef GFILE_NEED_PRINTG
-		#define GFILE_NEED_PRINTG		GFXOFF
+		#define GFILE_NEED_PRINTG		FALSE
 	#endif
 	/**
 	 * @brief   Include scang, fscang etc functions
-	 * @details	Defaults to GFXOFF
+	 * @details	Defaults to FALSE
 	 * @pre		To get the string sscang functions you also need to define @p GFILE_NEED_STRINGS
 	 */
 	#ifndef GFILE_NEED_SCANG
-		#define GFILE_NEED_SCANG		GFXOFF
+		#define GFILE_NEED_SCANG		FALSE
 	#endif
 	/**
 	 * @brief   Include the string based file functions
-	 * @details	Defaults to GFXOFF
+	 * @details	Defaults to FALSE
 	 */
 	#ifndef GFILE_NEED_STRINGS
-		#define GFILE_NEED_STRINGS		GFXOFF
+		#define GFILE_NEED_STRINGS		FALSE
 	#endif
 	/**
 	 * @brief   Map many stdio functions to their GFILE equivalent
-	 * @details	Defaults to GFXOFF
+	 * @details	Defaults to FALSE
 	 * @note	This replaces the functions in stdio.h with equivalents
 	 * 			- Do not include stdio.h as it has different conflicting definitions.
 	 */
 	#ifndef GFILE_NEED_STDIO
-		#define GFILE_NEED_STDIO		GFXOFF
-	#endif
-	/**
-	 * @brief   Include the USER file system
-	 * @details	Defaults to GFXOFF
-	 * @note	The User FS vmt strcture 'FsUSERVMT' must be defined and implemented in the user's project.
-	 * @note	If GFILE_ALLOW_DEVICESPECIFIC is on then you can ensure that you are
-	 * 			opening a file on the USER file system by prefixing
-	 * 			its name with "U|" (the letter 'U', followed by a vertical bar).
-	 *			The letter 'U' as described above should be replaced by the actual
-	 *			device specifier letter in the user's FsUSERVMT structure. It is suggested
-	 *			that it is actually the letter 'U' that is used and it is important that the letter
-	 *			used is not one used by the other file systems.
-	 */
-	#ifndef GFILE_NEED_USERFS
-		#define GFILE_NEED_USERFS		GFXOFF
+		#define GFILE_NEED_STDIO		FALSE
 	#endif
 	/**
 	 * @brief   Include the ROM file system
-	 * @details	Defaults to GFXOFF
+	 * @details	Defaults to FALSE
 	 * @note	If GFILE_ALLOW_DEVICESPECIFIC is on then you can ensure that you are
 	 * 			opening a file on the ROM file system by prefixing
 	 * 			its name with "S|" (the letter 'S', followed by a vertical bar).
@@ -101,11 +86,11 @@
 	 * 			converted to .h files using the file2c utility (using flags "-dbcs").
 	 */
 	#ifndef GFILE_NEED_ROMFS
-		#define GFILE_NEED_ROMFS		GFXOFF
+		#define GFILE_NEED_ROMFS		FALSE
 	#endif
 	/**
 	 * @brief   Include the RAM file system
-	 * @details	Defaults to GFXOFF
+	 * @details	Defaults to FALSE
 	 * @note	If GFILE_ALLOW_DEVICESPECIFIC is on then you can ensure that you are
 	 * 			opening a file on the RAM file system by prefixing
 	 * 			its name with "R|" (the letter 'R', followed by a vertical bar).
@@ -113,11 +98,11 @@
 	 * 			to be allocated in RAM.
 	 */
 	#ifndef GFILE_NEED_RAMFS
-		#define GFILE_NEED_RAMFS		GFXOFF
+		#define GFILE_NEED_RAMFS		FALSE
 	#endif
 	/**
 	 * @brief   Include the FAT file system driver based on the FATFS library
-	 * @details	Defaults to GFXOFF
+	 * @details	Defaults to FALSE
 	 * @note	If GFILE_ALLOW_DEVICESPECIFIC is on then you can ensure that you are
 	 * 			opening a file on the FAT file system by prefixing
 	 * 			its name with "F|" (the letter 'F', followed by a vertical bar).
@@ -126,11 +111,11 @@
 	 * 			one can be used at a time. The block interfaces are also different.
 	 */
 	#ifndef GFILE_NEED_FATFS
-		#define GFILE_NEED_FATFS		GFXOFF
+		#define GFILE_NEED_FATFS		FALSE
 	#endif
 	/**
 	 * @brief   Include the FAT file system driver based on the PETITFS library
-	 * @details	Defaults to GFXOFF
+	 * @details	Defaults to FALSE
 	 * @note	If GFILE_ALLOW_DEVICESPECIFIC is on then you can ensure that you are
 	 * 			opening a file on the FAT file system by prefixing
 	 * 			its name with "F|" (the letter 'F', followed by a vertical bar).
@@ -142,11 +127,11 @@
 	 * @note	PETITFS can only have one file open at a time.
 	 */
 	#ifndef GFILE_NEED_PETITFS
-		#define GFILE_NEED_PETITFS		GFXOFF
+		#define GFILE_NEED_PETITFS		FALSE
 	#endif
 	/**
 	 * @brief   Include the operating system's native file system
-	 * @details	Defaults to GFXOFF
+	 * @details	Defaults to FALSE
 	 * @note	If GFILE_ALLOW_DEVICESPECIFIC is on then you can ensure that you are
 	 * 			opening a file on the native file system by prefixing
 	 * 			its name with "N|" (the letter 'N', followed by a vertical bar).
@@ -155,11 +140,11 @@
 	 * 			If it is not defined the gfileStdOut and gfileStdErr io is discarded.
 	 */
 	#ifndef GFILE_NEED_NATIVEFS
-		#define GFILE_NEED_NATIVEFS		GFXOFF
+		#define GFILE_NEED_NATIVEFS		FALSE
 	#endif
 	/**
 	 * @brief   Include ChibiOS BaseFileStream support
-	 * @details	Defaults to GFXOFF
+	 * @details	Defaults to FALSE
 	 * @pre		This is only relevant on the ChibiOS operating system.
 	 * @note	Use the @p gfileOpenBaseFileStream() call to open a GFILE based on a
 	 * 			BaseFileStream. The BaseFileStream must already be open.
@@ -167,25 +152,25 @@
 	 * 			must be pre-opened using the operating system.
 	 */
 	#ifndef GFILE_NEED_CHIBIOSFS
-		#define GFILE_NEED_CHIBIOSFS	GFXOFF
+		#define GFILE_NEED_CHIBIOSFS	FALSE
 	#endif
 	/**
 	 * @brief   Include raw memory pointer support
-	 * @details	Defaults to GFXOFF
+	 * @details	Defaults to FALSE
 	 * @note	Use the @p gfileOpenMemory() call to open a GFILE based on a
 	 * 			memory pointer. The GFILE opened appears to be of unlimited size.
 	 * @note	A GFile of this type cannot be opened by filename.
 	 */
 	#ifndef GFILE_NEED_MEMFS
-		#define GFILE_NEED_MEMFS		GFXOFF
+		#define GFILE_NEED_MEMFS		FALSE
 	#endif
 	/**
 	 * @brief   Include support for file list functions
-	 * @details	Defaults to GFXOFF
+	 * @details	Defaults to FALSE
 	 * @note	Adds support for @p gfileOpenFileList(), @p gfileReadFileList() and @p gfileCloseFileList().
 	 */
 	#ifndef GFILE_NEED_FILELISTS
-		#define GFILE_NEED_FILELISTS	GFXOFF
+		#define GFILE_NEED_FILELISTS	FALSE
 	#endif
 /**
  * @}
@@ -197,7 +182,7 @@
 	 * @brief  Add floating point support to printg/scang etc.
 	 */
 	#ifndef GFILE_ALLOW_FLOATS
-		#define GFILE_ALLOW_FLOATS	GFXOFF
+		#define GFILE_ALLOW_FLOATS	FALSE
 	#endif
 	/**
 	 * @brief   Can the device be specified as part of the file name.
@@ -206,7 +191,7 @@
 	 * 			specific device.
 	 */
 	#ifndef GFILE_ALLOW_DEVICESPECIFIC
-		#define GFILE_ALLOW_DEVICESPECIFIC		GFXOFF
+		#define GFILE_ALLOW_DEVICESPECIFIC		FALSE
 	#endif
 	/**
 	 * @brief   The maximum number of open files
@@ -228,7 +213,7 @@
 	 *			be compatible with uGFX memory management.
 	 */
 	#ifndef GFILE_FATFS_EXTERNAL_LIB
-		#define GFILE_FATFS_EXTERNAL_LIB		GFXOFF
+		#define GFILE_FATFS_EXTERNAL_LIB		FALSE
 	#endif
 	/**
 	 * @brief   TUse an external PETITFS library instead of the uGFX inbuilt one
@@ -238,7 +223,7 @@
 	 * @note	The users pffconf.h file still needs to be reachable when compiling uGFX.
 	 */
 	#ifndef GFILE_PETITFS_EXTERNAL_LIB
-		#define GFILE_PETITFS_EXTERNAL_LIB	GFXOFF
+		#define GFILE_PETITFS_EXTERNAL_LIB	FALSE
 	#endif
 	
 /** @} */

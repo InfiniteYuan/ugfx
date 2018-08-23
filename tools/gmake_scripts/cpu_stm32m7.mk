@@ -15,5 +15,5 @@
 #
 SRCFLAGS += -mcpu=cortex-m7 -falign-functions=16 -mfloat-abi=hard -mfpu=fpv4-sp-d16 -fsingle-precision-constant
 LDFLAGS  += -mcpu=cortex-m7 -falign-functions=16 -mfloat-abi=hard -mfpu=fpv4-sp-d16 -fsingle-precision-constant
-DEFS     += CORTEX_USE_FPU=GFXON USE_FPU=hard
+DEFS     += CORTEX_USE_FPU=TRUE USE_FPU=hard
 LIBS	 += m

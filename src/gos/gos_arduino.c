@@ -25,11 +25,7 @@ void _gosInit(void)
 	 * getting here!
 	 */
 	#if !GFX_OS_INIT_NO_WARNING
-		#if GFX_COMPILER_WARNING_TYPE == GFX_COMPILER_WARNING_DIRECT
-			#warning "GOS: Arduino - Make sure you initialize your hardware and the C runtime before calling gfxInit() in your application!"
-		#elif GFX_COMPILER_WARNING_TYPE == GFX_COMPILER_WARNING_MACRO
-			COMPILER_WARNING("GOS: Arduino - Make sure you initialize your hardware and the C runtime before calling gfxInit() in your application!")
-		#endif
+		#warning "GOS: Arduino - Make sure you initialize your hardware and the C runtime before calling gfxInit() in your application!"
 	#endif
 
 	// Start the heap allocator
@@ -37,10 +33,6 @@ void _gosInit(void)
 
 	// Start the scheduler
 	_gosThreadsInit();
-}
-
-void _gosPostInit(void)
-{
 }
 
 void _gosDeinit(void)
@@ -72,10 +64,10 @@ void gfxExit(void) {
  * Sleep functions
  *********************************************************/
 
-gTicks gfxSystemTicks(void) {
+systemticks_t gfxSystemTicks(void) {
 	return millis();
 }
-gTicks gfxMillisecondsToTicks(gDelay ms) {
+systemticks_t gfxMillisecondsToTicks(delaytime_t ms) {
 	return ms;
 }
 

@@ -195,13 +195,13 @@ void gwinProgressbarDecrement(GHandle gh) {
 		#undef gsw
 	}
 
-	void gwinProgressbarStart(GHandle gh, gDelay delay) {
+	void gwinProgressbarStart(GHandle gh, delaytime_t delay) {
 		#define gsw		((GProgressbarObject *)gh)
 
 		if (gh->vmt != (gwinVMT *)&progressbarVMT)
 			return;
 
-		gtimerStart(&gsw->gt, _progressbarCallback, gh, gTrue, delay);
+		gtimerStart(&gsw->gt, _progressbarCallback, gh, TRUE, delay);
 
 		#undef gsw
 	}
@@ -255,7 +255,7 @@ void gwinProgressbarDraw_Std(GWidgetObject *gw, void *param) {
 		gdispGDrawBox(gw->g.display, gw->g.x, gw->g.y, gw->g.width, gw->g.height, pcol->edge);												// Edge
 		gdispGDrawLine(gw->g.display, gw->g.x+gsw->dpos, gw->g.y, gw->g.x+gsw->dpos, gw->g.y+gw->g.height-1, pcol->edge);					// Thumb
 	}
-	gdispGDrawStringBox(gw->g.display, gw->g.x+1, gw->g.y+1, gw->g.width-2, gw->g.height-2, gw->text, gw->g.font, pcol->text, gJustifyCenter);
+	gdispGDrawStringBox(gw->g.display, gw->g.x+1, gw->g.y+1, gw->g.width-2, gw->g.height-2, gw->text, gw->g.font, pcol->text, justifyCenter);
 
 	#undef gsw
 }
@@ -265,7 +265,7 @@ void gwinProgressbarDraw_Image(GWidgetObject *gw, void *param) {
 	#define gsw			((GProgressbarObject *)gw)
 	#define gi			((gdispImage *)param)
 	const GColorSet *	pcol;
-	gCoord				z, v;
+	coord_t				z, v;
 
 	if (gw->g.vmt != (gwinVMT *)&progressbarVMT)
 		return;
@@ -306,7 +306,7 @@ void gwinProgressbarDraw_Image(GWidgetObject *gw, void *param) {
 		gdispGDrawBox(gw->g.display, gw->g.x, gw->g.y, gw->g.width, gw->g.height, pcol->edge);								// Edge
 		gdispGDrawLine(gw->g.display, gw->g.x+gsw->dpos, gw->g.y+1, gw->g.x+gsw->dpos, gw->g.y+gw->g.height-2, pcol->edge);	// Thumb
 	}
-	gdispGDrawStringBox(gw->g.display, gw->g.x+1, gw->g.y+1, gw->g.width-2, gw->g.height-2, gw->text, gw->g.font, pcol->text, gJustifyCenter);
+	gdispGDrawStringBox(gw->g.display, gw->g.x+1, gw->g.y+1, gw->g.width-2, gw->g.height-2, gw->text, gw->g.font, pcol->text, justifyCenter);
 
 	#undef gsw
 }

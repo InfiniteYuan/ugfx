@@ -27,13 +27,13 @@
 	#define GDISP_GFXNET_PORT	GNETCODE_DEFAULT_PORT
 #endif
 #ifndef GDISP_DONT_WAIT_FOR_NET_DISPLAY
-	#define GDISP_DONT_WAIT_FOR_NET_DISPLAY	GFXOFF
+	#define GDISP_DONT_WAIT_FOR_NET_DISPLAY	FALSE
 #endif
 #ifndef GDISP_GFXNET_UNSAFE_SOCKETS
-	#define GDISP_GFXNET_UNSAFE_SOCKETS	GFXOFF
+	#define GDISP_GFXNET_UNSAFE_SOCKETS	FALSE
 #endif
 #ifndef GDISP_GFXNET_BROKEN_LWIP_ACCEPT
-	#define GDISP_GFXNET_BROKEN_LWIP_ACCEPT		GFXOFF
+	#define GDISP_GFXNET_BROKEN_LWIP_ACCEPT		FALSE
 #endif
 
 #if GINPUT_NEED_MOUSE
@@ -42,8 +42,8 @@
 	#include "../../../src/ginput/ginput_driver_mouse.h"
 
 	// Forward definitions
-	static gBool NMouseInit(GMouse *m, unsigned driverinstance);
-	static gBool NMouseRead(GMouse *m, GMouseReading *prd);
+	static bool_t NMouseInit(GMouse *m, unsigned driverinstance);
+	static bool_t NMouseRead(GMouse *m, GMouseReading *prd);
 
 	const GMouseVMT const GMOUSE_DRIVER_VMT[1] = {{
 		{
@@ -124,7 +124,7 @@
 		#define StartSockets()		Start_LWIP();
 	#else
 		#include "lwipthread.h"
-		#define StartSockets()		gfxThreadClose(gfxThreadCreate(wa_lwip_thread, LWIP_THREAD_STACK_SIZE, gThreadpriorityNormal, lwip_thread, 0))
+		#define StartSockets()		gfxThreadClose(gfxThreadCreate(wa_lwip_thread, LWIP_THREAD_STACK_SIZE, NORMAL_PRIORITY, lwip_thread, 0))
 	#endif
 
 	#if !LWIP_SOCKET
@@ -137,13 +137,9 @@
 
 	// Mutex protection is required for LWIP
 	#if !GDISP_GFXNET_UNSAFE_SOCKETS
-		#if GFX_COMPILER_WARNING_TYPE == GFX_COMPILER_WARNING_DIRECT
-			#warning "GDISP: uGFXnet - LWIP sockets are not thread-safe. GDISP_GFXNET_UNSAFE_SOCKETS has been turned on for you."
-		#elif GFX_COMPILER_WARNING_TYPE == GFX_COMPILER_WARNING_MACRO
-			COMPILER_WARNING("GDISP: uGFXnet - LWIP sockets are not thread-safe. GDISP_GFXNET_UNSAFE_SOCKETS has been turned on for you.")
-		#endif
+		#warning "GDISP: uGFXnet - LWIP sockets are not thread-safe. GDISP_GFXNET_UNSAFE_SOCKETS has been turned on for you."
 		#undef GDISP_GFXNET_UNSAFE_SOCKETS
-		#define GDISP_GFXNET_UNSAFE_SOCKETS	GFXON
+		#define GDISP_GFXNET_UNSAFE_SOCKETS	TRUE
 	#endif
 #endif
 
@@ -159,13 +155,13 @@ typedef struct netPriv {
 	unsigned		databytes;				// How many bytes have been read
 	uint16_t		data[2];				// Buffer for storing data read.
 	#if GINPUT_NEED_MOUSE
-		gCoord		mousex, mousey;
+		coord_t		mousex, mousey;
 		uint16_t	mousebuttons;
 		GMouse *	mouse;
 	#endif
 } netPriv;
 
-static gThread	hThread;
+static gfxThreadHandle	hThread;
 
 #if GDISP_GFXNET_UNSAFE_SOCKETS
 	static gfxMutex	uGFXnetMutex;
@@ -182,9 +178,9 @@ static gThread	hThread;
  * Send a whole packet of data.
  * Len is specified in the number of uint16_t's we want to send as our protocol only talks uint16_t's.
  * Note that contents of the packet are modified to ensure it will cross the wire in the correct format.
- * If the connection closes before we send all the data - the call returns gFalse.
+ * If the connection closes before we send all the data - the call returns FALSE.
  */
-static gBool sendpkt(SOCKET_TYPE netfd, uint16_t *pkt, int len) {
+static bool_t sendpkt(SOCKET_TYPE netfd, uint16_t *pkt, int len) {
 	int		i;
 
 	// Convert each uint16_t to network order
@@ -196,7 +192,7 @@ static gBool sendpkt(SOCKET_TYPE netfd, uint16_t *pkt, int len) {
 	return send(netfd, (const char *)pkt, len, 0) == len;
 }
 
-static gBool newconnection(SOCKET_TYPE clientfd) {
+static bool_t newconnection(SOCKET_TYPE clientfd) {
 	GDisplay *	g;
     netPriv *	priv;
 
@@ -213,7 +209,7 @@ static gBool newconnection(SOCKET_TYPE clientfd) {
 
 	// Was anything found?
 	if (!g)
-		return gFalse;
+		return FALSE;
 
 	// Reset the priv area
 	priv = g->priv;
@@ -240,13 +236,13 @@ static gBool newconnection(SOCKET_TYPE clientfd) {
 	// Send a redraw all
 	#if GFX_USE_GWIN && GWIN_NEED_WINDOWMANAGER
 		gdispGClear(g, gwinGetDefaultBgColor());
-		gwinRedrawDisplay(g, gFalse);
+		gwinRedrawDisplay(g, FALSE);
 	#endif
 
-	return gTrue;
+	return TRUE;
 }
 
-static gBool rxdata(SOCKET_TYPE fd) {
+static bool_t rxdata(SOCKET_TYPE fd) {
 	GDisplay *	g;
     netPriv *	priv;
     int			len;
@@ -269,7 +265,7 @@ static gBool rxdata(SOCKET_TYPE fd) {
 		// The higher level is still processing the previous data.
 		//	Give it a chance to run by coming back to this data.
 		gfxSleepMilliseconds(1);
-		return gTrue;
+		return TRUE;
 	}
 
 	/* handle data from a client */
@@ -278,14 +274,14 @@ static gBool rxdata(SOCKET_TYPE fd) {
 		// Socket closed or in error state
 		MUTEX_EXIT;
 		g->flags &= ~GDISP_FLG_CONNECTED;
-		return gFalse;
+		return FALSE;
 	}
 	MUTEX_EXIT;
 
 	// Do we have a full reply yet
 	priv->databytes += len;
 	if (priv->databytes < sizeof(priv->data))
-		return gTrue;
+		return TRUE;
 	priv->databytes = 0;
 
 	// Convert network byte or to host byte order
@@ -315,7 +311,7 @@ static gBool rxdata(SOCKET_TYPE fd) {
 		// Just ignore unrecognised data
 		break;
 	}
-	return gTrue;
+	return TRUE;
 }
 
 static DECLARE_THREAD_STACK(waNetThread, 512);
@@ -356,11 +352,7 @@ static DECLARE_THREAD_FUNCTION(NetThread, param) {
     fdmax = listenfd; /* so far, it's this one*/
 
 	#if GDISP_GFXNET_BROKEN_LWIP_ACCEPT
-		#if GFX_COMPILER_WARNING_TYPE == GFX_COMPILER_WARNING_DIRECT
-			#warning "Using GDISP_GFXNET_BROKEN_LWIP_ACCEPT limits the number of displays and the use of GFXNET. Avoid if possible!"
-		#elif GFX_COMPILER_WARNING_TYPE == GFX_COMPILER_WARNING_MACRO
-			COMPILER_WARNING("Using GDISP_GFXNET_BROKEN_LWIP_ACCEPT limits the number of displays and the use of GFXNET. Avoid if possible!")
-		#endif
+		#warning "Using GDISP_GFXNET_BROKEN_LWIP_ACCEPT limits the number of displays and the use of GFXNET. Avoid if possible!"
 		len = sizeof(addr);
 		if((clientfd = accept(listenfd, (struct sockaddr *)&addr, &len)) == (SOCKET_TYPE)-1)
 			gfxHalt("GDISP: uGFXnet - Accept failed");
@@ -429,13 +421,13 @@ static DECLARE_THREAD_FUNCTION(NetThread, param) {
 /* Driver exported functions.                                                */
 /*===========================================================================*/
 
-LLDSPEC gBool gdisp_lld_init(GDisplay *g) {
+LLDSPEC bool_t gdisp_lld_init(GDisplay *g) {
 	netPriv	*	priv;
 
 	// Initialise the receiver thread (if it hasn't been done already)
 	if (!hThread) {
 		MUTEX_INIT;
-		hThread = gfxThreadCreate(waNetThread, sizeof(waNetThread), gThreadpriorityHigh, NetThread, 0);
+		hThread = gfxThreadCreate(waNetThread, sizeof(waNetThread), HIGH_PRIORITY, NetThread, 0);
 		gfxThreadClose(hThread);
 	}
 
@@ -452,14 +444,14 @@ LLDSPEC gBool gdisp_lld_init(GDisplay *g) {
 	#endif
 
 	// Initialise the GDISP structure
-	g->g.Orientation = gOrientation0;
-	g->g.Powermode = gPowerOn;
+	g->g.Orientation = GDISP_ROTATE_0;
+	g->g.Powermode = powerOn;
 	g->g.Backlight = 100;
 	g->g.Contrast = 50;
 	g->g.Width = GDISP_SCREEN_WIDTH;
 	g->g.Height = GDISP_SCREEN_HEIGHT;
 
-	return gTrue;
+	return TRUE;
 }
 
 #if GDISP_HARDWARE_FLUSH
@@ -538,9 +530,9 @@ LLDSPEC gBool gdisp_lld_init(GDisplay *g) {
 #if GDISP_HARDWARE_BITFILLS
 	LLDSPEC void gdisp_lld_blit_area(GDisplay *g) {
 		netPriv	*	priv;
-		gPixel	*	buffer;
+		pixel_t	*	buffer;
 		uint16_t	buf[5];
-		gCoord		x, y;
+		coord_t		x, y;
 
 		#if GDISP_DONT_WAIT_FOR_NET_DISPLAY
 			if (!(g->flags & GDISP_FLG_CONNECTED))
@@ -574,10 +566,10 @@ LLDSPEC gBool gdisp_lld_init(GDisplay *g) {
 #endif
 
 #if GDISP_HARDWARE_PIXELREAD
-	LLDSPEC	gColor gdisp_lld_get_pixel_color(GDisplay *g) {
+	LLDSPEC	color_t gdisp_lld_get_pixel_color(GDisplay *g) {
 		netPriv	*	priv;
 		uint16_t	buf[3];
-		gColor		data;
+		color_t		data;
 
 		#if GDISP_DONT_WAIT_FOR_NET_DISPLAY
 			if (!(g->flags & GDISP_FLG_CONNECTED))
@@ -636,7 +628,7 @@ LLDSPEC gBool gdisp_lld_init(GDisplay *g) {
 	LLDSPEC void gdisp_lld_control(GDisplay *g) {
 		netPriv	*	priv;
 		uint16_t	buf[3];
-		gBool		allgood;
+		bool_t		allgood;
 
 		#if GDISP_DONT_WAIT_FOR_NET_DISPLAY
 			if (!(g->flags & GDISP_FLG_CONNECTED))
@@ -649,11 +641,11 @@ LLDSPEC gBool gdisp_lld_init(GDisplay *g) {
 		// Check if we might support the code
 		switch(g->p.x) {
 		case GDISP_CONTROL_ORIENTATION:
-			if (g->g.Orientation == (gOrientation)g->p.ptr)
+			if (g->g.Orientation == (orientation_t)g->p.ptr)
 				return;
 			break;
 		case GDISP_CONTROL_POWER:
-			if (g->g.Powermode == (gPowermode)g->p.ptr)
+			if (g->g.Powermode == (powermode_t)g->p.ptr)
 				return;
 			break;
 		case GDISP_CONTROL_BACKLIGHT:
@@ -680,7 +672,7 @@ LLDSPEC gBool gdisp_lld_init(GDisplay *g) {
 			gfxSleepMilliseconds(1);
 
 		// Extract the return status
-		allgood = priv->data[1] ? gTrue : gFalse;
+		allgood = priv->data[1] ? TRUE : FALSE;
 		g->flags &= ~GDISP_FLG_HAVEDATA;
 
 		// Do nothing more if the operation failed
@@ -689,24 +681,24 @@ LLDSPEC gBool gdisp_lld_init(GDisplay *g) {
 		// Update the local stuff
 		switch(g->p.x) {
 		case GDISP_CONTROL_ORIENTATION:
-			switch((gOrientation)g->p.ptr) {
-				case gOrientation0:
-				case gOrientation180:
+			switch((orientation_t)g->p.ptr) {
+				case GDISP_ROTATE_0:
+				case GDISP_ROTATE_180:
 					g->g.Width = GDISP_SCREEN_WIDTH;
 					g->g.Height = GDISP_SCREEN_HEIGHT;
 					break;
-				case gOrientation90:
-				case gOrientation270:
+				case GDISP_ROTATE_90:
+				case GDISP_ROTATE_270:
 					g->g.Height = GDISP_SCREEN_WIDTH;
 					g->g.Width = GDISP_SCREEN_HEIGHT;
 					break;
 				default:
 					return;
 			}
-			g->g.Orientation = (gOrientation)g->p.ptr;
+			g->g.Orientation = (orientation_t)g->p.ptr;
 			break;
 		case GDISP_CONTROL_POWER:
-			g->g.Powermode = (gPowermode)g->p.ptr;
+			g->g.Powermode = (powermode_t)g->p.ptr;
 			break;
 		case GDISP_CONTROL_BACKLIGHT:
 			g->g.Backlight = (uint16_t)(int)g->p.ptr;
@@ -716,12 +708,12 @@ LLDSPEC gBool gdisp_lld_init(GDisplay *g) {
 #endif
 
 #if GINPUT_NEED_MOUSE
-	static gBool NMouseInit(GMouse *m, unsigned driverinstance) {
+	static bool_t NMouseInit(GMouse *m, unsigned driverinstance) {
 		(void)	m;
 		(void)	driverinstance;
-		return gTrue;
+		return TRUE;
 	}
-	static gBool NMouseRead(GMouse *m, GMouseReading *pt) {
+	static bool_t NMouseRead(GMouse *m, GMouseReading *pt) {
 		GDisplay *	g;
 		netPriv	*	priv;
 
@@ -732,7 +724,7 @@ LLDSPEC gBool gdisp_lld_init(GDisplay *g) {
 		pt->y = priv->mousey;
 		pt->z = (priv->mousebuttons & GINPUT_MOUSE_BTN_LEFT) ? 1 : 0;
 		pt->buttons = priv->mousebuttons;
-		return gTrue;
+		return TRUE;
 	}
 #endif /* GINPUT_NEED_MOUSE */
 

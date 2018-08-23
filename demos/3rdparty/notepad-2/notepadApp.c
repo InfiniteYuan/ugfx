@@ -47,8 +47,8 @@ static GHandle					gstatusConsole;	  // GConsole Handle to the Status Bar
 
 static GEventMouse				curPtr;           // Holder for current pointer location
 
-static gFont					font;
-static gCoord 					swidth, sheight;
+static font_t					font;
+static coord_t 					swidth, sheight;
 
 // The toolbar buttons - Self-Explanatory
 static GButtonObject btnNew, btnOpen, btnSave;
@@ -63,9 +63,9 @@ static GButtonObject btnClose;
 // Image object
 static gdispImage toolbarImageFilmstrip;
 
-static gColor myColors[] = { GFX_BLACK, GFX_RED, GFX_GREEN, GFX_BLUE, GFX_CYAN, GFX_MAGENTA, GFX_YELLOW, GFX_WHITE };
+static color_t myColors[] = { Black, Red, Green, Blue, Cyan, Magenta, Yellow, White };
 
-static gColor selColor = GFX_BLACK;
+static color_t selColor = Black;
 static int selColorIndex = 0, selPenWidth = 1, tbMode = 1;
 
 static NColorScheme nCurColorScheme;
@@ -73,7 +73,7 @@ static NColorScheme nCurColorScheme;
 static DECLARE_THREAD_FUNCTION(notepadThread, param);
 
 // Custom drawing functions for the buttons
-static void nbtnColorBarDraw(GHandle gh, gBool enabled, gBool isdown, const char *txt, const GButtonDrawStyle *pstyle, void *param) {
+static void nbtnColorBarDraw(GHandle gh, bool_t enabled, bool_t isdown, const char *txt, const GButtonDrawStyle *pstyle, void *param) {
   #define ccs nCurColorScheme
 
   int i, j, k;
@@ -152,11 +152,11 @@ static void nbtnColorBarDraw(GHandle gh, gBool enabled, gBool isdown, const char
   #undef ccs
 }
 
-static void nbtnColorBarSelDraw(GHandle gh, gBool enabled, gBool isdown, const char *txt, const GButtonDrawStyle *pstyle, void *param) {
+static void nbtnColorBarSelDraw(GHandle gh, bool_t enabled, bool_t isdown, const char *txt, const GButtonDrawStyle *pstyle, void *param) {
 #define ccs nCurColorScheme
 
   int i, j = 0, k;
-  gColor ca, cb;
+  color_t ca, cb;
   GEventMouse ptr;
 
   (void)txt;
@@ -215,10 +215,10 @@ static void nbtnColorBarSelDraw(GHandle gh, gBool enabled, gBool isdown, const c
   #undef ccs
 }
 
-static void nToolbarImageButtonDraw(GHandle gh, gBool isenabled, gBool isdown, const char *txt, const GButtonDrawStyle *pstyle, void *param) {
+static void nToolbarImageButtonDraw(GHandle gh, bool_t isenabled, bool_t isdown, const char *txt, const GButtonDrawStyle *pstyle, void *param) {
   (void)txt;  (void)pstyle; (void)isenabled;
 
-  gColor cl = isdown ? nCurColorScheme.toolbarBgActive : nCurColorScheme.toolbarBgUnsel;
+  color_t cl = isdown ? nCurColorScheme.toolbarBgActive : nCurColorScheme.toolbarBgUnsel;
 
   gdispImageSetBgColor(&toolbarImageFilmstrip, cl);
   gdispFillArea(gh->x, gh->y, gh->width, gh->height, cl);
@@ -228,7 +228,7 @@ static void nToolbarImageButtonDraw(GHandle gh, gBool isenabled, gBool isdown, c
 	gdispDrawBox(gh->x, gh->y, gh->width, gh->height, nCurColorScheme.toolbarSeparator);
 }
 
-static void nCloseButtonDraw(GHandle gh, gBool isenabled, gBool isdown, const char *txt, const GButtonDrawStyle *pstyle, void *param) {
+static void nCloseButtonDraw(GHandle gh, bool_t isenabled, bool_t isdown, const char *txt, const GButtonDrawStyle *pstyle, void *param) {
   (void) isenabled;
   (void) isdown;
   (void) txt;
@@ -351,7 +351,7 @@ static DECLARE_THREAD_FUNCTION(notepadThread, param) {
                      NPAD_TITLETEXT_STR,
                      font,
                      nCurColorScheme.titleTextColor,
-                     gJustifyLeft);
+                     justifyLeft);
 
   /* Create the drawing window, draw its border */
   gdispDrawBox(NPAD_DRAWING_AREA_START_X - 1,
@@ -383,13 +383,13 @@ static DECLARE_THREAD_FUNCTION(notepadThread, param) {
                  0);
 
   gwinSetBgColor(ghc, nCurColorScheme.winBgColor);
-  gwinSetColor(ghc, GFX_BLACK);
+  gwinSetColor(ghc, Black);
 
   gstatusConsole = ghc;
 
   /* draw the buttons */
-  gwinSetColor(nDrawingArea, GFX_BLACK);
-  gwinSetBgColor(nDrawingArea, GFX_WHITE);
+  gwinSetColor(nDrawingArea, Black);
+  gwinSetBgColor(nDrawingArea, White);
 
   gwinClear(nDrawingArea);
   gwinClear(ghc);
@@ -401,8 +401,8 @@ static DECLARE_THREAD_FUNCTION(notepadThread, param) {
 
   ncoreSpawnDrawThread(nDrawingArea, gstatusConsole);
 
-  while(1) {
-	  pem = (GEventMouse *) geventEventWait(&gl, gDelayForever);
+  while(TRUE) {
+	  pem = (GEventMouse *) geventEventWait(&gl, TIME_INFINITE);
 
 	  /* button pressed... */
 	  if (pem->type == GEVENT_GWIN_BUTTON) {
@@ -414,8 +414,8 @@ static DECLARE_THREAD_FUNCTION(notepadThread, param) {
 		  selPenWidth = 0;
 		  ncoreSetMode(NCORE_MODE_DRAW);
 
-		  gwinSetColor(nDrawingArea, GFX_BLACK);
-		  gwinSetBgColor(nDrawingArea, GFX_WHITE);
+		  gwinSetColor(nDrawingArea, Black);
+		  gwinSetBgColor(nDrawingArea, White);
 
 		  // Refresh the buttons
 		  drawButtons();
@@ -464,7 +464,7 @@ static DECLARE_THREAD_FUNCTION(notepadThread, param) {
 void nSetColorScheme(NColorScheme sch)  {  nCurColorScheme = sch; }
 NColorScheme nGetColorScheme(void)      { return nCurColorScheme; }
 
-gThread nLaunchNotepadApp(void) {
+gfxThreadHandle nLaunchNotepadApp(void) {
 
   return gfxThreadCreate(waNotepadThread,
 						   sizeof(waNotepadThread),

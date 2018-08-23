@@ -71,7 +71,7 @@ extern "C" {
 
 /**
  * @brief				Initialise the record driver
- * @return				gTrue if the channel, frequency and format are valid.
+ * @return				TRUE if the channel, frequency and format are valid.
  *
  * @param[in] channel	The channel to use (see the driver for the available channels provided)
  * @param[in] frequency	The sample frequency to use
@@ -81,7 +81,7 @@ extern "C" {
  *
  * @api
  */
-gBool gaudio_record_lld_init(uint16_t channel, uint32_t frequency, ArrayDataFormat format);
+bool_t gaudio_record_lld_init(uint16_t channel, uint32_t frequency, ArrayDataFormat format);
 
 /**
  * @brief				Start the audio recording

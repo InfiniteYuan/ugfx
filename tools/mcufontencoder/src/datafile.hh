@@ -51,8 +51,6 @@ public:
     DataFile(const std::vector<dictentry_t> &dictionary,
              const std::vector<glyphentry_t> &glyphs,
              const fontinfo_t &fontinfo);
-
-    inline DataFile * clone() const { return new DataFile(GetDictionary(), GetGlyphTable(), GetFontInfo()); }
     
     // Save to a file (custom format)
     void Save(std::ostream &file) const;

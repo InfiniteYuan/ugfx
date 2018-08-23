@@ -28,10 +28,10 @@
  */
 	/**
 	 * @brief	Defines the GTIMER thread priority
-	 * @details	Defaults to gThreadpriorityHigh
+	 * @details	Defaults to HIGH_PRIORITY
 	 */
 	#ifndef GTIMER_THREAD_PRIORITY
-		#define GTIMER_THREAD_PRIORITY			gThreadpriorityHigh
+		#define GTIMER_THREAD_PRIORITY			HIGH_PRIORITY
 	#endif
 	/**
 	 * @brief   Defines the size of the timer threads work area (stack+structures).

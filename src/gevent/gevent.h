@@ -15,7 +15,7 @@
  * @details		GEVENT provides a simple to use but yet powerful event
  *				system.
  *
- * @pre			GFX_USE_GEVENT must be set to GFXON in your gfxconf.h
+ * @pre			GFX_USE_GEVENT must be set to TRUE in your gfxconf.h
  *
  * @{
  */
@@ -77,6 +77,10 @@ typedef struct GSourceListener_t {
 /* External declarations.                                                    */
 /*===========================================================================*/
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /* How to listen for events (act as a Listener)...
 	1. Get handles for all the event sources you are interested in.
 	2. Initialise a listener
@@ -93,7 +97,7 @@ typedef struct GSourceListener_t {
 			For each listener	- check the flags to see if an event should be sent.
 								- use geventGetEventBuffer() to get the event buffer supplied by the listener
 									and then call geventSendEvent() to send the event.
-								- Note: geventGetEventBuffer() may return gFalse to indicate the listener is currently not listening and
+								- Note: geventGetEventBuffer() may return FALSE to indicate the listener is currently not listening and
 									therefore no event should be sent. This situation enables the source to (optionally) flag
 									to the listener on its next wait that there have been missed events.
 								- Note: The GSourceListener pointer (and the GEvent buffer) are only valid between
@@ -117,16 +121,16 @@ void geventListenerInit(GListener *pl);
  * @brief 	Attach a source to a listener
  * @details	Flags are interpreted by the source when generating events for each listener.
  *			If this source is already assigned to the listener it will update the flags.
- *			If insufficient resources are available it will either assert or return gFalse
+ *			If insufficient resources are available it will either assert or return FALSE
  *			depending on the value of GEVENT_ASSERT_NO_RESOURCE.
  *
  * @param[in] pl	The listener
  * @param[in] gsh	The source which has to be attached to the listener
  * @param[in] flags	The flags
  *
- * @return gTrue if succeeded, gFalse otherwise
+ * @return TRUE if succeeded, FALSE otherwise
  */
-gBool geventAttachSource(GListener *pl, GSourceHandle gsh, uint32_t flags);
+bool_t geventAttachSource(GListener *pl, GSourceHandle gsh, uint32_t flags);
 
 /**
  * @brief	Detach a source from a listener
@@ -142,8 +146,8 @@ void geventDetachSource(GListener *pl, GSourceHandle gsh);
  * @brief	Wait for an event on a listener from an assigned source.
  * @details	The type of the event should be checked (pevent->type) and then pevent should
  *			be typecast to the actual event type if it needs to be processed.
- *			gDelayForever means no timeout - wait forever for an event.
- *			gDelayNone means return immediately
+ *			TIME_INFINITE means no timeout - wait forever for an event.
+ *			TIME_IMMEDIATE means return immediately
  * @note	The returned GEvent is released when this routine is called again
  * 			or when optionally @p geventEventComplete() is called. Calling @p geventEventComplete()
  * 			allows the GEvent object to be reused earlier which can reduce missed events. The GEvent
@@ -157,7 +161,7 @@ void geventDetachSource(GListener *pl, GSourceHandle gsh);
  *
  * @return	NULL on timeout
  */
-GEvent *geventEventWait(GListener *pl, gDelay timeout);
+GEvent *geventEventWait(GListener *pl, delaytime_t timeout);
 
 /**
  * @brief	Release the GEvent buffer associated with a listener.
@@ -231,6 +235,10 @@ void geventSendEvent(GSourceListener *psl);
  * @param[in] gsh	The source handle
  */
 void geventDetachSourceListeners(GSourceHandle gsh);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* GFX_USE_GEVENT */
 

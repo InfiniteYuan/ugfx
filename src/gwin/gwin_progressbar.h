@@ -14,8 +14,8 @@
  *
  * @brief		ProgressBar widget.
  *
- * @pre			GFX_USE_GWIN must be set to GFXON in your gfxconf.h
- * @pre			GWIN_NEED_PROGRESSBAR must be set to GFXON in your gfxconf.h
+ * @pre			GFX_USE_GWIN must be set to TRUE in your gfxconf.h
+ * @pre			GWIN_NEED_PROGRESSBAR must be set to TRUE in your gfxconf.h
  * @{
  */
 
@@ -26,7 +26,7 @@
 // A progressbar window
 typedef struct GProgressbarObject {
 	GWidgetObject		w;
-	gCoord				dpos;
+	coord_t				dpos;
 	int					min;
 	int					max;
 	int					res;
@@ -35,6 +35,10 @@ typedef struct GProgressbarObject {
 		GTimer			gt;
 	#endif
 } GProgressbarObject;
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /**
  * @brief   Create a progressbar window.
@@ -45,7 +49,7 @@ typedef struct GProgressbarObject {
  * @param[in] pInit		The initialization parameters to use
  *
  * @note				The drawing color and the background color get set to the current defaults. If you haven't called
- * 						@p gwinSetDefaultColor() or @p gwinSetDefaultBgColor() then these are GFX_WHITE and GFX_BLACK respectively.
+ * 						@p gwinSetDefaultColor() or @p gwinSetDefaultBgColor() then these are White and Black respectively.
  * @note				The font gets set to the current default font. If you haven't called @p gwinSetDefaultFont() then there
  * 						is no default font and text drawing operations will no nothing.
  * @note				A progressbar remembers its normal drawing state. If there is a window manager then it is automatically
@@ -159,7 +163,7 @@ void gwinProgressbarDecrement(GHandle gh);
 	 *
 	 * @api
 	 */
-	void gwinProgressbarStart(GHandle gh, gDelay delay);
+	void gwinProgressbarStart(GHandle gh, delaytime_t delay);
 
 	/**
 	 * @brief	Stop the timer which is started by @p gwinProgressbarStart()
@@ -209,13 +213,17 @@ void gwinProgressbarDraw_Std(GWidgetObject *gw, void *param);
 	 *						and inactive areas. No checking is done to compare the dimensions of the progressbar
 	 *						to the size of the image. Note text is drawn on top of the image.
 	 *
-	 * @pre					GDISP_NEED_IMAGE must be set to GFXON
+	 * @pre					GDISP_NEED_IMAGE must be set to TRUE
 	 *
 	 * @api
 	 */
 	void gwinProgressbarDraw_Image(GWidgetObject *gw, void *param);
 #endif /* GDISP_NEED_IMAGE */
 /** @} */
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* _GWIN_PROGRESSBAR_H */
 /** @} */

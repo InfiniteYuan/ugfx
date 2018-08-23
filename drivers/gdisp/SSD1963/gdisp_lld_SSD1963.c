@@ -17,7 +17,7 @@
 #define CALC_FPR(w,h,hb,hf,hp,vb,vf,vp,fps)	((fps * CALC_PERIOD(w,hb,hf,hp) * CALC_PERIOD(h,vb,vf,vp) * 1048576)/100000000)
 
 typedef struct LCD_Parameters {
-	gCoord		width, height;					// Panel width and height
+	coord_t		width, height;					// Panel width and height
 	uint16_t	hbporch;						// Horizontal Back Porch
 	uint16_t	hfporch;						// Horizontal Front Porch
 	uint16_t	hpulse;							// Horizontal Pulse
@@ -45,8 +45,8 @@ typedef struct LCD_Parameters {
 		#define LCD_PANEL_TYPE_SERIAL_RGB_MODE			((1<<6) << 8)				// Serial RGB mode
 		#define LCD_PANEL_TYPE_SERIAL_RGB_DUMMY_MODE	(((1<<5) | (1<<6)) << 8)	// Serial RGB+dummy mode
 
-	gBool		flipHorz;						// Flipping the display horizontally
-	gBool		flipVert;						// Flipping the display vertically
+	bool_t		flipHorz;						// Flipping the display horizontally
+	bool_t		flipVert;						// Flipping the display vertically
 } LCD_Parameters;
 
 #include "board_SSD1963.h"
@@ -56,7 +56,7 @@ typedef struct LCD_Parameters {
 /*===========================================================================*/
 
 #ifndef GDISP_SSD1963_NO_INIT
-	#define GDISP_SSD1963_NO_INIT	GFXOFF
+	#define GDISP_SSD1963_NO_INIT	FALSE
 #endif
 #ifndef GDISP_INITIAL_CONTRAST
 	#define GDISP_INITIAL_CONTRAST	50
@@ -79,7 +79,7 @@ typedef struct LCD_Parameters {
 static GFXINLINE void set_viewport(GDisplay* g) {
 	switch(g->g.Orientation) {
 		default:
-		case gOrientation0:
+		case GDISP_ROTATE_0:
 			write_index(g, SSD1963_SET_COLUMN_ADDRESS);
 			write_data16(g, g->p.x);
 			write_data16(g, g->p.x+g->p.cx-1);
@@ -88,7 +88,7 @@ static GFXINLINE void set_viewport(GDisplay* g) {
 			write_data16(g, g->p.y+g->p.cy-1);
 			write_index(g, SSD1963_WRITE_MEMORY_START);
 			break;
-		case gOrientation90:
+		case GDISP_ROTATE_90:
 			write_index(g, SSD1963_SET_COLUMN_ADDRESS);
 			write_data16(g, g->p.y);
 			write_data16(g, g->p.y+g->p.cy-1);
@@ -97,7 +97,7 @@ static GFXINLINE void set_viewport(GDisplay* g) {
 			write_data16(g, g->g.Width-1 - g->p.x);
 			write_index(g, SSD1963_WRITE_MEMORY_START);
 			break;
-		case gOrientation180:
+		case GDISP_ROTATE_180:
 			write_index(g, SSD1963_SET_COLUMN_ADDRESS);
 			write_data16(g, g->g.Width - g->p.x - g->p.cx);
 			write_data16(g, g->g.Width-1 - g->p.x);
@@ -106,7 +106,7 @@ static GFXINLINE void set_viewport(GDisplay* g) {
 			write_data16(g, g->g.Height-1 - g->p.y);
 			write_index(g, SSD1963_WRITE_MEMORY_START);
 			break;
-		case gOrientation270:
+		case GDISP_ROTATE_270:
 			write_index(g, SSD1963_SET_COLUMN_ADDRESS);
 			write_data16(g, g->g.Height - g->p.y - g->p.cy);
 			write_data16(g, g->g.Height-1 - g->p.y);
@@ -149,12 +149,12 @@ static GFXINLINE void set_backlight(GDisplay *g, uint8_t percent) {
 /* Driver exported functions.                                                */
 /*===========================================================================*/
 
-LLDSPEC gBool gdisp_lld_init(GDisplay *g) {
+LLDSPEC bool_t gdisp_lld_init(GDisplay *g) {
 	LCD_Parameters *	lcdp;
 
 /*
  *	Some displays (e.g. Displaytech) have an on-board setup process which just requires that we don't touch anything for a time after power up.
- *	For this type of display define GDISP_SSD1963_NO_INIT as GFXON, and implement an appropriate delay in the board file.
+ *	For this type of display define GDISP_SSD1963_NO_INIT as TRUE, and implement an appropriate delay in the board file.
  *	With such displays we can skip most of the initialisation. We also skip pulsing the reset pin, since it
  *	will introduce an extra second or so of display to the startup time.
  */
@@ -168,9 +168,9 @@ LLDSPEC gBool gdisp_lld_init(GDisplay *g) {
 
 	#if !GDISP_SSD1963_NO_INIT
 		// Hardware reset
-		setpin_reset(g, gTrue);
+		setpin_reset(g, TRUE);
 		gfxSleepMilliseconds(200);
-		setpin_reset(g, gFalse);
+		setpin_reset(g, FALSE);
 		gfxSleepMilliseconds(200);
 	#endif
 
@@ -267,11 +267,11 @@ LLDSPEC gBool gdisp_lld_init(GDisplay *g) {
 	/* Initialise the GDISP structure */
 	g->g.Width = lcdp->width;
 	g->g.Height = lcdp->height;
-	g->g.Orientation = gOrientation0;
-	g->g.Powermode = gPowerOn;
+	g->g.Orientation = GDISP_ROTATE_0;
+	g->g.Powermode = powerOn;
 	g->g.Backlight = GDISP_INITIAL_BACKLIGHT;
 	g->g.Contrast = GDISP_INITIAL_CONTRAST;
-	return gTrue;
+	return TRUE;
 }
 
 #if GDISP_HARDWARE_STREAM_WRITE
@@ -291,10 +291,10 @@ LLDSPEC gBool gdisp_lld_init(GDisplay *g) {
 	LLDSPEC void gdisp_lld_control(GDisplay *g) {
 		switch(g->p.x) {
 		case GDISP_CONTROL_POWER:
-			if (g->g.Powermode == (gPowermode)g->p.ptr)
+			if (g->g.Powermode == (powermode_t)g->p.ptr)
 				return;
-			switch((gPowermode)g->p.ptr) {
-				case gPowerOff:
+			switch((powermode_t)g->p.ptr) {
+				case powerOff:
 					acquire_bus(g);
 					write_index(g, SSD1963_EXIT_SLEEP_MODE);
 					gfxSleepMilliseconds(5);
@@ -302,7 +302,7 @@ LLDSPEC gBool gdisp_lld_init(GDisplay *g) {
 					write_index(g, SSD1963_SET_DEEP_SLEEP);
 					release_bus(g);
 					break;
-				case gPowerOn:
+				case powerOn:
 					acquire_bus(g);
 					setreadmode(g);
 					dummy_read(g);
@@ -315,14 +315,14 @@ LLDSPEC gBool gdisp_lld_init(GDisplay *g) {
 					set_backlight(g, gdispGGetBacklight(g));	// Restore the back-light
 					release_bus(g);
 					break;
-				case gPowerSleep:
+				case powerSleep:
 					acquire_bus(g);
 					set_backlight(g, 0xFF);						// Turn off the back-light pwm from SSD1963
 					write_index(g, SSD1963_ENTER_SLEEP_MODE);
 					gfxSleepMilliseconds(5);
 					release_bus(g);
 					break;
-				case gPowerDeepSleep:
+				case powerDeepSleep:
 					acquire_bus(g);
 					set_backlight(g, 0xFF);						// Turn off the back-light pwm from SSD1963
 					write_index(g, SSD1963_ENTER_SLEEP_MODE);
@@ -332,14 +332,14 @@ LLDSPEC gBool gdisp_lld_init(GDisplay *g) {
 				default:
 					return;
 			}
-			g->g.Powermode = (gPowermode)g->p.ptr;
+			g->g.Powermode = (powermode_t)g->p.ptr;
 			return;
 
 		case GDISP_CONTROL_ORIENTATION:
-			if (g->g.Orientation == (gOrientation)g->p.ptr)
+			if (g->g.Orientation == (orientation_t)g->p.ptr)
 				return;
-			switch((gOrientation)g->p.ptr) {
-			case gOrientation0:
+			switch((orientation_t)g->p.ptr) {
+			case GDISP_ROTATE_0:
 				acquire_bus(g);
 				write_index(g, SSD1963_SET_ADDRESS_MODE);
 				write_data(g, 0x00);
@@ -347,7 +347,7 @@ LLDSPEC gBool gdisp_lld_init(GDisplay *g) {
 				g->g.Height = ((LCD_Parameters *)g->priv)->height;
 				g->g.Width = ((LCD_Parameters *)g->priv)->width;
 				break;
-			case gOrientation90:
+			case GDISP_ROTATE_90:
 				acquire_bus(g);
 				write_index(g, SSD1963_SET_ADDRESS_MODE);
 				write_data(g, SSD1963_ADDR_MODE_PAGE_ADDR_ORDER | SSD1963_ADDR_MODE_PAG_COL_ADDR_ORDER );
@@ -355,7 +355,7 @@ LLDSPEC gBool gdisp_lld_init(GDisplay *g) {
 				g->g.Height = ((LCD_Parameters *)g->priv)->width;
 				g->g.Width = ((LCD_Parameters *)g->priv)->height;
 				break;
-			case gOrientation180:
+			case GDISP_ROTATE_180:
 				acquire_bus(g);
 				write_index(g, SSD1963_SET_ADDRESS_MODE);
 				write_data(g, SSD1963_ADDR_MODE_PAGE_ADDR_ORDER | SSD1963_ADDR_MODE_COL_ADDR_ORDER);
@@ -363,7 +363,7 @@ LLDSPEC gBool gdisp_lld_init(GDisplay *g) {
 				g->g.Height = ((LCD_Parameters *)g->priv)->height;
 				g->g.Width = ((LCD_Parameters *)g->priv)->width;
 				break;
-			case gOrientation270:
+			case GDISP_ROTATE_270:
 				acquire_bus(g);
 				write_index(g, SSD1963_SET_ADDRESS_MODE);
 				write_data(g,  SSD1963_ADDR_MODE_COL_ADDR_ORDER | SSD1963_ADDR_MODE_PAG_COL_ADDR_ORDER );
@@ -374,7 +374,7 @@ LLDSPEC gBool gdisp_lld_init(GDisplay *g) {
 			default:
 				return;
 			}
-			g->g.Orientation = (gOrientation)g->p.ptr;
+			g->g.Orientation = (orientation_t)g->p.ptr;
 			return;
 
 		case GDISP_CONTROL_BACKLIGHT:

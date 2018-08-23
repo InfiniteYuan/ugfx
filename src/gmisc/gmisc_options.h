@@ -22,38 +22,38 @@
  */
 	/**
 	 * @brief   Include array operation functions
-	 * @details	Defaults to GFXOFF
+	 * @details	Defaults to FALSE
 	 */
 	#ifndef GMISC_NEED_ARRAYOPS
-		#define GMISC_NEED_ARRAYOPS			GFXOFF
+		#define GMISC_NEED_ARRAYOPS			FALSE
 	#endif
 	/**
 	 * @brief   Include fast floating point trig functions (fsin, fcos)
-	 * @details	Defaults to GFXOFF
+	 * @details	Defaults to FALSE
 	 */
 	#ifndef GMISC_NEED_FASTTRIG
-		#define GMISC_NEED_FASTTRIG			GFXOFF
+		#define GMISC_NEED_FASTTRIG			FALSE
 	#endif
 	/**
 	 * @brief   Include fast fixed point trig functions (ffsin, ffcos)
-	 * @details	Defaults to GFXOFF
+	 * @details	Defaults to FALSE
 	 */
 	#ifndef GMISC_NEED_FIXEDTRIG
-		#define GMISC_NEED_FIXEDTRIG		GFXOFF
+		#define GMISC_NEED_FIXEDTRIG		FALSE
 	#endif
 	/**
 	 * @brief   Include fast inverse square root (x^-1/2)
-	 * @details	Defaults to GFXOFF
+	 * @details	Defaults to FALSE
 	 */
 	#ifndef GMISC_NEED_INVSQRT
-		#define GMISC_NEED_INVSQRT		GFXOFF
+		#define GMISC_NEED_INVSQRT		FALSE
 	#endif
 	/**
 	 * @brief   Include polygon hit test functions
-	 * @details	Defaults to GFXOFF
+	 * @details	Defaults to FALSE
 	 */
 	#ifndef GMISC_NEED_HITTEST_POLY
-		#define GMISC_NEED_HITTEST_POLY		GFXOFF
+		#define GMISC_NEED_HITTEST_POLY		FALSE
 	#endif
 /**
  * @}
@@ -75,7 +75,7 @@
 	 * GMISC_INVSQRT_REAL_SLOW and it will do it the hard way.
 	 */
 	#ifndef GMISC_INVSQRT_MIXED_ENDIAN
-		#define GMISC_INVSQRT_MIXED_ENDIAN	GFXOFF
+		#define GMISC_INVSQRT_MIXED_ENDIAN	FALSE
 	#endif
 	/**
 	 * @brief	Modifies the @p invsqrt() function to do things the long slow way.
@@ -84,7 +84,7 @@
 	 * @note	This makes the @p invsqrt() function very slow.
 	 */
 	#ifndef GMISC_INVSQRT_REAL_SLOW
-		#define GMISC_INVSQRT_REAL_SLOW		GFXOFF
+		#define GMISC_INVSQRT_REAL_SLOW		FALSE
 	#endif
 /** @} */
 

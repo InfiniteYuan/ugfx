@@ -45,7 +45,7 @@ static char whdr[32];
  * Application entry point.
  */
 int main(void) {
-	gFont			font;
+	font_t			font;
 	GFILE			*f;
 	char 			*errmsg;
 	uint32_t		toplay;
@@ -139,7 +139,7 @@ repeatplay:
 	len += 20;
 
 	// Read RIFF blocks until we get to the data RIFF block (contains the audio)
-	while(1) {
+	while(TRUE) {
 		if (gfileRead(f, whdr, 8) != 8) {
 			errmsg = "Err: Read block";
 			goto theend;
@@ -162,10 +162,10 @@ repeatplay:
 	}
 
 	// Play the file
-	gdispDrawString(0, gdispGetHeight()/2, "Playing...", font, GFX_YELLOW);
+	gdispDrawString(0, gdispGetHeight()/2, "Playing...", font, Yellow);
 	while(toplay) {
 		// Get a buffer to put the data into
-		pd = gfxBufferGet(gDelayForever);		// This should never fail as we are waiting forever
+		pd = gfxBufferGet(TIME_INFINITE);		// This should never fail as we are waiting forever
 
 		// How much data can we put in
 		len = toplay > pd->size ? pd->size : toplay;
@@ -183,19 +183,19 @@ repeatplay:
 	gfileClose(f);
 
 	// Wait for the play to finish
-	gaudioPlayWait(gDelayForever);
-	gdispDrawString(0, gdispGetHeight()/2+10, "Done", font, GFX_GREEN);
+	gaudioPlayWait(TIME_INFINITE);
+	gdispDrawString(0, gdispGetHeight()/2+10, "Done", font, Green);
 
 	// Repeat the whole thing
 	gfxSleepMilliseconds(1500);
-	gdispClear(GFX_BLACK);
+	gdispClear(Black);
 	goto repeatplay;
 
 	// The end
 theend:
 	if (errmsg)
-		gdispDrawString(0, gdispGetHeight()/2, errmsg, font, GFX_RED);
+		gdispDrawString(0, gdispGetHeight()/2, errmsg, font, Red);
 
-	while(1)
+	while(TRUE)
 		gfxSleepMilliseconds(1000);
 }

@@ -12,10 +12,10 @@
 
 #if GFX_USE_GDISP
 
-#define GDISP_HARDWARE_FLUSH			GFXON		// This controller requires flushing
-#define GDISP_HARDWARE_DRAWPIXEL		GFXON
-#define GDISP_HARDWARE_CLEARS           GFXON
-#define GDISP_HARDWARE_CONTROL          GFXON
+#define GDISP_HARDWARE_FLUSH			TRUE		// This controller requires flushing
+#define GDISP_HARDWARE_DRAWPIXEL		TRUE
+#define GDISP_HARDWARE_CLEARS           TRUE
+#define GDISP_HARDWARE_CONTROL          TRUE
 
 #define GDISP_LLD_PIXELFORMAT			GDISP_PIXELFORMAT_MONO
 

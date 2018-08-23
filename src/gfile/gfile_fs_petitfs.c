@@ -16,12 +16,12 @@
 #include "gfile_fs.h"
 #include "gfile_petitfs_wrapper.h"
 
-static gBool petitfsExists(const char* fname);
-static gBool petitfsOpen(GFILE* f, const char* fname);
+static bool_t petitfsExists(const char* fname);
+static bool_t petitfsOpen(GFILE* f, const char* fname);
 static int petitfsRead(GFILE* f, void* buf, int size);
-static gBool petitfsSetPos(GFILE* f, long int pos);
+static bool_t petitfsSetPos(GFILE* f, long int pos);
 #if GFILE_NEED_FILELISTS && _FS_MINIMIZE <= 1
-	static gfileList *petitfsFlOpen(const char *path, gBool dirs);
+	static gfileList *petitfsFlOpen(const char *path, bool_t dirs);
 	static const char *petitfsFlRead(gfileList *pfl);
 	static void petitfsFlClose(gfileList *pfl);
 #endif
@@ -58,38 +58,38 @@ typedef struct petitfsList {
 } petitfsList;
 
 // optimize these later on. Use an array to have multiple
-static gBool petitfs_mounted = gFalse;
+static bool_t petitfs_mounted = FALSE;
 static FATFS petitfs_fs;
 
-static gBool petitfsExists(const char* fname)
+static bool_t petitfsExists(const char* fname)
 {
 	// Mount first
 	if (!petitfs_mounted && pf_mount(&petitfs_fs) != FR_OK)
-		return gFalse;
+		return FALSE;
 
 	// Open
 	if (pf_open(fname) != FR_OK)
-		return gFalse;
+		return FALSE;
 
-	return gTrue;
+	return TRUE;
 }
 
-static gBool petitfsOpen(GFILE* f, const char* fname)
+static bool_t petitfsOpen(GFILE* f, const char* fname)
 {
 	// No writing
 	if ((f->flags & GFILEFLG_WRITE))
-		return gFalse;
+		return FALSE;
 
 	// Mount first
 	if (!petitfs_mounted && pf_mount(&petitfs_fs) != FR_OK)
-		return gFalse;
+		return FALSE;
 
 	// Open
 	if (pf_open(fname) != FR_OK)
-		return gFalse;
+		return FALSE;
 
 	f->obj = &petitfs_fs;
-	return gTrue;	
+	return TRUE;	
 }
 
 static int petitfsRead(GFILE* f, void* buf, int size)
@@ -103,14 +103,14 @@ static int petitfsRead(GFILE* f, void* buf, int size)
 	return br;
 }
 
-static gBool petitfsSetPos(GFILE* f, long int pos)
+static bool_t petitfsSetPos(GFILE* f, long int pos)
 {
 	(void)	f;
 	return pf_lseek((DWORD)pos) == FR_OK;
 }
 
 #if GFILE_NEED_FILELISTS
-	static gfileList *petitfsFlOpen(const char *path, gBool dirs) {
+	static gfileList *petitfsFlOpen(const char *path, bool_t dirs) {
 		petitfsList	*p;
 		(void) dirs;
 

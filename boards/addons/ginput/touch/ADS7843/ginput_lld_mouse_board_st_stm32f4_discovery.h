@@ -45,11 +45,11 @@ static const SPIConfig spicfg = {
 // How much extra data to allocate at the end of the GMouse structure for the board's use
 #define GMOUSE_ADS7843_BOARD_DATA_SIZE			0
 
-static gBool init_board(GMouse* m, unsigned driverinstance) {
+static bool_t init_board(GMouse* m, unsigned driverinstance) {
 	(void)		m;
 
 	if (driverinstance)
-		return gFalse;
+		return FALSE;
 
 	palSetPadMode(GPIOB, 13, PAL_MODE_ALTERNATE(5) );	/* SCK */
 	palSetPadMode(GPIOB, 14, PAL_MODE_ALTERNATE(5) );	/* MISO */
@@ -57,10 +57,10 @@ static gBool init_board(GMouse* m, unsigned driverinstance) {
 	palSetPadMode(GPIOC,  4, PAL_MODE_OUTPUT_PUSHPULL);	/* CS */
 
 	spiStart(&SPID2, &spicfg);
-	return gTrue;
+	return TRUE;
 }
 
-static GFXINLINE gBool getpin_pressed(GMouse* m) {
+static GFXINLINE bool_t getpin_pressed(GMouse* m) {
 	(void)		m;
 
 	return (!palReadPad(GPIOC, 5));

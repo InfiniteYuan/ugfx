@@ -51,7 +51,7 @@ static GScopeObject			gScopeWindow;
  */
 int main(void) {
 	GHandle					ghScope;
-	gCoord					swidth, sheight;
+	coord_t					swidth, sheight;
 
 	gfxInit();
 
@@ -74,17 +74,17 @@ int main(void) {
 		GWindowInit	wi;
 
 		gwinClearInit(&wi);
-		wi.show = gTrue;
+		wi.show = TRUE;
 		wi.x = wi.y = 0;
 		wi.width = swidth; wi.height = sheight;
 		ghScope = gwinScopeCreate(&gScopeWindow, &wi, MY_AUDIO_CHANNEL, MY_AUDIO_FREQUENCY, MY_AUDIO_FORMAT);
 	}
-	gwinSetBgColor(ghScope, GFX_WHITE);
-	gwinSetColor(ghScope, GFX_RED);
+	gwinSetBgColor(ghScope, White);
+	gwinSetColor(ghScope, Red);
 	gwinClear(ghScope);
 
 	/* Just keep displaying the scope traces */
-	while (1) {
+	while (TRUE) {
 		gwinScopeWaitForTrace(ghScope);
 	}
 }

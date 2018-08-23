@@ -30,9 +30,9 @@
 #include "gfx.h"
 #include "tasks.h"
 
-static volatile gBool	run;
+static volatile bool_t	run;
 static GHandle			gh;
-static gThread	thread;
+static gfxThreadHandle	thread;
 
 static void mandelbrot(float x1, float y1, float x2, float y2) {
 	unsigned int i,j, width, height;
@@ -85,13 +85,13 @@ static DECLARE_THREAD_FUNCTION(task, param) {
 	return 0;
 }
 
-void doMandlebrot(GHandle parent, gBool start) {
+void doMandlebrot(GHandle parent, bool_t start) {
 	if (start) {
-		run = gTrue;
+		run = TRUE;
 		gh = parent;
-		thread = gfxThreadCreate(0, 0x400, gThreadpriorityLow, task, 0);
+		thread = gfxThreadCreate(0, 0x400, LOW_PRIORITY, task, 0);
 	} else if (run) {
-		run = gFalse;
+		run = FALSE;
 		gfxThreadWait(thread);
 	}
 }

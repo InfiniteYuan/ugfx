@@ -36,27 +36,27 @@
 #define _GFXCONF_H
 
 /* The operating system to use. One of these must be defined - preferably in your Makefile */
-//#define GFX_USE_OS_CHIBIOS	GFXOFF
-//#define GFX_USE_OS_WIN32		GFXOFF
-//#define GFX_USE_OS_LINUX		GFXOFF
-//#define GFX_USE_OS_OSX		GFXOFF
+//#define GFX_USE_OS_CHIBIOS	FALSE
+//#define GFX_USE_OS_WIN32		FALSE
+//#define GFX_USE_OS_LINUX		FALSE
+//#define GFX_USE_OS_OSX		FALSE
 
 /* GFX sub-systems to turn on */
-#define GFX_USE_GDISP			GFXON
-#define GFX_USE_GWIN			GFXON
-#define GFX_USE_GTIMER			GFXON
-#define GFX_USE_GADC			GFXON
+#define GFX_USE_GDISP			TRUE
+#define GFX_USE_GWIN			TRUE
+#define GFX_USE_GTIMER			TRUE
+#define GFX_USE_GADC			TRUE
 
 /* Features for the GDISP sub-system. */
-#define GDISP_NEED_VALIDATION	GFXON
-#define GDISP_NEED_CLIP			GFXON
-#define GDISP_NEED_TEXT			GFXON
-#define GDISP_NEED_MULTITHREAD	GFXON
+#define GDISP_NEED_VALIDATION	TRUE
+#define GDISP_NEED_CLIP			TRUE
+#define GDISP_NEED_TEXT			TRUE
+#define GDISP_NEED_MULTITHREAD	TRUE
 
 /* GDISP - builtin fonts */
-#define GDISP_INCLUDE_FONT_UI2			GFXON
+#define GDISP_INCLUDE_FONT_UI2			TRUE
 
 /* Features for the GWIN sub-system. */
-#define GWIN_NEED_CONSOLE		GFXON
+#define GWIN_NEED_CONSOLE		TRUE
 
 #endif /* _GFXCONF_H */
