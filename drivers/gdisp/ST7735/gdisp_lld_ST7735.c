@@ -21,36 +21,14 @@
 #include "gdisp_lld_config.h"
 #include "src/gdisp/gdisp_driver.h"
 
-#define BOARD_TYPE_B      1
-#define BOARD_TYPE_R      2
-#define BOARD_TYPE_R144   3
-                
 #include "board_ST7735.h"
-
-#if !defined(ST7735_TYPE)
-// Backward compatibility:
-  #if defined(ST7735_TYPE_R)
-    #define ST7735_TYPE BOARD_TYPE_R
-  #elif defined(ST7735_TYPE_B)
-    #define ST7735_TYPE BOARD_TYPE_B
-  #endif
-#endif
-
-#if !defined(ST7735_TYPE)
-  // It seems all modern boards is 7735R
-  #define ST7735_TYPE BOARD_TYPE_R
-#endif
 
 /*===========================================================================*/
 /* Driver local definitions.                                                 */
 /*===========================================================================*/
 
 #ifndef GDISP_SCREEN_HEIGHT
-  #if ST7735_TYPE == BOARD_TYPE_R144
-    #define GDISP_SCREEN_HEIGHT		128
-  #else
-    #define GDISP_SCREEN_HEIGHT		160
-  #endif
+	#define GDISP_SCREEN_HEIGHT		160
 #endif
 #ifndef GDISP_SCREEN_WIDTH
     #define GDISP_SCREEN_WIDTH		128
@@ -62,14 +40,22 @@
 	#define GDISP_INITIAL_BACKLIGHT	100
 #endif
 
+// Define one of supported type, if not defined yet
+#if !defined(ST7735_TYPE_R) && !defined(ST7735_TYPE_B)
+	// It seems all modern boards is 7735R
+	#define ST7735_TYPE_R TRUE
+#endif
+
 // Define one of supported color packing, if not defined yet
 #if !defined(ST7735_COLOR_RGB) && !defined(ST7735_COLOR_BRG)
-	// It seems most modern boards are RGB
-#if ST7735_TYPE == BOARD_TYPE_R144
-	#define ST7735_COLOR_RGB GFXOFF
-#else
-	#define ST7735_COLOR_RGB GFXON
+	// It seems all modern boards is RGB
+	#define ST7735_COLOR_RGB TRUE
 #endif
+
+
+// Strange boars with shifted coords
+#if !defined (ST7735_SHIFTED_COORDS)
+	#define ST7735_SHIFTED_COORDS FALSE
 #endif
 
 
@@ -79,10 +65,7 @@
 	#define ST7735_MADCTRL_COLOR 0x08
 #endif
 
-#if ST7735_TYPE == BOARD_TYPE_R144
-	#define ST7735_COL_SHIFT 2
-	#define ST7735_ROW_SHIFT 3
-#elif defined(ST7735_SHIFTED_COORDS) && ST7735_SHIFTED_COORDS
+#if ST7735_SHIFTED_COORDS
 	#define ST7735_COL_SHIFT 2
 	#define ST7735_ROW_SHIFT 1
 #else
@@ -91,7 +74,7 @@
 #endif
 
 
-#include "drivers/gdisp/ST7735/st7735.h"
+#include "drivers/gdisp/ST7735/ST7735.h"
 
 // Some common routines and macros
 #define dummy_read(g)				{ volatile uint16_t dummy; dummy = read_data(g); (void) dummy; }
@@ -99,13 +82,13 @@
 
 // Serial write data for fast fill.
 #ifndef write_data_repeat
-#define write_data_repeat(g, data, count) { int i; for (i = 0; i < count; ++i) write_data (g, data); }
+#define write_data_repeat(g, data, count) { int i; for (i = 0; i < count; ++i) write_data (g, data) }
 #endif
 
 // Commands list copied from https://github.com/adafruit/Adafruit-ST7735-Library
 #define DELAY 0x80
 
-#if ST7735_TYPE == BOARD_TYPE_B
+#if ST7735_TYPE_B
 static const unsigned char  
 	init_cmds[] = {                  // Initialization commands for 7735B screens
     16,                       // 16 commands in list:
@@ -159,7 +142,7 @@ static const unsigned char
       10,                     //     10 ms delay
     ST7735_DISPON ,   DELAY,  // 18: Main screen turn on, no args, w/delay
       255 };                  //     255 = 500 ms delay
-#elif (ST7735_TYPE == BOARD_TYPE_R) || (ST7735_TYPE == BOARD_TYPE_R144)
+#elif ST7735_TYPE_R
 static const unsigned char
   init_cmds[] = {                 // Init for 7735R, part 1 (red or green tab)
     19,                       // 19 commands in list:
@@ -197,12 +180,12 @@ static const unsigned char
       0xC0|ST7735_MADCTRL_COLOR, //     row addr/col addr, bottom to top refresh
     ST7735_COLMOD , 1      ,  // 15: set color mode, 1 arg, no delay:
       0x05,                   //     16-bit color
-    ST7735_GMCTRP1, 16      , //  1: Gamma + Correction, 16 args, no delay:
+    ST7735_GMCTRP1, 16      , //  1: Magical unicorn dust, 16 args, no delay:
       0x02, 0x1c, 0x07, 0x12,
       0x37, 0x32, 0x29, 0x2d,
       0x29, 0x25, 0x2B, 0x39,
       0x00, 0x01, 0x03, 0x10,
-    ST7735_GMCTRN1, 16      , //  2: Gamma - Correction, 16 args, no delay:
+    ST7735_GMCTRN1, 16      , //  2: Sparkles and rainbows, 16 args, no delay:
       0x03, 0x1d, 0x07, 0x06,
       0x2E, 0x2C, 0x29, 0x2D,
       0x2E, 0x2E, 0x37, 0x3F,
@@ -210,12 +193,12 @@ static const unsigned char
     ST7735_NORON  ,    DELAY, //  3: Normal display on, no args, w/delay
       10,                     //     10 ms delay
     ST7735_DISPON ,    DELAY, //  4: Main screen turn on, no args w/delay
-      100
+      100 
       };                  //     100 ms delay
 #endif
 
 
-static void execute_cmds(GDisplay *g, const uint8_t *addr) {
+static void execute_cmds (const uint8_t *addr) {
 
 	unsigned int cmds = *addr++;
 	while (cmds--) {
@@ -228,12 +211,12 @@ static void execute_cmds(GDisplay *g, const uint8_t *addr) {
 		if (ms) {
 			ms = *addr++;
 			gfxSleepMilliseconds(ms==255?500:ms);
-		}
+		} 
 	}
 }
 
 
-LLDSPEC gBool gdisp_lld_init(GDisplay *g) {
+LLDSPEC bool_t gdisp_lld_init(GDisplay *g) {
 	// No private area for this controller
 	g->priv = 0;
 
@@ -241,14 +224,14 @@ LLDSPEC gBool gdisp_lld_init(GDisplay *g) {
 	init_board(g);
 
 	// Hardware reset
-	setpin_reset(g, gTrue);
+	setpin_reset(g, TRUE);
 	gfxSleepMilliseconds(20);
-	setpin_reset(g, gFalse);
+	setpin_reset(g, FALSE);
 	gfxSleepMilliseconds(20);
 
 	// Get the bus for the following initialisation commands
 	acquire_bus(g);
-	execute_cmds(g, init_cmds);
+	execute_cmds (init_cmds);
 	release_bus(g);
 
 	// Finish Init
@@ -260,16 +243,16 @@ LLDSPEC gBool gdisp_lld_init(GDisplay *g) {
 	/* Initialise the GDISP structure */
 	g->g.Width = GDISP_SCREEN_WIDTH;
 	g->g.Height = GDISP_SCREEN_HEIGHT;
-	g->g.Orientation = gOrientation0;
-	g->g.Powermode = gPowerOn;
+	g->g.Orientation = GDISP_ROTATE_0;
+	g->g.Powermode = powerOn;
 	g->g.Backlight = GDISP_INITIAL_BACKLIGHT;
 	g->g.Contrast = GDISP_INITIAL_CONTRAST;
-	return gTrue;
+	return TRUE;
 }
 
 static void set_viewport(GDisplay *g) {
 	write_cmd (g, ST7735_CASET);
-	write_data (g, g->p.x+ST7735_COL_SHIFT);
+	write_data (g, g->p.x+ST7735_COL_SHIFT); 
 	write_data (g, g->p.x+g->p.cx-1+ST7735_COL_SHIFT);
 	write_cmd (g, ST7735_RASET);
 	write_data (g, g->p.y+ST7735_ROW_SHIFT);
@@ -315,23 +298,23 @@ LLDSPEC void gdisp_lld_fill_area(GDisplay *g) {
 LLDSPEC void gdisp_lld_control(GDisplay *g) {
 	switch(g->p.x) {
 	case GDISP_CONTROL_POWER:
-		if (g->g.Powermode == (gPowermode)g->p.ptr)
+		if (g->g.Powermode == (powermode_t)g->p.ptr)
 			return;
-		switch((gPowermode)g->p.ptr) {
-			case gPowerOff:
+		switch((powermode_t)g->p.ptr) {
+			case powerOff:
 				acquire_bus(g);
 				// not implemented
+				release_bus();
+				set_backlight(g, 0);
+				break;
+			case powerSleep:
+			case powerDeepSleep:
+				// not implemented
+				acquire_bus(g);
 				release_bus(g);
 				set_backlight(g, 0);
 				break;
-			case gPowerSleep:
-			case gPowerDeepSleep:
-				// not implemented
-				acquire_bus(g);
-				release_bus(g);
-				set_backlight(g, 0);
-				break;
-			case gPowerOn:
+			case powerOn:
 				acquire_bus(g);
 				// not implemented
 				release_bus(g);
@@ -340,14 +323,14 @@ LLDSPEC void gdisp_lld_control(GDisplay *g) {
 			default:
 				return;
 		}
-		g->g.Powermode = (gPowermode)g->p.ptr;
+		g->g.Powermode = (powermode_t)g->p.ptr;
 		return;
 
 	case GDISP_CONTROL_ORIENTATION:
-		if (g->g.Orientation == (gOrientation)g->p.ptr)
+		if (g->g.Orientation == (orientation_t)g->p.ptr)
 			return;
-		switch((gOrientation)g->p.ptr) {
-			case gOrientation0:
+		switch((orientation_t)g->p.ptr) {
+			case GDISP_ROTATE_0:
 				acquire_bus(g);
 				write_cmd(g, ST7735_MADCTL);
 				write_data_byte(g, 0xC0|ST7735_MADCTRL_COLOR);
@@ -355,7 +338,7 @@ LLDSPEC void gdisp_lld_control(GDisplay *g) {
 				g->g.Width = GDISP_SCREEN_WIDTH;
 				release_bus(g);
 				break;
-			case gOrientation90:
+			case GDISP_ROTATE_90:
 				acquire_bus(g);
 				write_cmd(g, ST7735_MADCTL);
 				write_data_byte(g, 0xA0|ST7735_MADCTRL_COLOR);
@@ -363,7 +346,7 @@ LLDSPEC void gdisp_lld_control(GDisplay *g) {
 				g->g.Width = GDISP_SCREEN_HEIGHT;
 				release_bus(g);
 				break;
-			case gOrientation180:
+			case GDISP_ROTATE_180:
 				acquire_bus(g);
 				write_cmd(g, ST7735_MADCTL);
 				write_data_byte(g, 0x00|ST7735_MADCTRL_COLOR);
@@ -371,7 +354,7 @@ LLDSPEC void gdisp_lld_control(GDisplay *g) {
 				g->g.Width = GDISP_SCREEN_WIDTH;
 				release_bus(g);
 				break;
-			case gOrientation270:
+			case GDISP_ROTATE_270:
 				acquire_bus(g);
 				write_cmd(g, ST7735_MADCTL);
 				write_data_byte(g, 0x60|ST7735_MADCTRL_COLOR);
@@ -382,7 +365,7 @@ LLDSPEC void gdisp_lld_control(GDisplay *g) {
 			default:
 				return;
 		}
-		g->g.Orientation = (gOrientation)g->p.ptr;
+		g->g.Orientation = (orientation_t)g->p.ptr;
 		return;
 	case GDISP_CONTROL_BACKLIGHT:
 		if ((unsigned)g->p.ptr > 100)

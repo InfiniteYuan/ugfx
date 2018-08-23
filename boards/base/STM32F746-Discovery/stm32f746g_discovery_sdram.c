@@ -1,9 +1,7 @@
 #include "../../../gfx.h"
-#if GFX_COMPAT_V2 && GFX_COMPAT_OLDCOLORS
-	#undef Red
-	#undef Green
-	#undef Blue
-#endif
+#undef Red
+#undef Green
+#undef Blue
 #include "stm32f746g_discovery_sdram.h"
 #include "stm32f7xx_hal_rcc.h"
 #include "stm32f7xx_hal_dma.h"
@@ -259,7 +257,7 @@ static HAL_StatusTypeDef _HAL_SDRAM_SendCommand(SDRAM_HandleTypeDef *hsdram, FMC
 static HAL_StatusTypeDef _FMC_SDRAM_SendCommand(FMC_SDRAM_TypeDef *Device, FMC_SDRAM_CommandTypeDef *Command, uint32_t Timeout)
 {
   __IO uint32_t tmpr = 0;
-  gTicks tickstart = 0;
+  systemticks_t tickstart = 0;
 
   /* Set command register */
   tmpr = (uint32_t)((Command->CommandMode)                  |\

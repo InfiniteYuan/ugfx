@@ -31,7 +31,7 @@
 #define SET_RST				palSetPad(SPFD54124B_PIN_PORT, SPFD54124B_PIN_RST);
 #define CLR_RST				palClearPad(SPFD54124B_PIN_PORT, SPFD54124B_PIN_RST);
 
-#define USE_SOFT_SPI            GFXON
+#define USE_SOFT_SPI            TRUE
 #define USE_HARD_SPI            !(USE_SOFT_SPI)
 
 #if USE_HARD_SPI
@@ -81,7 +81,7 @@ static GFXINLINE void soft_spi_write_9bit(uint16_t data){
 }
 #endif
 
-static GFXINLINE void setpin_reset(GDisplay *g, gBool state) {
+static GFXINLINE void setpin_reset(GDisplay *g, bool_t state) {
   (void) g;
   if(state) {
     CLR_RST;
@@ -100,7 +100,7 @@ static GFXINLINE void init_board(GDisplay *g) {
      * SPI1 I/O pins setup.
      */
     palSetPadMode(SPFD54124B_PIN_PORT, SPFD54124B_PIN_RST,  PAL_MODE_OUTPUT_PUSHPULL);            /* RESET */
-    setpin_reset(g, gTrue);
+    setpin_reset(g, TRUE);
 
 #if USE_HARD_SPI
     palSetPadMode(SPFD54124B_SPI_PORT, SPFD54124B_SPI_SCK,  PAL_MODE_ALTERNATE(5) | PAL_STM32_OSPEED_HIGHEST);   /* SCK. */

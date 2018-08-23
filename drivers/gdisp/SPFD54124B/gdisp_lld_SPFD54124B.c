@@ -102,7 +102,7 @@ const uint16_t lcd_init_list[] = {
 	SPFD54124B_CMD_NORON
 };
 
-LLDSPEC gBool gdisp_lld_init(GDisplay *g)
+LLDSPEC bool_t gdisp_lld_init(GDisplay *g)
 {
 	// No private area for this controller
 	g->priv = 0;
@@ -111,9 +111,9 @@ LLDSPEC gBool gdisp_lld_init(GDisplay *g)
 	init_board(g);
 
 	// Hardware reset
-	setpin_reset(g, gTrue);
+	setpin_reset(g, TRUE);
 	delayms(100);
-	setpin_reset(g, gFalse);
+	setpin_reset(g, FALSE);
 	delayms(100);
 
 	acquire_bus(g);
@@ -136,12 +136,12 @@ LLDSPEC gBool gdisp_lld_init(GDisplay *g)
 	// Initialise the GDISP structure to match 
 	g->g.Width = GDISP_SCREEN_WIDTH;
 	g->g.Height = GDISP_SCREEN_HEIGHT;
-	g->g.Orientation = gOrientation0;
-	g->g.Powermode = gPowerOn;
+	g->g.Orientation = GDISP_ROTATE_0;
+	g->g.Powermode = powerOn;
 	g->g.Backlight = GDISP_INITIAL_BACKLIGHT;
 	g->g.Contrast = GDISP_INITIAL_CONTRAST;
 
-	return gTrue;
+	return TRUE;
 }
 
 #if GDISP_HARDWARE_STREAM_WRITE
@@ -175,17 +175,17 @@ LLDSPEC void gdisp_lld_control(GDisplay *g)
 
 	switch(g->p.x) {
 		case GDISP_CONTROL_POWER:
-			if (g->g.Powermode == (gPowermode)g->p.ptr)
+			if (g->g.Powermode == (powermode_t)g->p.ptr)
 				return;
 
-			switch((gPowermode)g->p.ptr) {
-				case gPowerOff:
+			switch((powermode_t)g->p.ptr) {
+				case powerOff:
 					acquire_bus(g);
 					write_index(g, SPFD54124B_CMD_SLPIN);
 					release_bus(g);
 					break;
 
-				case gPowerOn:
+				case powerOn:
 					acquire_bus(g);
 					write_index(g, SPFD54124B_CMD_SLPOUT);
 					delayms(20);
@@ -193,7 +193,7 @@ LLDSPEC void gdisp_lld_control(GDisplay *g)
 					release_bus(g);
 					break;
 
-				case gPowerSleep:
+				case powerSleep:
 					acquire_bus(g);
 					write_index(g, SPFD54124B_CMD_SLPOUT);
 					delayms(20);
@@ -204,15 +204,15 @@ LLDSPEC void gdisp_lld_control(GDisplay *g)
 					return;
 			}
 
-			g->g.Powermode = (gPowermode)g->p.ptr;
+			g->g.Powermode = (powermode_t)g->p.ptr;
 			return;
 
 		case GDISP_CONTROL_ORIENTATION:
-			if (g->g.Orientation == (gOrientation)g->p.ptr)
+			if (g->g.Orientation == (orientation_t)g->p.ptr)
 				return;
 
-			switch((gOrientation)g->p.ptr) {
-				case gOrientation0:
+			switch((orientation_t)g->p.ptr) {
+				case GDISP_ROTATE_0:
 					acquire_bus(g);
 					write_index(g, SPFD54124B_CMD_MADCTR);
 					write_index(g, 0x0100);
@@ -221,7 +221,7 @@ LLDSPEC void gdisp_lld_control(GDisplay *g)
 					g->g.Width = GDISP_SCREEN_WIDTH;
 					break;
 
-				case gOrientation90:
+				case GDISP_ROTATE_90:
 					acquire_bus(g);
 					write_index(g, SPFD54124B_CMD_MADCTR);
 					write_index(g, 0x01A0);
@@ -230,7 +230,7 @@ LLDSPEC void gdisp_lld_control(GDisplay *g)
 					g->g.Width = GDISP_SCREEN_HEIGHT;
 					break;
 
-				case gOrientation180:
+				case GDISP_ROTATE_180:
 					acquire_bus(g);
 					write_index(g, SPFD54124B_CMD_MADCTR);
 					write_index(g, 0x01C0);
@@ -239,7 +239,7 @@ LLDSPEC void gdisp_lld_control(GDisplay *g)
 					g->g.Width = GDISP_SCREEN_WIDTH;
 					break;
 
-				case gOrientation270:
+				case GDISP_ROTATE_270:
 					acquire_bus(g);
 					write_index(g, SPFD54124B_CMD_MADCTR);
 					write_index(g, 0x0160);
@@ -249,11 +249,11 @@ LLDSPEC void gdisp_lld_control(GDisplay *g)
 					break;
 
 				default:
-					// gOrientationPortrait and gOrientationLandscape are handled by the higher level code
+					// GDISP_ROTATE_PORTRAIT and GDISP_ROTATE_LANDSCAPE are handled by the higher level code
 					return;
 			}
 
-			g->g.Orientation = (gOrientation)g->p.ptr;
+			g->g.Orientation = (orientation_t)g->p.ptr;
 
 			return;
 	}

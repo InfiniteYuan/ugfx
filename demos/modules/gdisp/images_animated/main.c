@@ -36,7 +36,7 @@
  * The ROMFS uses the file "romfs_files.h" to describe the set of files in the ROMFS.
  */
 
-#define USE_IMAGE_CACHE			GFXOFF						// Only if you want to get performance at the expense of RAM
+#define USE_IMAGE_CACHE			FALSE						// Only if you want to get performance at the expense of RAM
 #define MY_BG_COLOR				RGB2COLOR(220, 220, 255)	// Pale blue so we can see the transparent parts
 
 static gdispImage myImage;
@@ -54,8 +54,8 @@ static gdispImage myImage;
  * Orange	- Decoding a frame has produced an error.
  */
 int main(void) {
-	gCoord			swidth, sheight, errx, erry, errcx, errcy;
-	gDelay		delay;
+	coord_t			swidth, sheight, errx, erry, errcx, errcy;
+	delaytime_t		delay;
 
 	gfxInit();		// Initialize the display
 
@@ -85,21 +85,21 @@ int main(void) {
 				gdispImageCache(&myImage);
 			#endif
 			if (gdispImageDraw(&myImage, 0, 0, myImage.width, myImage.height, 0, 0) != GDISP_IMAGE_ERR_OK) {
-				SHOW_ERROR(GFX_ORANGE);
+				SHOW_ERROR(Orange);
 				break;
 			}
 			delay = gdispImageNext(&myImage);
-			if (delay == gDelayForever) {
-				SHOW_ERROR(GFX_GREEN);
+			if (delay == TIME_INFINITE) {
+				SHOW_ERROR(Green);
 				break;
 			}
-			SHOW_ERROR(GFX_YELLOW);
-			if (delay != gDelayNone)
+			SHOW_ERROR(Yellow);
+			if (delay != TIME_IMMEDIATE)
 				gfxSleepMilliseconds(delay);
 		}
 		gdispImageClose(&myImage);
 	} else
-		SHOW_ERROR(GFX_RED);
+		SHOW_ERROR(Red);
 
 	while(1) {
 		gfxSleepMilliseconds(1000);

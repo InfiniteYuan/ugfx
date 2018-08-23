@@ -16,10 +16,6 @@
 
 #include "../../../gfx.h"
 
-/* Ensure definitions are compatible with uGFX */
-#undef bool
-#define bool gBool
-
 #if !GFX_USE_GDISP || !GDISP_NEED_TEXT
 	#define MF_NO_COMPILE				// Don't compile any font code
 #endif
@@ -63,7 +59,7 @@
 /* Encoding for the input data.
  * With the unicode encodings, the library supports the range of unicode
  * characters 0x0000-0xFFFF (the Basic Multilingual Plane).
- *
+ * 
  * ASCII: Plain ascii (somewhat works with ISO8859-1 also)
  * UTF8:  UTF8 encoding (variable number of bytes)
  * UTF16: UTF16 encoding (2 bytes per character, compatible with UCS-2)

@@ -25,11 +25,11 @@
 #undef GDISP_HARDWARE_CONTROL
 #undef GDISP_HARDWARE_QUERY
 #undef GDISP_HARDWARE_CLIP
-#define GDISP_HARDWARE_DEINIT			GFXON
-#define GDISP_HARDWARE_DRAWPIXEL		GFXON
-#define GDISP_HARDWARE_PIXELREAD		GFXON
-#define GDISP_HARDWARE_CONTROL			GFXON
-#define IN_PIXMAP_DRIVER				GFXON
+#define GDISP_HARDWARE_DEINIT			TRUE
+#define GDISP_HARDWARE_DRAWPIXEL		TRUE
+#define GDISP_HARDWARE_PIXELREAD		TRUE
+#define GDISP_HARDWARE_CONTROL			TRUE
+#define IN_PIXMAP_DRIVER				TRUE
 #define GDISP_DRIVER_VMT				GDISPVMT_pixmap
 #define GDISP_DRIVER_VMT_FLAGS			(GDISP_VFLG_DYNAMICONLY|GDISP_VFLG_PIXMAP)
 
@@ -46,18 +46,18 @@ typedef struct pixmap {
 	#if GDISP_NEED_PIXMAP_IMAGE
 		uint8_t		imghdr[8];			// This field must come just before the data member.
 	#endif
-	gColor			pixels[1];			// We really want pixels[0] but some compilers don't allow that even though it is C standard.
+	color_t			pixels[1];			// We really want pixels[0] but some compilers don't allow that even though it is C standard.
 	} pixmap;
 
-GDisplay *gdispPixmapCreate(gCoord width, gCoord height) {
+GDisplay *gdispPixmapCreate(coord_t width, coord_t height) {
 	GDisplay	*g;
 	pixmap		*p;
 	unsigned	i;
 
 	// Calculate the size of the display surface in bytes
-	i = width*height*sizeof(gColor);
-	if (i < 2*sizeof(gCoord))
-		i = 2*sizeof(gCoord);
+	i = width*height*sizeof(color_t);
+	if (i < 2*sizeof(coord_t))
+		i = 2*sizeof(coord_t);
 
 	// Allocate the pixmap
 	if (!(p = gfxAlloc(i+sizeof(pixmap)-sizeof(p->pixels))))
@@ -76,8 +76,8 @@ GDisplay *gdispPixmapCreate(gCoord width, gCoord height) {
 	#endif
 
 	// Save the width and height so the driver can retrieve it.
-	((gCoord *)p->pixels)[0] = width;
-	((gCoord *)p->pixels)[1] = height;
+	((coord_t *)p->pixels)[0] = width;
+	((coord_t *)p->pixels)[1] = height;
 
 	// Register the driver
 	g = (GDisplay *)gdriverRegister(&GDISPVMT_pixmap->d, p);
@@ -92,7 +92,7 @@ void gdispPixmapDelete(GDisplay *g) {
 	gdriverUnRegister(&g->d);
 }
 
-gPixel	*gdispPixmapGetBits(GDisplay *g) {
+pixel_t	*gdispPixmapGetBits(GDisplay *g) {
 	if (gvmt(g) != GDISPVMT_pixmap)
 		return 0;
 	return ((pixmap *)g->priv)->pixels;
@@ -110,23 +110,23 @@ gPixel	*gdispPixmapGetBits(GDisplay *g) {
 /* Driver exported functions.                                                */
 /*===========================================================================*/
 
-LLDSPEC gBool gdisp_lld_init(GDisplay *g) {
+LLDSPEC bool_t gdisp_lld_init(GDisplay *g) {
 	// The user api function should have already allocated and initialised the pixmap
 	//	structure and put it into the priv member during driver initialisation.
 	if (!g->priv)
-		return gFalse;
+		return FALSE;
 
 	// Initialize the GDISP structure
 	//	Width and height were saved into the start of the framebuffer.
-	g->g.Width = ((gCoord *)((pixmap *)g->priv)->pixels)[0];
-	g->g.Height = ((gCoord *)((pixmap *)g->priv)->pixels)[1];
+	g->g.Width = ((coord_t *)((pixmap *)g->priv)->pixels)[0];
+	g->g.Height = ((coord_t *)((pixmap *)g->priv)->pixels)[1];
 	g->g.Backlight = 100;
 	g->g.Contrast = 50;
-	g->g.Orientation = gOrientation0;
-	g->g.Powermode = gPowerOn;
+	g->g.Orientation = GDISP_ROTATE_0;
+	g->g.Powermode = powerOn;
 	g->board = 0;
 
-	return gTrue;
+	return TRUE;
 }
 
 LLDSPEC	void gdisp_lld_deinit(GDisplay *g) {
@@ -138,17 +138,17 @@ LLDSPEC void gdisp_lld_draw_pixel(GDisplay *g) {
 
 	#if GDISP_NEED_CONTROL
 		switch(g->g.Orientation) {
-		case gOrientation0:
+		case GDISP_ROTATE_0:
 		default:
 			pos = g->p.y * g->g.Width + g->p.x;
 			break;
-		case gOrientation90:
+		case GDISP_ROTATE_90:
 			pos = (g->g.Width-g->p.x-1) * g->g.Height + g->p.y;
 			break;
-		case gOrientation180:
+		case GDISP_ROTATE_180:
 			pos = (g->g.Height-g->p.y-1) * g->g.Width + g->g.Width-g->p.x-1;
 			break;
-		case gOrientation270:
+		case GDISP_ROTATE_270:
 			pos = g->p.x * g->g.Height + g->g.Height-g->p.y-1;
 			break;
 		}
@@ -159,22 +159,22 @@ LLDSPEC void gdisp_lld_draw_pixel(GDisplay *g) {
 	((pixmap *)(g)->priv)->pixels[pos] = g->p.color;
 }
 
-LLDSPEC	gColor gdisp_lld_get_pixel_color(GDisplay *g) {
+LLDSPEC	color_t gdisp_lld_get_pixel_color(GDisplay *g) {
 	unsigned		pos;
 
 	#if GDISP_NEED_CONTROL
 		switch(g->g.Orientation) {
-		case gOrientation0:
+		case GDISP_ROTATE_0:
 		default:
 			pos = g->p.y * g->g.Width + g->p.x;
 			break;
-		case gOrientation90:
+		case GDISP_ROTATE_90:
 			pos = (g->g.Width-g->p.x-1) * g->g.Height + g->p.y;
 			break;
-		case gOrientation180:
+		case GDISP_ROTATE_180:
 			pos = (g->g.Height-g->p.y-1) * g->g.Width + g->g.Width-g->p.x-1;
 			break;
-		case gOrientation270:
+		case GDISP_ROTATE_270:
 			pos = g->p.x * g->g.Height + g->g.Height-g->p.y-1;
 			break;
 		}
@@ -189,23 +189,23 @@ LLDSPEC	gColor gdisp_lld_get_pixel_color(GDisplay *g) {
 	LLDSPEC void gdisp_lld_control(GDisplay *g) {
 		switch(g->p.x) {
 		case GDISP_CONTROL_ORIENTATION:
-			if (g->g.Orientation == (gOrientation)g->p.ptr)
+			if (g->g.Orientation == (orientation_t)g->p.ptr)
 				return;
-			switch((gOrientation)g->p.ptr) {
-				case gOrientation0:
-				case gOrientation180:
-					if (g->g.Orientation == gOrientation90 || g->g.Orientation == gOrientation270) {
-						gCoord		tmp;
+			switch((orientation_t)g->p.ptr) {
+				case GDISP_ROTATE_0:
+				case GDISP_ROTATE_180:
+					if (g->g.Orientation == GDISP_ROTATE_90 || g->g.Orientation == GDISP_ROTATE_270) {
+						coord_t		tmp;
 
 						tmp = g->g.Width;
 						g->g.Width = g->g.Height;
 						g->g.Height = tmp;
 					}
 					break;
-				case gOrientation90:
-				case gOrientation270:
-					if (g->g.Orientation == gOrientation0 || g->g.Orientation == gOrientation180) {
-						gCoord		tmp;
+				case GDISP_ROTATE_90:
+				case GDISP_ROTATE_270:
+					if (g->g.Orientation == GDISP_ROTATE_0 || g->g.Orientation == GDISP_ROTATE_180) {
+						coord_t		tmp;
 
 						tmp = g->g.Width;
 						g->g.Width = g->g.Height;
@@ -215,7 +215,7 @@ LLDSPEC	gColor gdisp_lld_get_pixel_color(GDisplay *g) {
 				default:
 					return;
 			}
-			g->g.Orientation = (gOrientation)g->p.ptr;
+			g->g.Orientation = (orientation_t)g->p.ptr;
 			return;
 		}
 	}

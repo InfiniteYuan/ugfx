@@ -46,24 +46,10 @@ static void SendRadioEvent(GWidgetObject *gw) {
 
 #if GINPUT_NEED_MOUSE
 	// A mouse down has occurred over the button
-	static void RadioMouseDown(GWidgetObject *gw, gCoord x, gCoord y) {
+	static void RadioMouseDown(GWidgetObject *gw, coord_t x, coord_t y) {
 		(void) x; (void) y;
 
 		gwinRadioPress((GHandle)gw);
-	}
-#endif
-
-#if GINPUT_NEED_KEYBOARD || GWIN_NEED_KEYBOARD
-	static void RadioKeyboard(GWidgetObject* gw, GEventKeyboard* pke)
-	{
-		// Only react on KEYDOWN events. Ignore KEYUP events.
-		if ((pke->keystate & GKEYSTATE_KEYUP))
-			return;
-
-		// ENTER and SPACE keys to check/uncheck the checkbox
-		if (pke->c[0] == GKEY_ENTER || pke->c[0] == GKEY_SPACE) {
-			gwinRadioPress((GHandle)gw);
-		}
 	}
 #endif
 
@@ -105,7 +91,7 @@ static const gwidgetVMT radioVMT = {
 	#endif
 	#if GINPUT_NEED_KEYBOARD || GWIN_NEED_KEYBOARD
 		{
-			RadioKeyboard			// Process keyboard events
+			0						// Process keyboard events
 		},
 	#endif
 	#if GINPUT_NEED_TOGGLE
@@ -154,11 +140,11 @@ void gwinRadioPress(GHandle gh) {
 	SendRadioEvent((GWidgetObject *)gh);
 }
 
-gBool gwinRadioIsPressed(GHandle gh) {
+bool_t gwinRadioIsPressed(GHandle gh) {
 	if (gh->vmt != (gwinVMT *)&radioVMT)
-		return gFalse;
+		return FALSE;
 
-	return (gh->flags & GRADIO_FLG_PRESSED) ? gTrue : gFalse;
+	return (gh->flags & GRADIO_FLG_PRESSED) ? TRUE : FALSE;
 }
 
 GHandle gwinRadioGetActive(uint16_t group) {
@@ -183,7 +169,7 @@ static const GColorSet *getDrawColors(GWidgetObject *gw) {
 
 void gwinRadioDraw_Radio(GWidgetObject *gw, void *param) {
 	#define gcw			((GRadioObject *)gw)
-	gCoord				ld, df;
+	coord_t				ld, df;
 	const GColorSet *	pcol;
 	(void)				param;
 
@@ -208,9 +194,7 @@ void gwinRadioDraw_Radio(GWidgetObject *gw, void *param) {
 			gdispGFillArea(gw->g.display, gw->g.x+df, gw->g.y+df, ld-2*df, ld-2*df, pcol->fill);
 	#endif
 
-	_gwidgetDrawFocusCircle(gw, df);
-
-	gdispGFillStringBox(gw->g.display, gw->g.x+ld+1, gw->g.y, gw->g.width-ld-1, gw->g.height, gw->text, gw->g.font, pcol->text, gw->pstyle->background, gJustifyLeft);
+	gdispGFillStringBox(gw->g.display, gw->g.x+ld+1, gw->g.y, gw->g.width-ld-1, gw->g.height, gw->text, gw->g.font, pcol->text, gw->pstyle->background, justifyLeft);
 	#undef gcw
 }
 
@@ -224,15 +208,12 @@ void gwinRadioDraw_Radio(GWidgetObject *gw, void *param) {
 
 		#if GWIN_NEED_FLASHING
 			// Flash only the on state.
-			pcol = _gwinGetFlashedColor(gw, pcol, gFalse);
+			pcol = _gwinGetFlashedColor(gw, pcol, FALSE);
 		#endif
 
-		gdispGFillStringBox(gw->g.display, gw->g.x, gw->g.y, gw->g.width-1, gw->g.height-1, gw->text, gw->g.font, pcol->text, pcol->fill, gJustifyCenter);
+		gdispGFillStringBox(gw->g.display, gw->g.x, gw->g.y, gw->g.width-1, gw->g.height-1, gw->text, gw->g.font, pcol->text, pcol->fill, justifyCenter);
 		gdispGDrawLine(gw->g.display, gw->g.x+gw->g.width-1, gw->g.y, gw->g.x+gw->g.width-1, gw->g.y+gw->g.height-1, pcol->edge);
 		gdispGDrawLine(gw->g.display, gw->g.x, gw->g.y+gw->g.height-1, gw->g.x+gw->g.width-2, gw->g.y+gw->g.height-1, pcol->edge);
-
-		// Render highlighted border if focused
-		_gwidgetDrawFocusRect(gw, 1, 1, gw->g.width-2, gw->g.height-2);
 	}
 	void gwinRadioDraw_Tab(GWidgetObject *gw, void *param) {
 		const GColorSet *	pcol;
@@ -243,53 +224,47 @@ void gwinRadioDraw_Radio(GWidgetObject *gw, void *param) {
 
 		#if GWIN_NEED_FLASHING
 			// Flash only the on state.
-			pcol = _gwinGetFlashedColor(gw, pcol, gFalse);
+			pcol = _gwinGetFlashedColor(gw, pcol, FALSE);
 		#endif
 
 		if ((gw->g.flags & GRADIO_FLG_PRESSED)) {
 			gdispGDrawBox(gw->g.display, gw->g.x, gw->g.y, gw->g.width, gw->g.height, pcol->edge);
-			gdispGFillStringBox(gw->g.display, gw->g.x+1, gw->g.y+1, gw->g.width-2, gw->g.height-1, gw->text, gw->g.font, pcol->text, pcol->fill, gJustifyCenter);
+			gdispGFillStringBox(gw->g.display, gw->g.x+1, gw->g.y+1, gw->g.width-2, gw->g.height-1, gw->text, gw->g.font, pcol->text, pcol->fill, justifyCenter);
 		} else {
-			gdispGFillStringBox(gw->g.display, gw->g.x, gw->g.y, gw->g.width-1, gw->g.height-1, gw->text, gw->g.font, pcol->text, pcol->fill, gJustifyCenter);
+			gdispGFillStringBox(gw->g.display, gw->g.x, gw->g.y, gw->g.width-1, gw->g.height-1, gw->text, gw->g.font, pcol->text, pcol->fill, justifyCenter);
 			gdispGDrawLine(gw->g.display, gw->g.x+gw->g.width-1, gw->g.y, gw->g.x+gw->g.width-1, gw->g.y+gw->g.height-1, pcol->edge);
 			gdispGDrawLine(gw->g.display, gw->g.x, gw->g.y+gw->g.height-1, gw->g.x+gw->g.width-2, gw->g.y+gw->g.height-1, pcol->edge);
 		}
-
-		// Render highlighted border if focused
-		_gwidgetDrawFocusRect(gw, 0, 0, gw->g.width-1, gw->g.height-1);
 	}
 #else
 	void gwinRadioDraw_Button(GWidgetObject *gw, void *param) {
 		const GColorSet *	pcol;
 		fixed				alpha;
 		fixed				dalpha;
-		gCoord				i;
-		gColor				tcol, bcol;
+		coord_t				i;
+		color_t				tcol, bcol;
 		(void)				param;
 
 		if (gw->g.vmt != (gwinVMT *)&radioVMT) return;
 		pcol = getDrawColors(gw);
 	
 		/* Fill the box blended from variants of the fill color */
-		tcol = gdispBlendColor(GFX_WHITE, pcol->fill, GRADIO_TOP_FADE);
-		bcol = gdispBlendColor(GFX_BLACK, pcol->fill, GRADIO_BOTTOM_FADE);
+		tcol = gdispBlendColor(White, pcol->fill, GRADIO_TOP_FADE);
+		bcol = gdispBlendColor(Black, pcol->fill, GRADIO_BOTTOM_FADE);
 		dalpha = FIXED(255)/gw->g.height;
 		for(alpha = 0, i = 0; i < gw->g.height; i++, alpha += dalpha)
 			gdispGDrawLine(gw->g.display, gw->g.x, gw->g.y+i, gw->g.x+gw->g.width-2, gw->g.y+i, gdispBlendColor(bcol, tcol, NONFIXED(alpha)));
 
-		gdispGDrawStringBox(gw->g.display, gw->g.x, gw->g.y, gw->g.width-1, gw->g.height-1, gw->text, gw->g.font, pcol->text, gJustifyCenter);
+		gdispGDrawStringBox(gw->g.display, gw->g.x, gw->g.y, gw->g.width-1, gw->g.height-1, gw->text, gw->g.font, pcol->text, justifyCenter);
 		gdispGDrawLine(gw->g.display, gw->g.x+gw->g.width-1, gw->g.y, gw->g.x+gw->g.width-1, gw->g.y+gw->g.height-1, pcol->edge);
 		gdispGDrawLine(gw->g.display, gw->g.x, gw->g.y+gw->g.height-1, gw->g.x+gw->g.width-2, gw->g.y+gw->g.height-1, pcol->edge);
-
-		// Render highlighted border if focused
-		_gwidgetDrawFocusRect(gw, 0, 0, gw->g.width-1, gw->g.height-1);
 	}
 	void gwinRadioDraw_Tab(GWidgetObject *gw, void *param) {
 		const GColorSet *	pcol;
 		fixed				alpha;
 		fixed				dalpha;
-		gCoord				i;
-		gColor				tcol, bcol;
+		coord_t				i;
+		color_t				tcol, bcol;
 		(void)				param;
 
 		if (gw->g.vmt != (gwinVMT *)&radioVMT)	return;
@@ -297,23 +272,20 @@ void gwinRadioDraw_Radio(GWidgetObject *gw, void *param) {
 
 		if ((gw->g.flags & GRADIO_FLG_PRESSED)) {
 			tcol = gdispBlendColor(pcol->edge, gw->pstyle->background, GRADIO_OUTLINE_FADE);
-			gdispGFillStringBox(gw->g.display, gw->g.x, gw->g.y, gw->g.width, gw->g.height, gw->text, gw->g.font, pcol->text, gw->g.bgcolor, gJustifyCenter);
+			gdispGFillStringBox(gw->g.display, gw->g.x, gw->g.y, gw->g.width, gw->g.height, gw->text, gw->g.font, pcol->text, gw->g.bgcolor, justifyCenter);
 			gdispGDrawLine(gw->g.display, gw->g.x, gw->g.y, gw->g.x+gw->g.width-(GRADIO_TAB_CNR+1), gw->g.y, tcol);
 			gdispGDrawLine(gw->g.display, gw->g.x+gw->g.width-(GRADIO_TAB_CNR+1), gw->g.y, gw->g.x+gw->g.width-1, gw->g.y+GRADIO_TAB_CNR, tcol);
 			gdispGDrawLine(gw->g.display, gw->g.x+gw->g.width-1, gw->g.y+GRADIO_TAB_CNR, gw->g.x+gw->g.width-1, gw->g.y+gw->g.height-1, tcol);
 		} else {
 			/* Fill the box blended from variants of the fill color */
-			tcol = gdispBlendColor(GFX_WHITE, pcol->fill, GRADIO_TOP_FADE);
-			bcol = gdispBlendColor(GFX_BLACK, pcol->fill, GRADIO_BOTTOM_FADE);
+			tcol = gdispBlendColor(White, pcol->fill, GRADIO_TOP_FADE);
+			bcol = gdispBlendColor(Black, pcol->fill, GRADIO_BOTTOM_FADE);
 			dalpha = FIXED(255)/gw->g.height;
 			for(alpha = 0, i = 0; i < gw->g.height; i++, alpha += dalpha)
 				gdispGDrawLine(gw->g.display, gw->g.x, gw->g.y+i, gw->g.x+gw->g.width-2, gw->g.y+i, gdispBlendColor(bcol, tcol, NONFIXED(alpha)));
 			gdispGDrawLine(gw->g.display, gw->g.x+gw->g.width-1, gw->g.y, gw->g.x+gw->g.width-1, gw->g.y+gw->g.height-1, pcol->edge);
-			gdispGDrawStringBox(gw->g.display, gw->g.x+1, gw->g.y+1, gw->g.width-2, gw->g.height-2, gw->text, gw->g.font, pcol->text, gJustifyCenter);
+			gdispGDrawStringBox(gw->g.display, gw->g.x+1, gw->g.y+1, gw->g.width-2, gw->g.height-2, gw->text, gw->g.font, pcol->text, justifyCenter);
 		}
-
-		// Render highlighted border if focused
-		_gwidgetDrawFocusRect(gw, 0, 0, gw->g.width-1, gw->g.height-1);
 	}
 #endif
 

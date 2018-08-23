@@ -12,7 +12,7 @@
 /* Driver hardware support.                                                  */
 /*===========================================================================*/
 
-#define GDISP_HARDWARE_DRAWPIXEL        GFXON
+#define GDISP_HARDWARE_DRAWPIXEL        TRUE
 #define GDISP_LLD_PIXELFORMAT			GDISP_PIXELFORMAT_MONO
 
 #endif	/* _GDISP_LLD_CONFIG_H */

@@ -26,7 +26,7 @@
  * @note		This module gdriver.h file is NOT included in the general gfx.h file.
  * 				Instead it is included in each driver type's driver API.
  *
- * @pre			GFX_USE_GDRIVER must be set to GFXON in your gfxconf.h
+ * @pre			GFX_USE_GDRIVER must be set to TRUE in your gfxconf.h
  *
  * @{
  */
@@ -67,7 +67,7 @@ typedef struct GDriverVMT {
 	uint16_t	type;																// @< What type of driver this is
 	uint16_t	flags;																// @< Flags for the driver. Meaning is specific to each driver type.
 	uint32_t	objsize;															// @< How big the runtime driver structure is
-	gBool		(*init)(GDriver *driver, void *param, unsigned driverinstance, unsigned systeminstance);	// @< Initialise the driver. Returns gTrue if OK.
+	bool_t		(*init)(GDriver *driver, void *param, unsigned driverinstance, unsigned systeminstance);	// @< Initialise the driver. Returns TRUE if OK.
 																					//		driverinstance is the instance 0..n of this driver.
 																					//		systeminstance is the instance 0..n of this type of device.
 																					//      The memory allocated is cleared before this call.

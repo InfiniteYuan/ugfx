@@ -52,7 +52,7 @@ void _gosPostInit(void)
 {
 	#if !GFX_OS_NO_INIT && GFX_OS_CALL_UGFXMAIN
 		if (xTaskGetSchedulerState() == taskSCHEDULER_NOT_STARTED) {
-			gfxThreadCreate(0, GFX_OS_UGFXMAIN_STACKSIZE, gThreadpriorityNormal, startUGFX_FreeRTOS, 0);
+			gfxThreadCreate(0, GFX_OS_UGFXMAIN_STACKSIZE, NORMAL_PRIORITY, startUGFX_FreeRTOS, 0);
 			vTaskStartScheduler();
 			gfxHalt("Unable to start FreeRTOS scheduler. Out of memory?");
 		}
@@ -85,12 +85,12 @@ void* gfxRealloc(void *ptr, size_t oldsz, size_t newsz)
 	return np;
 }
 
-void gfxSleepMilliseconds(gDelay ms)
+void gfxSleepMilliseconds(delaytime_t ms)
 {
 	vTaskDelay(gfxMillisecondsToTicks(ms));
 }
 
-void gfxSleepMicroseconds(gDelay ms)
+void gfxSleepMicroseconds(delaytime_t ms)
 {
 
 	// delay milli seconds - microsecond resolution delay is not supported in FreeRTOS
@@ -106,7 +106,7 @@ void gfxMutexInit(gfxMutex *pmutex)
 	#endif
 }
 
-void gfxSemInit(gfxSem* psem, gSemcount val, gSemcount limit)
+void gfxSemInit(gfxSem* psem, semcount_t val, semcount_t limit)
 {
 	if (val > limit)
 		val = limit;
@@ -117,20 +117,20 @@ void gfxSemInit(gfxSem* psem, gSemcount val, gSemcount limit)
 	#endif
 }
 
-gBool gfxSemWait(gfxSem* psem, gDelay ms)
+bool_t gfxSemWait(gfxSem* psem, delaytime_t ms)
 {
 	if (xSemaphoreTake(*psem, gfxMillisecondsToTicks(ms)) == pdPASS)
-		return gTrue;
-	return gFalse;
+		return TRUE;
+	return FALSE;
 }
 
-gBool gfxSemWaitI(gfxSem* psem)
+bool_t gfxSemWaitI(gfxSem* psem)
 {
 	portBASE_TYPE xHigherPriorityTaskWoken = pdFALSE;
 
 	if (xSemaphoreTakeFromISR(*psem, &xHigherPriorityTaskWoken) == pdTRUE)
-		return gTrue;
-	return gFalse;
+		return TRUE;
+	return FALSE;
 }
 
 void gfxSemSignal(gfxSem* psem)
@@ -146,9 +146,9 @@ void gfxSemSignalI(gfxSem* psem)
 	xSemaphoreGiveFromISR(*psem,&xHigherPriorityTaskWoken);
 }
 
-gThread gfxThreadCreate(void *stackarea, size_t stacksz, gThreadpriority prio, DECLARE_THREAD_FUNCTION((*fn),p), void *param)
+gfxThreadHandle gfxThreadCreate(void *stackarea, size_t stacksz, threadpriority_t prio, DECLARE_THREAD_FUNCTION((*fn),p), void *param)
 {
-	gThread task;
+	gfxThreadHandle task;
 	(void) stackarea;
 
 	// uGFX expresses stack size in bytes - FreeRTOS in "Stack Words"
@@ -165,7 +165,7 @@ gThread gfxThreadCreate(void *stackarea, size_t stacksz, gThreadpriority prio, D
 }
 
 #if INCLUDE_eTaskGetState == 1
-	gThreadreturn gfxThreadWait(gThread thread) {
+	threadreturn_t gfxThreadWait(gfxThreadHandle thread) {
 		while (eTaskGetState(thread) != eDeleted)
 			gfxYield();
 	}

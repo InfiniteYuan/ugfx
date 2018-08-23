@@ -13,12 +13,12 @@
 /* Driver hardware support.                                                  */
 /*===========================================================================*/
 
-#define GDISP_HARDWARE_STREAM_WRITE		GFXOFF
-#define GDISP_HARDWARE_STREAM_READ		GFXOFF
-#define GDISP_HARDWARE_CONTROL          GFXOFF
-#define GDISP_HARDWARE_DRAWPIXEL        GFXON
+#define GDISP_HARDWARE_STREAM_WRITE		FALSE
+#define GDISP_HARDWARE_STREAM_READ		FALSE
+#define GDISP_HARDWARE_CONTROL          FALSE
+#define GDISP_HARDWARE_DRAWPIXEL        TRUE
 #define GDISP_LLD_PIXELFORMAT			GDISP_PIXELFORMAT_MONO
-#define GDISP_HARDWARE_FILLS            GFXOFF
+#define GDISP_HARDWARE_FILLS            FALSE
 
 #endif	/* GFX_USE_GDISP */
 

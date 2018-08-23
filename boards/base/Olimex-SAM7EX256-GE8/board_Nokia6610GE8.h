@@ -17,7 +17,7 @@
  * Set various display properties. These properties mostly depend on the exact controller chip you get.
  * The defaults should work for most controllers.
  */
-//#define GDISP_GE8_BROKEN_CONTROLLER		GFXOFF	// Uncomment this out if you have a controller thats not window wrap broken.
+//#define GDISP_GE8_BROKEN_CONTROLLER		FALSE	// Uncomment this out if you have a controller thats not window wrap broken.
 //#define GDISP_SCREEN_HEIGHT				130		// The visible display height
 //#define GDISP_SCREEN_WIDTH				130		// The visible display width
 //#define GDISP_RAM_X_OFFSET				0		// The x offset of the visible area
@@ -56,7 +56,7 @@ static const PWMConfig pwmcfg = {
   },
 };
 
-static gBool pwmRunning = gFalse;
+static bool_t pwmRunning = FALSE;
 
 /**
  * @brief   Initialise the board for the display.
@@ -121,7 +121,7 @@ static GFXINLINE void init_board(GDisplay *g) {
 		pSPI->SPI_CSR[0]  = 0x00000311;			//9bit, CPOL=1, ClockPhase=0, SCLK = 48Mhz/3 = 16MHz
 
 		/* Display backlight control at 100% */
-		pwmRunning = gFalse;
+		pwmRunning = FALSE;
 		palSetPad(IOPORT2, PIOB_LCD_BL);
 		break;
 	}
@@ -131,7 +131,7 @@ static GFXINLINE void post_init_board(GDisplay *g) {
 	(void) g;
 }
 
-static GFXINLINE void setpin_reset(GDisplay *g, gBool state) {
+static GFXINLINE void setpin_reset(GDisplay *g, bool_t state) {
 	(void) g;
 	if (state)
 		palClearPad(IOPORT1, PIOA_LCD_RESET);
@@ -145,21 +145,21 @@ static GFXINLINE void set_backlight(GDisplay *g, uint8_t percent) {
 		/* Turn the pin on - No PWM */
 		if (pwmRunning) {
 			pwmStop(&PWMD2);
-			pwmRunning = gFalse;
+			pwmRunning = FALSE;
 		}
 		palSetPad(IOPORT2, PIOB_LCD_BL);
 	} else if (percent == 0) {
 		/* Turn the pin off - No PWM */
 		if (pwmRunning) {
 			pwmStop(&PWMD2);
-			pwmRunning = gFalse;
+			pwmRunning = FALSE;
 		}
 		palClearPad(IOPORT2, PIOB_LCD_BL);
 	} else {
 		/* Use the PWM */
 		if (!pwmRunning) {
 			pwmStart(&PWMD2, &pwmcfg);
-			pwmRunning = gTrue;
+			pwmRunning = TRUE;
 		}
 		pwmEnableChannel(&PWMD2, 0, PWM_VALUE(percent));
 	}

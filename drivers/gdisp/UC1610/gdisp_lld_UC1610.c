@@ -45,10 +45,10 @@
 #define GDISP_FLG_NEEDFLUSH		(GDISP_FLG_DRIVER << 0)
 
 typedef struct UC1610_Window {
-	gCoord x1;
-	gCoord y1;
-	gCoord x2;
-	gCoord y2;
+	coord_t x1;
+	coord_t y1;
+	coord_t x2;
+	coord_t y2;
 } UC1610_Window;
 
 /*===========================================================================*/
@@ -92,15 +92,9 @@ static void GFXINLINE flush_screen(GDisplay* g) {
 /* Driver exported functions.                                                */
 /*===========================================================================*/
 
-LLDSPEC gBool gdisp_lld_init(GDisplay *g) {
+LLDSPEC bool_t gdisp_lld_init(GDisplay *g) {
 	// The private area is the display surface + flush window structure.
 	g->priv = gfxAlloc(sizeof(UC1610_Window) + GDISP_SCREEN_WIDTH * GDISP_SCREEN_HEIGHT / UC1610_PAGE_HEIGHT);
-
-	// Clear the initial flush region
-	PRIV(g)->x1 = GDISP_SCREEN_WIDTH;
-	PRIV(g)->y1 = GDISP_SCREEN_HEIGHT;
-	PRIV(g)->x2 = -1;
-	PRIV(g)->y2 = -1;
 
 	// Initialise the board interface
 	init_board(g);
@@ -124,16 +118,16 @@ LLDSPEC gBool gdisp_lld_init(GDisplay *g) {
 	/* Initialise the GDISP structure */
 	g->g.Width = GDISP_SCREEN_WIDTH;
 	g->g.Height = GDISP_SCREEN_HEIGHT;
-	g->g.Orientation = gOrientation0;
-	g->g.Powermode = gPowerOn;
+	g->g.Orientation = GDISP_ROTATE_0;
+	g->g.Powermode = powerOn;
 	g->g.Backlight = GDISP_INITIAL_BACKLIGHT;
 	g->g.Contrast = GDISP_INITIAL_CONTRAST;
-	return gTrue;
+	return TRUE;
 }
 
 #if GDISP_HARDWARE_DRAWPIXEL
 	LLDSPEC void gdisp_lld_draw_pixel(GDisplay *g) {
-		gCoord x, y;
+		coord_t x, y;
 		uint8_t *c;
 
 		// handle orientation
@@ -142,11 +136,11 @@ LLDSPEC gBool gdisp_lld_init(GDisplay *g) {
 				x = g->p.x;
 				y = g->p.y;
 				break;
-			case gOrientation90 :
+			case GDISP_ROTATE_90 :
 				y = g->p.x;
 				x = g->p.y;
 				break;
-			case gOrientation270 :
+			case GDISP_ROTATE_270 :
 				y = g->p.x;
 				x = g->p.y;
 				break;
@@ -170,7 +164,7 @@ LLDSPEC gBool gdisp_lld_init(GDisplay *g) {
 #if GDISP_HARDWARE_FLUSH
 	LLDSPEC void gdisp_lld_flush(GDisplay* g)
 	{
-		gCoord x1, y1, x2, y2, cx;
+		coord_t x1, y1, x2, y2, cx;
 		uint8_t *c;
 
 		// Don't flush unless we really need to
@@ -182,7 +176,7 @@ LLDSPEC gBool gdisp_lld_init(GDisplay *g) {
 		x2 = PRIV(g)->x2;
 		y2 = PRIV(g)->y2;
 		cx = x2 - x1 + 1;
-
+		
 		// Clear the 'need-flushing' flag and reset the window
 		g->flags &= ~GDISP_FLG_NEEDFLUSH;
 		PRIV(g)->x1 = GDISP_SCREEN_WIDTH;
@@ -201,10 +195,10 @@ LLDSPEC gBool gdisp_lld_init(GDisplay *g) {
 		cmdBuffer[7] = UC1610_SET_WP_ENDING_PA;
 		cmdBuffer[8] = y2 >> 2;
 		cmdBuffer[9] = UC1610_SET_WINDOW_PROGRAM_ENABLE | 1;	// entering window programming
-
+		
 		acquire_bus(g);
 		write_cmd (g, cmdBuffer, 10);
-
+		
 		// write each page segment from RAM(g) to display RAM
 		for (c = RAM(g) + xyaddr(x1, y1) ; y1 <= y2 ; c += GDISP_SCREEN_WIDTH, y1 += UC1610_PAGE_HEIGHT) {
 			write_data(g, c, cx);
@@ -217,24 +211,24 @@ LLDSPEC gBool gdisp_lld_init(GDisplay *g) {
 	LLDSPEC void gdisp_lld_control(GDisplay *g) {
 		switch(g->p.x) {
 			case GDISP_CONTROL_POWER:
-				if (g->g.Powermode == (gPowermode)g->p.ptr) { return; }
-				switch((gPowermode)g->p.ptr) {
-					case gPowerOff:
+				if (g->g.Powermode == (powermode_t)g->p.ptr) { return; }
+				switch((powermode_t)g->p.ptr) {
+					case powerOff:
 						cmdBuffer[0] = UC1610_SYSTEM_RESET;
 						acquire_bus(g);
 						write_cmd(g, cmdBuffer, 1);
 						release_bus(g);
 						gfxSleepMilliseconds(2);
 						break;
-					case gPowerSleep:
+					case powerSleep:
 						cmdBuffer[0] = UC1610_SET_DISPLAY_ENABLE | 0;
 						acquire_bus(g);
 						write_cmd(g, cmdBuffer, 1);
 						release_bus(g);
 						gfxSleepMilliseconds(2);
 						break;
-					case gPowerOn:
-						if (g->g.Powermode == gPowerSleep) {
+					case powerOn:
+						if (g->g.Powermode == powerSleep) {
 							cmdBuffer[0] = UC1610_SET_DISPLAY_ENABLE | 1;
 							acquire_bus(g);
 							write_cmd(g, cmdBuffer, 1);
@@ -250,13 +244,13 @@ LLDSPEC gBool gdisp_lld_init(GDisplay *g) {
 					default:
 						return;
 				}
-				g->g.Powermode = (gPowermode)g->p.ptr;
+				g->g.Powermode = (powermode_t)g->p.ptr;
 				return;
 
 			case GDISP_CONTROL_ORIENTATION:
-				if (g->g.Orientation == (gOrientation)g->p.ptr) { return; }
-				switch((gOrientation)g->p.ptr) {
-					case gOrientation0:
+				if (g->g.Orientation == (orientation_t)g->p.ptr) { return; }
+				switch((orientation_t)g->p.ptr) {
+					case GDISP_ROTATE_0:
 						g->g.Width  = GDISP_SCREEN_WIDTH;
 						g->g.Height = GDISP_SCREEN_HEIGHT;
 						cmdBuffer[0] = UC1610_SET_MAPPING_CONTROL;
@@ -265,7 +259,7 @@ LLDSPEC gBool gdisp_lld_init(GDisplay *g) {
 						release_bus(g);
 						flush_screen(g);
 						break;
-					case gOrientation180:	// we can rotate 180° without modify screen buffer RAM(g)
+					case GDISP_ROTATE_180:	// we can rotate 180° without modify screen buffer RAM(g)
 						g->g.Width  = GDISP_SCREEN_WIDTH;
 						g->g.Height = GDISP_SCREEN_HEIGHT;
 						cmdBuffer[0] = UC1610_SET_MAPPING_CONTROL | UC1610_SET_MAPPING_CONTROL_MY_MASK | UC1610_SET_MAPPING_CONTROL_MX_MASK;
@@ -274,7 +268,7 @@ LLDSPEC gBool gdisp_lld_init(GDisplay *g) {
 						release_bus(g);
 						flush_screen(g);
 						break;
-					case gOrientation90:	// needs clearing screen and updating RAM(g)
+					case GDISP_ROTATE_90:	// needs clearing screen and updating RAM(g)
 						g->g.Width  = GDISP_SCREEN_HEIGHT;
 						g->g.Height = GDISP_SCREEN_WIDTH;
 						cmdBuffer[0] = UC1610_SET_MAPPING_CONTROL | UC1610_SET_MAPPING_CONTROL_MX_MASK;
@@ -282,7 +276,7 @@ LLDSPEC gBool gdisp_lld_init(GDisplay *g) {
 						write_cmd(g, cmdBuffer, 1);
 						release_bus(g);
 						break;
-					case gOrientation270:	// needs clearing screen and updating RAM(g)
+					case GDISP_ROTATE_270:	// needs clearing screen and updating RAM(g)
 						g->g.Width  = GDISP_SCREEN_HEIGHT;
 						g->g.Height = GDISP_SCREEN_WIDTH;
 						cmdBuffer[0] = UC1610_SET_MAPPING_CONTROL | UC1610_SET_MAPPING_CONTROL_MY_MASK;
@@ -293,7 +287,7 @@ LLDSPEC gBool gdisp_lld_init(GDisplay *g) {
 					default:
 						return;
 				}
-				g->g.Orientation = (gOrientation)g->p.ptr;
+				g->g.Orientation = (orientation_t)g->p.ptr;
 				return;
 
 			case GDISP_CONTROL_BACKLIGHT:

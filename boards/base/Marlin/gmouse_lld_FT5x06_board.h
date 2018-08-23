@@ -19,11 +19,11 @@
 // How much extra data to allocate at the end of the GMouse structure for the board's use
 #define GMOUSE_FT5x06_BOARD_DATA_SIZE			0
 
-// Set this to GFXON if you want self-calibration.
+// Set this to TRUE if you want self-calibration.
 //	NOTE:	This is not as accurate as real calibration.
 //			It requires the orientation of the touch panel to match the display.
 //			It requires the active area of the touch panel to exactly match the display size.
-#define GMOUSE_FT5x06_SELF_CALIBRATE			GFXOFF
+#define GMOUSE_FT5x06_SELF_CALIBRATE			FALSE
 
 /* I2C interface #2 - Touchscreen controller */
 static const I2CConfig i2ccfg2 = {
@@ -32,13 +32,13 @@ static const I2CConfig i2ccfg2 = {
     FAST_DUTY_CYCLE_2,
 };
 
-static gBool init_board(GMouse* m, unsigned driverinstance) {
+static bool_t init_board(GMouse* m, unsigned driverinstance) {
 	(void)		m;
 
 	// We only support one of these on this board
 	if (driverinstance)
-		return gFalse;
-	return gTrue;
+		return FALSE;
+	return TRUE;
 }
 
 static GFXINLINE void aquire_bus(GMouse* m) {

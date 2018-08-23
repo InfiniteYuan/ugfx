@@ -25,26 +25,41 @@
 
 #include <malloc.h>
 
-typedef DWORD				gDelay;
-typedef DWORD				gTicks;
-typedef LONG				gSemcount;
-typedef DWORD				gThreadreturn;
-typedef int					gThreadpriority;
+/* Stop cygwin from defining these types */
+#define __int8_t_defined
 
-#define DECLARE_THREAD_FUNCTION(fnName, param)	gThreadreturn (WINAPI fnName)(void *param)
+/**
+ * size_t
+ * TRUE, FALSE
+ * are already defined by Win32
+ */
+typedef __int8				bool_t;
+typedef __int8				int8_t;
+typedef unsigned __int8		uint8_t;
+typedef __int16				int16_t;
+typedef unsigned __int16	uint16_t;
+typedef __int32				int32_t;
+typedef unsigned __int32	uint32_t;
+typedef DWORD				delaytime_t;
+typedef DWORD				systemticks_t;
+typedef LONG				semcount_t;
+typedef DWORD				threadreturn_t;
+typedef int					threadpriority_t;
+
+#define DECLARE_THREAD_FUNCTION(fnName, param)	threadreturn_t (WINAPI fnName)(void *param)
 #define DECLARE_THREAD_STACK(name, sz)			uint8_t name[1];
 #define THREAD_RETURN(retval)					return retval
 
-#define gDelayNone					0
-#define gDelayForever				INFINITE
-#define MAX_SEMAPHORE_COUNT			((gSemcount)(((unsigned long)((gSemcount)(-1))) >> 1))
-#define gThreadpriorityLow				THREAD_PRIORITY_BELOW_NORMAL
-#define gThreadpriorityNormal				THREAD_PRIORITY_NORMAL
-#define gThreadpriorityHigh				THREAD_PRIORITY_ABOVE_NORMAL
+#define TIME_IMMEDIATE				0
+#define TIME_INFINITE				INFINITE
+#define MAX_SEMAPHORE_COUNT			((semcount_t)(((unsigned long)((semcount_t)(-1))) >> 1))
+#define LOW_PRIORITY				THREAD_PRIORITY_BELOW_NORMAL
+#define NORMAL_PRIORITY				THREAD_PRIORITY_NORMAL
+#define HIGH_PRIORITY				THREAD_PRIORITY_ABOVE_NORMAL
 
 typedef HANDLE gfxSem;
 typedef HANDLE gfxMutex;
-typedef HANDLE gThread;
+typedef HANDLE gfxThreadHandle;
 
 #define gfxExit()						ExitProcess(0)
 #define gfxAlloc(sz)					malloc(sz)
@@ -60,7 +75,7 @@ typedef HANDLE gThread;
 #define gfxMutexExit(pmutex)			ReleaseMutex(*(pmutex))
 #define gfxSemInit(psem, val, limit)	*(psem) = CreateSemaphore(0, val, limit, 0)
 #define gfxSemDestroy(psem)				CloseHandle(*(psem))
-#define gfxSemWaitI(psem)				gfxSemWait((psem), gDelayNone)
+#define gfxSemWaitI(psem)				gfxSemWait((psem), TIME_IMMEDIATE)
 #define gfxSemSignal(psem)				ReleaseSemaphore(*(psem), 1, 0)
 #define gfxSemSignalI(psem)				ReleaseSemaphore(*(psem), 1, 0)
 #define gfxThreadMe()					GetCurrentThread()
@@ -70,13 +85,21 @@ typedef HANDLE gThread;
 /* Function declarations.                                                    */
 /*===========================================================================*/
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 void gfxHalt(const char *msg);
-void gfxSleepMicroseconds(gDelay ms);
-gBool gfxSemWait(gfxSem *psem, gDelay ms);
+void gfxSleepMicroseconds(delaytime_t ms);
+bool_t gfxSemWait(gfxSem *psem, delaytime_t ms);
 void gfxSystemLock(void);
 void gfxSystemUnlock(void);
-gThread gfxThreadCreate(void *stackarea, size_t stacksz, gThreadpriority prio, DECLARE_THREAD_FUNCTION(*fn,p), void *param);
-gThreadreturn gfxThreadWait(gThread thread);
+gfxThreadHandle gfxThreadCreate(void *stackarea, size_t stacksz, threadpriority_t prio, DECLARE_THREAD_FUNCTION(*fn,p), void *param);
+threadreturn_t gfxThreadWait(gfxThreadHandle thread);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* GFX_USE_OS_WIN32 */
 #endif /* _GOS_WIN32_H */

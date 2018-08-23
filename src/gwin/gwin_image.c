@@ -34,10 +34,10 @@ static void ImageDestroy(GWindowObject *gh) {
 #endif
 
 static void ImageRedraw(GHandle gh) {
-	gCoord		x, y, w, h, dx, dy;
-	gColor		bg;
+	coord_t		x, y, w, h, dx, dy;
+	color_t		bg;
 	#if GWIN_NEED_IMAGE_ANIMATION
-		gDelay	delay;
+		delaytime_t	delay;
 	#endif
 
 	// The default display area
@@ -99,16 +99,16 @@ static void ImageRedraw(GHandle gh) {
 
 		// Wait for that delay if required
 		switch(delay) {
-		case gDelayForever:
+		case TIME_INFINITE:
 			// Everything is done
 			break;
-		case gDelayNone:
+		case TIME_IMMEDIATE:
 			// We can't allow a continuous loop here as it would lock the system up so we delay for the minimum period
 			delay = 1;
 			// Fall through
 		default:
 			// Start the timer to draw the next frame of the animation
-			gtimerStart(&gw->timer, ImageTimer, (void*)gh, gFalse, delay);
+			gtimerStart(&gw->timer, ImageTimer, (void*)gh, FALSE, delay);
 			break;
 		}
 	#endif
@@ -139,20 +139,20 @@ GHandle gwinGImageCreate(GDisplay *g, GImageObject *gobj, GWindowInit *pInit) {
 	return (GHandle)gobj;
 }
 
-gBool gwinImageOpenGFile(GHandle gh, GFILE *f) {
+bool_t gwinImageOpenGFile(GHandle gh, GFILE *f) {
 	// is it a valid handle?
 	if (gh->vmt != (gwinVMT *)&imageVMT)
-		return gFalse;
+		return FALSE;
 
 	if (gdispImageIsOpen(&gw->image))
 		gdispImageClose(&gw->image);
 
 	if ((gdispImageOpenGFile(&gw->image, f) & GDISP_IMAGE_ERR_UNRECOVERABLE))
-		return gFalse;
+		return FALSE;
 
 	_gwinUpdate(gh);
 
-	return gTrue;
+	return TRUE;
 }
 
 gdispImageError gwinImageCache(GHandle gh) {

@@ -9,11 +9,9 @@
 #define _GDISP_LLD_BOARD_H
 
 /* Avoid naming collisions with CubeHAL. */
-#if GFX_COMPAT_V2 && GFX_COMPAT_OLDCOLORS
-	#undef Red
-	#undef Green
-	#undef Blue
-#endif
+#undef Red
+#undef Green
+#undef Blue
 
 /* HAL drivers needed for configuration. */
 #include "stm32f4xx_hal.h"
@@ -106,9 +104,8 @@ static GFXINLINE void init_board(GDisplay *g) {
   RCC->PLLSAICFGR = (STM32_PLLSAIN_VALUE << 6) | (STM32_PLLSAIR_VALUE << 28) | (STM32_PLLSAIQ_VALUE << 24);
   RCC->DCKCFGR = (RCC->DCKCFGR & ~RCC_DCKCFGR_PLLSAIDIVR) | STM32_PLLSAIR_POST;
   RCC->CR |= RCC_CR_PLLSAION;
-  while(!(RCC->CR & RCC_CR_PLLSAIRDY));			// wait for PLLSAI to lock
 #endif
-
+    
   __HAL_RCC_DSI_CLK_ENABLE();
 
   DSI_PLLInitTypeDef  dsiPllInit;
@@ -122,7 +119,7 @@ static GFXINLINE void init_board(GDisplay *g) {
   /* TXEscapeCkdiv = f(LaneByteClk)/15.62 = 4 -> 500MHz/4 = 25MHz datasheet says around 20MHz */
   dsiHandle.Init.TXEscapeCkdiv             = laneByteClk_kHz/15620;          // Low power clock relative to the laneByteClock
   dsiHandle.Init.NumberOfLanes             = DSI_TWO_DATA_LANES;             // Two data lines for the fastest transfer speed
-
+  
   /* Fill in the command mode struct. */
   dsiCmdMode.VirtualChannelID              = 0;                              // The first virtual channel
 
@@ -142,7 +139,7 @@ static GFXINLINE void init_board(GDisplay *g) {
   dsiCmdMode.VSyncPol               = DSI_VSYNC_FALLING;
   dsiCmdMode.AutomaticRefresh       = DSI_AR_ENABLE;               // Use the automatic refresh mode
   dsiCmdMode.TEAcknowledgeRequest   = DSI_TE_ACKNOWLEDGE_DISABLE;  // Not needed when using TE through GPIO
-
+  
   /* GPIO configuration. */
   GPIO_InitTypeDef  gpioInit;
   /* PH7  LCD_RESET */
@@ -152,14 +149,14 @@ static GFXINLINE void init_board(GDisplay *g) {
   gpioInit.Pull  = GPIO_NOPULL;
   gpioInit.Speed = GPIO_SPEED_HIGH;
   HAL_GPIO_Init(GPIOH, &gpioInit);
-
+  
   /* PJ2  DSIHOST_TE */
   __HAL_RCC_GPIOJ_CLK_ENABLE();
   gpioInit.Pin        = GPIO_PIN_2;
   gpioInit.Mode       = GPIO_MODE_AF_PP;
   gpioInit.Alternate  = GPIO_AF13_DSI;
   HAL_GPIO_Init(GPIOJ, &gpioInit);
-
+  
   /* PA3  LCD_BL_CTRL This pin is not physically connected. */
   __HAL_RCC_GPIOA_CLK_ENABLE();
   gpioInit.Pin        = GPIO_PIN_3;
@@ -180,7 +177,7 @@ static GFXINLINE void init_board(GDisplay *g) {
 
   /* Initialize the DSI peripheral. */
   HAL_DSI_Init(&dsiHandle, &dsiPllInit);
-
+  
   DSI_PHY_TimerTypeDef  PhyTimings;
   /* Configure DSI PHY HS2LP and LP2HS timings. Datasheet says 95ns max */
   PhyTimings.ClockLaneHS2LPTime   = 35;
@@ -192,8 +189,8 @@ static GFXINLINE void init_board(GDisplay *g) {
   HAL_DSI_ConfigPhyTimer(&dsiHandle, &PhyTimings);
 
   /* Configure adapted command mode. */
-  HAL_DSI_ConfigAdaptedCommandMode(&dsiHandle, &dsiCmdMode);
-
+  HAL_DSI_ConfigAdaptedCommandMode(&dsiHandle, &dsiCmdMode);  
+  
   /* Hardware reset LCD */
   reset_lcd(g);
 
@@ -233,7 +230,7 @@ static GFXINLINE void post_init_board(GDisplay* g)
 {
   (void)g;
   DSI_LPCmdTypeDef dsiAPBCmd;
-
+  
   /* Enable the DSI host and wrapper after the LTDC initialization
   To avoid any synchronization issue, the DSI shall be started after enabling the LTDC */
   HAL_DSI_Start(&dsiHandle);
@@ -252,7 +249,7 @@ static GFXINLINE void post_init_board(GDisplay* g)
   dsiAPBCmd.LPDcsShortReadNoP     = DSI_LP_DSR0P_ENABLE;
   dsiAPBCmd.LPDcsLongWrite        = DSI_LP_DLW_ENABLE;
   HAL_DSI_ConfigCommand(&dsiHandle, &dsiAPBCmd);
-
+  
   /* Configure the LCD. */
 #ifdef GDISP_PIXELFORMAT_RGB565
   OTM8009A_Init(OTM8009A_FORMAT_RBG565, 1);
@@ -262,7 +259,7 @@ static GFXINLINE void post_init_board(GDisplay* g)
 
   /* Enable the tearing effect line. */
   HAL_DSI_ShortWrite(&dsiHandle, 0, DSI_DCS_SHORT_PKT_WRITE_P1, DSI_SET_TEAR_ON, 0);  // Only V-Blanking info
-
+  
   /* Disable the APB command mode again to go into adapted command mode. (going into high speed mode) */
   dsiAPBCmd.LPGenShortWriteNoP    = DSI_LP_GSW0P_DISABLE;
   dsiAPBCmd.LPGenShortWriteOneP   = DSI_LP_GSW1P_DISABLE;
@@ -276,7 +273,7 @@ static GFXINLINE void post_init_board(GDisplay* g)
   dsiAPBCmd.LPDcsShortReadNoP     = DSI_LP_DSR0P_DISABLE;
   dsiAPBCmd.LPDcsLongWrite        = DSI_LP_DLW_DISABLE;
   HAL_DSI_ConfigCommand(&dsiHandle, &dsiAPBCmd);
-
+    
   HAL_DSI_Refresh(&dsiHandle);
 }
 

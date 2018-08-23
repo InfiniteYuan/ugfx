@@ -44,12 +44,12 @@ void _gosPostInit(void)
 			osKernelInitialize();
 			/* Fall Through */
 		case osKernelReady:
-			gfxThreadCreate(0, GFX_OS_UGFXMAIN_STACKSIZE, gThreadpriorityNormal, startUGFX_CMSIS2, 0);
+			gfxThreadCreate(0, GFX_OS_UGFXMAIN_STACKSIZE, NORMAL_PRIORITY, startUGFX_CMSIS2, 0);
 			osKernelStart();
 			gfxHalt("Unable to start CMSIS V2 scheduler. Out of memory?");
 			break;
 		default:
-			gfxThreadCreate(0, GFX_OS_UGFXMAIN_STACKSIZE, gThreadpriorityNormal, startUGFX_CMSIS2, 0);
+			gfxThreadCreate(0, GFX_OS_UGFXMAIN_STACKSIZE, NORMAL_PRIORITY, startUGFX_CMSIS2, 0);
 			break;
 		}
 	#endif
@@ -64,19 +64,19 @@ void gfxMutexInit(gfxMutex* pmutex)
 	*pmutex = osMutexNew(NULL);
 }
 
-void gfxSemInit(gfxSem* psem, gSemcount val, gSemcount limit)
+void gfxSemInit(gfxSem* psem, semcount_t val, semcount_t limit)
 {
 	*psem = osSemaphoreNew(limit, val, NULL);
 }
 
-gBool gfxSemWait(gfxSem* psem, gDelay ms)
+bool_t gfxSemWait(gfxSem* psem, delaytime_t ms)
 {
 	if (osSemaphoreAcquire(*psem, gfxMillisecondsToTicks(ms)) == osOK)
-		return gTrue;
-	return gFalse;
+		return TRUE;
+	return FALSE;
 }
 
-gThread gfxThreadCreate(void* stackarea, size_t stacksz, gThreadpriority prio, DECLARE_THREAD_FUNCTION((*fn),p), void* param)
+gfxThreadHandle gfxThreadCreate(void* stackarea, size_t stacksz, threadpriority_t prio, DECLARE_THREAD_FUNCTION((*fn),p), void* param)
 {
 	osThreadAttr_t def;
 
@@ -93,7 +93,7 @@ gThread gfxThreadCreate(void* stackarea, size_t stacksz, gThreadpriority prio, D
 	return osThreadNew((osThreadFunc_t)fn, param, &def);
 }
 
-gThreadreturn gfxThreadWait(gThread thread) {
+threadreturn_t gfxThreadWait(gfxThreadHandle thread) {
 	while(1) {
 		switch(osThreadGetState(thread)) {
 		case osThreadReady:

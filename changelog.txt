@@ -2,48 +2,6 @@
 *** Releases                                                              ***
 *****************************************************************************
 
-*** After Release 2.8 ***
-FEATURE:	Added config vars GINPUT_TOUCH_CALIBRATION_FONT1 and GINPUT_TOUCH_CALIBRATION_FONT2
-FEATURE:	Added config vars GINPUT_TOUCH_CALIBRATION_TITLE and GINPUT_TOUCH_CALIBRATION_ERROR
-FIX:		Fixed ensuring the clock is fully started in STM32LTDC based boards
-FIX:		Added support for negative baseline_x in fonts
-FIX:		Fixed some word wrapping issues
-FIX:		Fixed drawing of 3x3 pixel boxes
-FIX:		Fixed issue in RTX5/CMSIS2 port which resulted in hanging delays/threads
-FEATURE:	Added GFX_COMPAT_V2 to maintain source compatibility with V2.x programs. It is turned on by default.
-FEATURE:	Added GFX_COMPAT_OLDCOLORS to allow V2.x Red, Green, Blue color names. It is turned on by default.
-CHANGE:		Added GFX_RED, GFX_BLUE, GFX_GREEN etc to replace V2.x Red, Gree, Blue color names
-CHANGE:		Added GFXON/GFXOFF to replace V2.x TRUE/FALSE for configuration options.
-CHANGE:		Added types gI8, gU8 .. gI32, gU32 to replace V2.x int8_t etc
-CHANGE:		Added type gBool           to replace V2.x bool_t,        and values gTrue/gFalse to replace TRUE/FALSE
-CHANGE:		Added type gDelay          to replace V2.x delaytime_t    and values gDelayNone/gDelayForever to replace TIME_IMMEDIATE/TIME_INFINITE
-CHANGE:		Added type gTicks          to replace V2.x systemticks_t
-CHANGE:		Added type gThread         to replace V2.x gfxThreadHandle
-CHANGE:		Added type gThreadreturn   to replace V2.x threadreturn_t
-CHANGE:		Added type gThreadpriority to replace V2.x threadpriority_t and values gThreadpriorityLow/Normal/High to replace LOW_/NORMAL_/HIGH_PRIORITY
-CHANGE:		Added type gPoint          to replace V2.x point and point_t
-CHANGE:		Added type gCoord          to replace V2.x coord_t
-CHANGE:		Added type gPixel          to replace V2.x pixel_t
-CHANGE:		Added type gColor          to replace V2.x color_t
-CHANGE:		Added type gColorformat    to replace V2.x colorformat
-CHANGE:		Added type gFont           to replace V2.x font_t
-CHANGE:		Added type gPowermode      to replace V2.x powermode_t,   and values gPowerXXX replace powerXXX
-CHANGE:		Added type gJustify        to replace V2.x justify_t,     and values gJustifyXXX replace justifyXXX
-CHANGE:		Added type gFontmetric     to replace V2.x fontmetric_t,  and values gFontXXX replace fontXXX
-CHANGE:		Added type gOrientation    to replace V2.x orientation_t, and values gOrientationX replace GDISP_ROTATE_X
-CHANGE:		Added macros JUSTIFYMASK_HORIZONTAL, JUSTIFYMASK_VERTICAL to replace macros JUSTIFYMASK_LEFTRIGHT, JUSTIFYMASK_TOPBOTTOM
-FEATURE:	Added types gPtr and gPtrDiff
-FEATURE:	Added gI64 and gU64 when the compiler supports it. GFX_TYPE_64 macro is defined as GFXON if it does.
-FEATURE:	Fixed headers to ensure size_t, NULL are always defined. size_t is not used as it may be 64bit.
-FIX:		Added gfxRealloc() to Qt port
-FIX:		Fixed UC1610 driver private area initialisation
-FIX:		Fixed ST7735 driver and added kapacuk changes
-FEATURE:	Added keyboard support to radio buttons (by Steffan)
-FEATURE:	Added internal use only GFX_COMPILESTAGE (used to control compilation)
-FEATURE:	Added support for ChibiOS Kernel V5
-FEATURE:	Added WS29EPD WaveShare E-Paper display
-
-
 *** Release 2.8 ***
 FEATURE:	Added support for 128x32 SSD1306 based displays
 FIX:		Fixed recursion bug in console history

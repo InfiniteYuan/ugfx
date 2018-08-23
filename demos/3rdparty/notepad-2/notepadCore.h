@@ -37,7 +37,7 @@
 
 /* Configuration */
 #define	NCORE_THD_STACK_SIZE	256
-#define NCORE_THD_PRIO			gThreadpriorityNormal
+#define NCORE_THD_PRIO			NORMAL_PRIORITY
 
 #define NCORE_MODE_DRAW			0
 #define NCORE_MODE_ERASE		1
@@ -58,8 +58,8 @@ void ncoreSetPenWidth(uint8_t penWidth);
 uint8_t ncoreGetPenWidth(void);
 
 /* Get and set the drawing color */
-void ncoreSetPenColor(gColor penColor);
-gColor ncoreGetPenColor(void);
+void ncoreSetPenColor(color_t penColor);
+color_t ncoreGetPenColor(void);
 
 /* Get and set the pen mode */
 void ncoreSetMode(uint8_t mode);

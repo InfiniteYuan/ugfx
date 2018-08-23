@@ -23,7 +23,7 @@ ifeq ($(OPT_OS),raw32)
 			$(GFXLIB)/boards/base/STM32F469i-Discovery/stm32f469i_raw32_ugfx.c \
 			$(GFXLIB)/boards/base/STM32F469i-Discovery/stm32f469i_raw32_system.c \
 			$(GFXLIB)/boards/base/STM32F469i-Discovery/stm32f469i_raw32_it.c
-	GFXDEFS	+=	GFX_OS_PRE_INIT_FUNCTION=Raw32OSInit GFX_OS_INIT_NO_WARNING=GFXON
+	GFXDEFS	+=	GFX_OS_PRE_INIT_FUNCTION=Raw32OSInit GFX_OS_INIT_NO_WARNING=TRUE
 	GFXINC	+=	$(CMSIS)/Device/ST/STM32F4xx/Include \
 			$(CMSIS)/Include
 	LDSCRIPT = 	$(GFXLIB)/boards/base/STM32F469i-Discovery/STM32_FLASH.ld

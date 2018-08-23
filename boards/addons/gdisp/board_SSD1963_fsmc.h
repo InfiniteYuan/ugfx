@@ -81,7 +81,7 @@ static GFXINLINE void post_init_board(GDisplay *g) {
 	FSMC_Bank1->BTCR[0] = FSMC_BCR1_MWID_0 | FSMC_BCR1_WREN | FSMC_BCR1_MBKEN;
 }
 
-static GFXINLINE void setpin_reset(GDisplay *g, gBool state) {
+static GFXINLINE void setpin_reset(GDisplay *g, bool_t state) {
 	(void) g;
 	(void) state;
 }

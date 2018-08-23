@@ -29,7 +29,7 @@
 
 typedef struct fbPriv {
 	void* pixels;			// The pixel buffer
-	gCoord linelen;		// The number of bytes per display line
+	coord_t linelen;		// The number of bytes per display line
 	void* frame0;
 	void* frame1;
 } fbPriv;
@@ -46,7 +46,7 @@ typedef struct fbPriv {
 /* Driver exported functions.                                                */
 /*===========================================================================*/
 
-LLDSPEC gBool gdisp_lld_init(GDisplay* g)
+LLDSPEC bool_t gdisp_lld_init(GDisplay* g)
 {
 	// Allocate the frame buffers
 	PRIV(g)->frame0 = gfxAlloc(SCREEN_WIDTH * SCREEN_HEIGHT * sizeof(LLDCOLOR_TYPE));
@@ -60,8 +60,8 @@ LLDSPEC gBool gdisp_lld_init(GDisplay* g)
 	g->g.Height = SCREEN_HEIGHT;
 	g->g.Backlight = 100;
 	g->g.Contrast = 50;
-	g->g.Orientation = gOrientation0;
-	g->g.Powermode = gPowerOn;
+	g->g.Orientation = GDISP_ROTATE_0;
+	g->g.Powermode = powerOn;
 	g->board = 0;
 	PRIV(g)->linelen = g->g.Width * sizeof(LLDCOLOR_TYPE);	// bytes per line
 	PRIV(g)->pixels = PRIV(g)->frame0;
@@ -94,7 +94,7 @@ LLDSPEC gBool gdisp_lld_init(GDisplay* g)
 	// Start the framebuffer reader
 	IOWR(ALT_VIP_VFR_0_BASE, 0x00, 0x01);
 
-	return gTrue;
+	return TRUE;
 }
 
 LLDSPEC void gdisp_lld_draw_pixel(GDisplay* g)
@@ -103,17 +103,17 @@ LLDSPEC void gdisp_lld_draw_pixel(GDisplay* g)
 
 	#if GDISP_NEED_CONTROL
 		switch(g->g.Orientation) {
-		case gOrientation0:
+		case GDISP_ROTATE_0:
 		default:
 			pos = PIXIL_POS(g, g->p.x, g->p.y);
 			break;
-		case gOrientation90:
+		case GDISP_ROTATE_90:
 			pos = PIXIL_POS(g, g->p.y, g->g.Width-g->p.x-1);
 			break;
-		case gOrientation180:
+		case GDISP_ROTATE_180:
 			pos = PIXIL_POS(g, g->g.Width-g->p.x-1, g->g.Height-g->p.y-1);
 			break;
-		case gOrientation270:
+		case GDISP_ROTATE_270:
 			pos = PIXIL_POS(g, g->g.Height-g->p.y-1, g->p.x);
 			break;
 		}
@@ -124,24 +124,24 @@ LLDSPEC void gdisp_lld_draw_pixel(GDisplay* g)
 		PIXEL_ADDR(g, pos)[0] = gdispColor2Native(g->p.color);
 }
 
-LLDSPEC	gColor gdisp_lld_get_pixel_color(GDisplay* g)
+LLDSPEC	color_t gdisp_lld_get_pixel_color(GDisplay* g)
 {
 	unsigned		pos;
 	LLDCOLOR_TYPE	color;
 
 	#if GDISP_NEED_CONTROL
 		switch(g->g.Orientation) {
-		case gOrientation0:
+		case GDISP_ROTATE_0:
 		default:
 			pos = PIXIL_POS(g, g->p.x, g->p.y);
 			break;
-		case gOrientation90:
+		case GDISP_ROTATE_90:
 			pos = PIXIL_POS(g, g->p.y, g->g.Width-g->p.x-1);
 			break;
-		case gOrientation180:
+		case GDISP_ROTATE_180:
 			pos = PIXIL_POS(g, g->g.Width-g->p.x-1, g->g.Height-g->p.y-1);
 			break;
-		case gOrientation270:
+		case GDISP_ROTATE_270:
 			pos = PIXIL_POS(g, g->g.Height-g->p.y-1, g->p.x);
 			break;
 		}
@@ -158,36 +158,36 @@ LLDSPEC	gColor gdisp_lld_get_pixel_color(GDisplay* g)
 	{
 		switch(g->p.x) {
 		case GDISP_CONTROL_POWER:
-			if (g->g.Powermode == (gPowermode)g->p.ptr)
+			if (g->g.Powermode == (powermode_t)g->p.ptr)
 				return;
-			switch((gPowermode)g->p.ptr) {
-			case gPowerOff: case gPowerOn: case gPowerSleep: case gPowerDeepSleep:
-				board_power(g, (gPowermode)g->p.ptr);
+			switch((powermode_t)g->p.ptr) {
+			case powerOff: case powerOn: case powerSleep: case powerDeepSleep:
+				board_power(g, (powermode_t)g->p.ptr);
 				break;
 			default:
 				return;
 			}
-			g->g.Powermode = (gPowermode)g->p.ptr;
+			g->g.Powermode = (powermode_t)g->p.ptr;
 			return;
 
 		case GDISP_CONTROL_ORIENTATION:
-			if (g->g.Orientation == (gOrientation)g->p.ptr)
+			if (g->g.Orientation == (orientation_t)g->p.ptr)
 				return;
-			switch((gOrientation)g->p.ptr) {
-				case gOrientation0:
-				case gOrientation180:
-					if (g->g.Orientation == gOrientation90 || g->g.Orientation == gOrientation270) {
-						gCoord		tmp;
+			switch((orientation_t)g->p.ptr) {
+				case GDISP_ROTATE_0:
+				case GDISP_ROTATE_180:
+					if (g->g.Orientation == GDISP_ROTATE_90 || g->g.Orientation == GDISP_ROTATE_270) {
+						coord_t		tmp;
 
 						tmp = g->g.Width;
 						g->g.Width = g->g.Height;
 						g->g.Height = tmp;
 					}
 					break;
-				case gOrientation90:
-				case gOrientation270:
-					if (g->g.Orientation == gOrientation0 || g->g.Orientation == gOrientation180) {
-						gCoord		tmp;
+				case GDISP_ROTATE_90:
+				case GDISP_ROTATE_270:
+					if (g->g.Orientation == GDISP_ROTATE_0 || g->g.Orientation == GDISP_ROTATE_180) {
+						coord_t		tmp;
 
 						tmp = g->g.Width;
 						g->g.Width = g->g.Height;
@@ -197,7 +197,7 @@ LLDSPEC	gColor gdisp_lld_get_pixel_color(GDisplay* g)
 				default:
 					return;
 			}
-			g->g.Orientation = (gOrientation)g->p.ptr;
+			g->g.Orientation = (orientation_t)g->p.ptr;
 			return;
 
 		case GDISP_CONTROL_BACKLIGHT:
@@ -255,7 +255,7 @@ LLDSPEC	gColor gdisp_lld_get_pixel_color(GDisplay* g)
 	
 		// Fill the line buffer with the solid color
 	    for (i = 0; i < bytes_per_pixel * g->p.cx; i += 4)  {
-			*((gColor*)(line + i)) = g->p.color;
+			*((color_t*)(line + i)) = g->p.color;
 		}
 	  
 		// Calculate the address of the first pixel of the rectangle (top left corner)

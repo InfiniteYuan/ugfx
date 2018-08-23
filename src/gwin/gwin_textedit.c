@@ -53,7 +53,7 @@ static void TextEditRemoveChar(GHandle gh) {
 	gh2obj->w.text = p;
 }
 
-static gBool TextEditAddChars(GHandle gh, unsigned cnt) {
+static bool_t TextEditAddChars(GHandle gh, unsigned cnt) {
 	char		*p;
 	const char	*q;
 	unsigned	sz;
@@ -65,21 +65,21 @@ static gBool TextEditAddChars(GHandle gh, unsigned cnt) {
 
 	if (!(gh->flags & GWIN_FLG_ALLOCTXT)) {
 		if (!(p = gfxAlloc(sz+cnt)))
-			return gFalse;
+			return FALSE;
 		memcpy(p, gh2obj->w.text, pos);
 		memcpy(p+pos+cnt, gh2obj->w.text+pos, sz-pos);
 		gh->flags |= GWIN_FLG_ALLOCTXT;
 		gh2obj->w.text = p;
 	} else {
 		if (!(p = gfxRealloc((char *)gh2obj->w.text, sz, sz+cnt)))
-			return gFalse;
+			return FALSE;
 		gh2obj->w.text = p;
 		q = p+pos;
 		p += sz;
 		while(--p >= q)
 			p[cnt] = p[0];
 	}
-	return gTrue;
+	return TRUE;
 }
 
 // Function that allows to set the cursor to any position in the string
@@ -87,7 +87,7 @@ static gBool TextEditAddChars(GHandle gh, unsigned cnt) {
 // slow. An optimized version would copy the behavior of mf_get_string_width()
 // and do the comparation directly inside of that loop so we only iterate
 // the string once.
-static void TextEditMouseDown(GWidgetObject* gw, gCoord x, gCoord y) {
+static void TextEditMouseDown(GWidgetObject* gw, coord_t x, coord_t y) {
 	uint16_t i = 0;
 
 	(void)y;
@@ -269,7 +269,7 @@ GHandle gwinGTexteditCreate(GDisplay* g, GTexteditObject* wt, GWidgetInit* pInit
 void gwinTexteditDefaultDraw(GWidgetObject* gw, void* param)
 {
 	const char*			p;
-	gCoord				cpos, tpos;
+	coord_t				cpos, tpos;
 	const GColorSet*	pcol;
 
 	(void)param;
@@ -300,15 +300,15 @@ void gwinTexteditDefaultDraw(GWidgetObject* gw, void* param)
 	#if TEXT_PADDING_LEFT
 		gdispGFillArea(gw->g.display, gw->g.x, gw->g.y, TEXT_PADDING_LEFT, gw->g.height, pcol->fill);
 	#endif
-	gdispGFillStringBox(gw->g.display, gw->g.x + TEXT_PADDING_LEFT, gw->g.y, gw->g.width-TEXT_PADDING_LEFT, gw->g.height, p, gw->g.font, pcol->text, pcol->fill, gJustifyLeft);
+	gdispGFillStringBox(gw->g.display, gw->g.x + TEXT_PADDING_LEFT, gw->g.y, gw->g.width-TEXT_PADDING_LEFT, gw->g.height, p, gw->g.font, pcol->text, pcol->fill, justifyLeft);
 
 	// Render cursor (if focused)
 	if (gwinGetFocus() == (GHandle)gw) {
 		// Calculate cursor stuff
 
 		// Draw cursor
-		tpos += gw->g.x + CURSOR_PADDING_LEFT + TEXT_PADDING_LEFT + gdispGetFontMetric(gw->g.font, gFontBaselineX)/2;
-		cpos = (gw->g.height - gdispGetFontMetric(gw->g.font, gFontHeight))/2 - CURSOR_EXTRA_HEIGHT;
+		tpos += gw->g.x + CURSOR_PADDING_LEFT + TEXT_PADDING_LEFT + gdispGetFontMetric(gw->g.font, fontBaselineX)/2;
+		cpos = (gw->g.height - gdispGetFontMetric(gw->g.font, fontHeight))/2 - CURSOR_EXTRA_HEIGHT;
 		gdispGDrawLine(gw->g.display, tpos, gw->g.y + cpos, tpos, gw->g.y + gw->g.height - cpos, pcol->edge);
 	}
 

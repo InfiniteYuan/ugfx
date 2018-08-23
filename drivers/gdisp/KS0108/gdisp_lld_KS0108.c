@@ -94,7 +94,7 @@
 /* Driver exported functions.                                                */
 /*===========================================================================*/
 
-LLDSPEC gBool gdisp_lld_init(GDisplay *g) {
+LLDSPEC bool_t gdisp_lld_init(GDisplay *g) {
 	#if !KS0108_NEED_READ
 		// The private area is the display surface.
 		g->priv = gfxAlloc(BUFFSZ);
@@ -105,9 +105,9 @@ LLDSPEC gBool gdisp_lld_init(GDisplay *g) {
 	init_board(g);
 
 	#if KS0108_HAS_RESET  //Make Hardware Reset
-		setpin_reset(g, gTrue);
+		setpin_reset(g, TRUE);
 		gfxSleepMilliseconds(120);
-		setpin_reset(g, gFalse);
+		setpin_reset(g, FALSE);
 	#endif
 	gfxSleepMilliseconds(120);
 	write_cmd(g, KS0108_DISP1OFF);
@@ -134,12 +134,12 @@ LLDSPEC gBool gdisp_lld_init(GDisplay *g) {
 	// Initialise the GDISP structure
 	g->g.Width = GDISP_SCREEN_WIDTH;
 	g->g.Height = GDISP_SCREEN_HEIGHT;
-	g->g.Orientation = gOrientation0;
-	g->g.Powermode = gPowerOn;
+	g->g.Orientation = GDISP_ROTATE_0;
+	g->g.Powermode = powerOn;
 	g->g.Backlight = GDISP_INITIAL_BACKLIGHT;
 	g->g.Contrast = GDISP_INITIAL_CONTRAST;
 
-	return gTrue;
+	return TRUE;
 }
 
 GFXINLINE void KS0108_goto(GDisplay* g, ) {
@@ -159,7 +159,7 @@ LLDSPEC void gdisp_lld_write_color(GDisplay *g) {
 	uint16_t	data;
 
 	data = (g->p.x >> 6) << 8;		// Set the chip
-	if (g->p.color != GFX_WHITE)
+	if (g->p.color != White)
 		data |= 0x01;				// set dot
 	write_data(g, data);
 }
@@ -188,7 +188,7 @@ LLDSPEC void gdisp_lld_draw_pixel(GDisplay *g) {
 		dummy_read(g);
 	}
 
-	LLDSPEC gColor gdisp_lld_read_color(GDisplay *g) {
+	LLDSPEC color_t gdisp_lld_read_color(GDisplay *g) {
 		uint16_t data;
 
 		data = read_data(g);
@@ -206,7 +206,7 @@ LLDSPEC void gdisp_lld_draw_pixel(GDisplay *g) {
 		uint8_t data, j;
 		set_viewport(g);
 
-		if (g->p.color != GFX_WHITE) {
+		if (g->p.color != White) {
 			data = 0xFF;              // set dot
 		}
 		else {
@@ -225,11 +225,11 @@ LLDSPEC void gdisp_lld_draw_pixel(GDisplay *g) {
 	LLDSPEC void gdisp_lld_control(GDisplay *g) {
 		switch(g->p.x) {
 		case GDISP_CONTROL_POWER:
-			if (g->g.Powermode == (gPowermode)g->p.ptr)
+			if (g->g.Powermode == (powermode_t)g->p.ptr)
 				return;
 
-			switch((gPowermode)g->p.ptr) {
-			case gPowerOff:
+			switch((powermode_t)g->p.ptr) {
+			case powerOff:
 				acquire_bus(g);
 				write_index(g, 0x28);
 				gfxSleepMilliseconds(10);
@@ -237,17 +237,17 @@ LLDSPEC void gdisp_lld_draw_pixel(GDisplay *g) {
 				release_bus(g);
 				break;
 
-			case gPowerOn:
+			case powerOn:
 				acquire_bus(g);
 				write_index(g, 0x11);
 				gfxSleepMilliseconds(120);
 				write_index(g, 0x29);
 				release_bus(g);
-				if (g->g.Powermode != gPowerSleep)
+				if (g->g.Powermode != powerSleep)
 					gdisp_lld_init(g);
 			break;
 
-			case gPowerSleep:
+			case powerSleep:
 				acquire_bus(g);
 				write_index(g, 0x28);
 				gfxSleepMilliseconds(10);
@@ -259,15 +259,15 @@ LLDSPEC void gdisp_lld_draw_pixel(GDisplay *g) {
 				return;
 			}
 
-			g->g.Powermode = (gPowermode)g->p.ptr;
+			g->g.Powermode = (powermode_t)g->p.ptr;
 			return;
 
 		case GDISP_CONTROL_ORIENTATION:
-			if (g->g.Orientation == (gOrientation)g->p.ptr)
+			if (g->g.Orientation == (orientation_t)g->p.ptr)
 				return;
 
-			switch((gOrientation)g->p.ptr) {
-			case gOrientation0:
+			switch((orientation_t)g->p.ptr) {
+			case GDISP_ROTATE_0:
 				acquire_bus(g);
 
 				write_index(g, 0x36);
@@ -278,7 +278,7 @@ LLDSPEC void gdisp_lld_draw_pixel(GDisplay *g) {
 				g->g.Width = GDISP_SCREEN_WIDTH;
 				break;
 
-			case gOrientation90:
+			case GDISP_ROTATE_90:
 				acquire_bus(g);
 
 				write_index(g, 0x36);
@@ -289,7 +289,7 @@ LLDSPEC void gdisp_lld_draw_pixel(GDisplay *g) {
 				g->g.Width = GDISP_SCREEN_HEIGHT;
 				break;
 
-			case gOrientation180:
+			case GDISP_ROTATE_180:
 				acquire_bus(g);
 
 				write_index(g, 0x36);
@@ -300,7 +300,7 @@ LLDSPEC void gdisp_lld_draw_pixel(GDisplay *g) {
 				g->g.Width = GDISP_SCREEN_WIDTH;
 				break;
 
-			case gOrientation270:
+			case GDISP_ROTATE_270:
 				acquire_bus(g);
 
 				write_index(g, 0x36);
@@ -315,7 +315,7 @@ LLDSPEC void gdisp_lld_draw_pixel(GDisplay *g) {
 				return;
 			}
 
-			g->g.Orientation = (gOrientation)g->p.ptr;
+			g->g.Orientation = (orientation_t)g->p.ptr;
 			return;
 
 		default:

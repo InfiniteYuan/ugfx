@@ -26,11 +26,11 @@
 #define _GDISP_LLD_BOARD_H
 
 // My Settings
-#define RA6963_NEED_READ                GFXOFF //works, but is very slow!
-#define RA6963_HAS_RESET                GFXOFF
-#define RA6963_NEED_FONT_SELECT         GFXOFF
-#define RA6963_NEED_BACKLIGHT           GFXOFF
-#define RA6963_NEED_PWMBACKLIGHT        GFXOFF
+#define RA6963_NEED_READ                FALSE //works, but is very slow!
+#define RA6963_HAS_RESET                FALSE
+#define RA6963_NEED_FONT_SELECT         FALSE
+#define RA6963_NEED_BACKLIGHT           FALSE
+#define RA6963_NEED_PWMBACKLIGHT        FALSE
 #define GDISP_SCREEN_HEIGHT             64
 #define GDISP_SCREEN_WIDTH              128
 #define GDISP_INITIAL_CONTRAST          50
@@ -165,7 +165,7 @@ static GFXINLINE void post_init_board(GDisplay *g) {
 	(void) g;
 }
 
-static GFXINLINE void setpin_reset(GDisplay *g, gBool state) {
+static GFXINLINE void setpin_reset(GDisplay *g, bool_t state) {
 	(void) g;
 #if RA6963_HAS_RESET  //Make Hardware Reset
 	if (state)
@@ -199,7 +199,7 @@ static GFXINLINE void release_bus(GDisplay *g) {
 
 
 #if RA6963_NEED_READ
-static GFXINLINE uint8_t RA6963_busy_wait(uint8_t pattern, gBool lh){
+static GFXINLINE uint8_t RA6963_busy_wait(uint8_t pattern, bool_t lh){
 
   uint8_t data;
   int ii;

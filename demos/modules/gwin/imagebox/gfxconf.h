@@ -19,72 +19,72 @@
 #define _GFXCONF_H
 
 /* The operating system to use. One of these must be defined - preferably in your Makefile */
-//#define GFX_USE_OS_CHIBIOS                         GFXON
-//#define GFX_USE_OS_WIN32                           GFXON
-//#define GFX_USE_OS_LINUX                           GFXON
-//#define GFX_USE_OS_OSX                             GFXON
+//#define GFX_USE_OS_CHIBIOS                         TRUE
+//#define GFX_USE_OS_WIN32                           TRUE
+//#define GFX_USE_OS_LINUX                           TRUE
+//#define GFX_USE_OS_OSX                             TRUE
 
 
 ///////////////////////////////////////////////////////////////////////////
 // GDISP                                                                 //
 ///////////////////////////////////////////////////////////////////////////
-#define GFX_USE_GDISP                                GFXON
+#define GFX_USE_GDISP                                TRUE
 
-//#define GDISP_NEED_AUTOFLUSH                         GFXOFF
-//#define GDISP_NEED_TIMERFLUSH                        GFXOFF
-#define GDISP_NEED_VALIDATION                        GFXON
-#define GDISP_NEED_CLIP                              GFXON
-#define GDISP_NEED_MULTITHREAD                       GFXON
-#define GDISP_NEED_TEXT                              GFXON
-    #define GDISP_INCLUDE_FONT_UI2                   GFXON
+//#define GDISP_NEED_AUTOFLUSH                         FALSE
+//#define GDISP_NEED_TIMERFLUSH                        FALSE
+#define GDISP_NEED_VALIDATION                        TRUE
+#define GDISP_NEED_CLIP                              TRUE
+#define GDISP_NEED_MULTITHREAD                       TRUE
+#define GDISP_NEED_TEXT                              TRUE
+    #define GDISP_INCLUDE_FONT_UI2                   TRUE
 
-#define GDISP_NEED_IMAGE                             GFXON
-    #define GDISP_NEED_IMAGE_GIF                     GFXON
-    #define GDISP_NEED_IMAGE_BMP                     GFXON
-        #define GDISP_NEED_IMAGE_BMP_24              GFXON
+#define GDISP_NEED_IMAGE                             TRUE
+    #define GDISP_NEED_IMAGE_GIF                     TRUE
+    #define GDISP_NEED_IMAGE_BMP                     TRUE
+        #define GDISP_NEED_IMAGE_BMP_24              TRUE
 
-#define GDISP_DEFAULT_ORIENTATION                    gOrientationLandscape
+#define GDISP_DEFAULT_ORIENTATION                    GDISP_ROTATE_LANDSCAPE
 
 ///////////////////////////////////////////////////////////////////////////
 // GWIN                                                                  //
 ///////////////////////////////////////////////////////////////////////////
-#define GFX_USE_GWIN                                 GFXON
+#define GFX_USE_GWIN                                 TRUE
 
-#define GWIN_NEED_WINDOWMANAGER                      GFXON
+#define GWIN_NEED_WINDOWMANAGER                      TRUE
 
-#define GWIN_NEED_WIDGET                             GFXON
-    #define GWIN_NEED_IMAGE                          GFXON
-        #define GWIN_NEED_IMAGE_ANIMATION            GFXON
+#define GWIN_NEED_WIDGET                             TRUE
+    #define GWIN_NEED_IMAGE                          TRUE
+        #define GWIN_NEED_IMAGE_ANIMATION            TRUE
 
 
 ///////////////////////////////////////////////////////////////////////////
 // GEVENT                                                                //
 ///////////////////////////////////////////////////////////////////////////
-#define GFX_USE_GEVENT                               GFXON
+#define GFX_USE_GEVENT                               TRUE
 
 ///////////////////////////////////////////////////////////////////////////
 // GTIMER                                                                //
 ///////////////////////////////////////////////////////////////////////////
-#define GFX_USE_GTIMER                               GFXON
+#define GFX_USE_GTIMER                               TRUE
 
 ///////////////////////////////////////////////////////////////////////////
 // GQUEUE                                                                //
 ///////////////////////////////////////////////////////////////////////////
-#define GFX_USE_GQUEUE                               GFXON
-#define GQUEUE_NEED_ASYNC                            GFXON
+#define GFX_USE_GQUEUE                               TRUE
+#define GQUEUE_NEED_ASYNC                            TRUE
 
 ///////////////////////////////////////////////////////////////////////////
 // GINPUT                                                                //
 ///////////////////////////////////////////////////////////////////////////
-#define GFX_USE_GINPUT                               GFXON
+#define GFX_USE_GINPUT                               TRUE
 
-#define GINPUT_NEED_MOUSE                            GFXON
+#define GINPUT_NEED_MOUSE                            TRUE
 
 ///////////////////////////////////////////////////////////////////////////
 // GFILE                                                                 //
 ///////////////////////////////////////////////////////////////////////////
-#define GFX_USE_GFILE                                GFXON
+#define GFX_USE_GFILE                                TRUE
 
-#define GFILE_NEED_ROMFS                             GFXON
+#define GFILE_NEED_ROMFS                             TRUE
 
 #endif /* _GFXCONF_H */

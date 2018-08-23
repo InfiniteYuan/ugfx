@@ -22,28 +22,28 @@
 	#error "--"
 #endif
 
-gThreadreturn heartbeat1(void* param)
+threadreturn_t heartbeat1(void* param)
 {
     (void)param;
 
-    while (1) {
+    while (TRUE) {
     	DEBUGWRITE("thread 1\n");
         gfxSleepMilliseconds(500);
     }
 
-    return (gThreadreturn)0;
+    return (threadreturn_t)0;
 }
 
-gThreadreturn heartbeat2(void* param)
+threadreturn_t heartbeat2(void* param)
 {
     (void)param;
 
-    while (1) {
+    while (TRUE) {
     	DEBUGWRITE("thread 2\n");
         gfxSleepMilliseconds(900);
     }
 
-    return (gThreadreturn)0;
+    return (threadreturn_t)0;
 }
 
 int main(void)
@@ -51,10 +51,10 @@ int main(void)
     gfxInit();
 
     // Give this plenty of stack. Stack size optimisation should be a production change only
-    gfxThreadCreate(0, 2048, gThreadpriorityNormal, heartbeat1, 0);
-    gfxThreadCreate(0, 2048, gThreadpriorityNormal, heartbeat2, 0);
+    gfxThreadCreate(0, 2048, NORMAL_PRIORITY, heartbeat1, 0);
+    gfxThreadCreate(0, 2048, NORMAL_PRIORITY, heartbeat2, 0);
 
-    while (1) {
+    while (TRUE) {
     	DEBUGWRITE("thread main\n");
         gfxSleepMilliseconds(1400);
     }

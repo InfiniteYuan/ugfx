@@ -20,16 +20,16 @@
 #define GMOUSE_STMPE811_BOARD_DATA_SIZE			0
 
 // Options - Leave these commented to make it user configurable in the gfxconf.h
-//#define GMOUSE_STMPE811_READ_PRESSURE		GFXOFF
-//#define GMOUSE_STMPE811_SELF_CALIBRATE	GFXOFF
-//#define GMOUSE_STMPE811_TEST_MODE			GFXOFF
+//#define GMOUSE_STMPE811_READ_PRESSURE		FALSE
+//#define GMOUSE_STMPE811_SELF_CALIBRATE	FALSE
+//#define GMOUSE_STMPE811_TEST_MODE			FALSE
 
-// If GFXON this board has the STMPE811 IRQ pin connected to a GPIO.
+// If TRUE this board has the STMPE811 IRQ pin connected to a GPIO.
 // Note: Although this board has such a pin its reliability has not been tested on this board!!!!!
-#define GMOUSE_STMPE811_GPIO_IRQPIN				GFXOFF
+#define GMOUSE_STMPE811_GPIO_IRQPIN				FALSE
 
-// If GFXON this is a really slow CPU and we should always clear the FIFO between reads.
-#define GMOUSE_STMPE811_SLOW_CPU				GFXOFF
+// If TRUE this is a really slow CPU and we should always clear the FIFO between reads.
+#define GMOUSE_STMPE811_SLOW_CPU				FALSE
 
 // Slave address
 #define STMPE811_ADDR				(0x82 >> 1)
@@ -43,12 +43,12 @@ static const I2CConfig i2ccfg = {
 	FAST_DUTY_CYCLE_2,
 };
 
-static gBool init_board(GMouse* m, unsigned driverinstance) {
+static bool_t init_board(GMouse* m, unsigned driverinstance) {
 	(void)		m;
 
 	// This board only supports one touch panel
 	if (driverinstance)
-		return gFalse;
+		return FALSE;
 
 	palSetPadMode(GPIOC, 13, PAL_MODE_INPUT | PAL_STM32_PUDR_FLOATING);			/* TP IRQ */
 	palSetPadMode(GPIOB, 8, PAL_MODE_ALTERNATE(4) | PAL_STM32_OTYPE_OPENDRAIN);	/* SCL */
@@ -56,11 +56,11 @@ static gBool init_board(GMouse* m, unsigned driverinstance) {
 
 	i2cStart(&I2CD1, &i2ccfg);
 
-	return gTrue;
+	return TRUE;
 }
 
 #if GMOUSE_STMPE811_GPIO_IRQPIN
-	static gBool getpin_irq(GMouse* m) {
+	static bool_t getpin_irq(GMouse* m) {
 		(void)		m;
 
 		return !palReadPad(GPIOC, 13);

@@ -38,7 +38,7 @@
 
 const NColorScheme schemeDefault = {
   .titleBarColor = HTML2COLOR(0x3064D8),
-  .titleTextColor = GFX_WHITE,
+  .titleTextColor = White,
 
   .winBgColor = HTML2COLOR(0xFFECB0),
   .drawingWinBorder = HTML2COLOR(0xCEBA77),
@@ -53,7 +53,7 @@ const NColorScheme schemeDefault = {
 
 const NColorScheme schemeDefault2 = {
   .titleBarColor = HTML2COLOR(0x3064D8),
-  .titleTextColor = GFX_WHITE,
+  .titleTextColor = White,
 
   .winBgColor = HTML2COLOR(0xC8D8F8),
   .drawingWinBorder = HTML2COLOR(0x8098E0),
@@ -75,25 +75,25 @@ const char *tsCalibRead(uint16_t instance) {
 
 int main(void) {
 
-  gFont font = gdispOpenFont("UI2");
+  font_t font = gdispOpenFont("UI2");
 
   /* initialize the hardware and the OS */
   gfxInit();
 
   /* Calibrate the touchscreen */
-  ginputSetMouseCalibrationRoutines(0, NULL, tsCalibRead, gFalse);
+  ginputSetMouseCalibrationRoutines(0, NULL, tsCalibRead, FALSE);
   ginputGetMouse(0);
 
   // Set the color scheme
   nSetColorScheme(schemeDefault);
 
-  while (1) {
+  while (TRUE) {
 	gfxThreadWait(nLaunchNotepadApp());
 
 	gdispSetClip(0, 0, gdispGetWidth(), gdispGetHeight());
-	gdispClear(GFX_BLACK);
-	gdispDrawString(3, 3, "Notepad Terminated.", font, GFX_WHITE);
-	gdispDrawString(3, 20, "Relaunching Notepad App...", font, GFX_WHITE);
+	gdispClear(Black);
+	gdispDrawString(3, 3, "Notepad Terminated.", font, White);
+	gdispDrawString(3, 20, "Relaunching Notepad App...", font, White);
 
 	gfxSleepMilliseconds(1000);
   }

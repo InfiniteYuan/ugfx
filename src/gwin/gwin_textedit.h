@@ -17,10 +17,10 @@
  * @note		Due to the modularity of the @p GINPUT module, the text input can either come from a real physical
  *				keyboard or from a vritual on-screen keyboard such as the @p KeyboardWidget.
  *
- * @pre			GFX_USE_GDISP must be set to GFXON in your gfxconf.h
- * @pre			GFX_USE_GWIN must be set to GFXON in your gfxconf.h
- * @pre			GDISP_NEED_TEXT must be set to GFXON in your gfxconf.h
- * @pre			GWIN_NEED_TEXTEDIT must be set to GFXON in your gfxconf.h
+ * @pre			GFX_USE_GDISP must be set to TRUE in your gfxconf.h
+ * @pre			GFX_USE_GWIN must be set to TRUE in your gfxconf.h
+ * @pre			GDISP_NEED_TEXT must be set to TRUE in your gfxconf.h
+ * @pre			GWIN_NEED_TEXTEDIT must be set to TRUE in your gfxconf.h
  * @pre			The fonts you want to use must be enabled in your gfxconf.h
  *
  * @{
@@ -39,6 +39,10 @@ typedef struct GTexteditObject {
 	size_t			maxSize;
 	uint16_t		cursorPos;
 } GTexteditObject;
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /**
  * @brief				Create a TextEdit widget
@@ -111,6 +115,10 @@ void gwinTextEditSendKey(GHandle gh, char *pkey, unsigned len);
 void gwinTexteditDefaultDraw(GWidgetObject* gw, void* param);
 
 /** @} */
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // _GWIN_TEXTEDIT_H
 /** @} */

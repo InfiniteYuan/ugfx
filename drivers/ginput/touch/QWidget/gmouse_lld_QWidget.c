@@ -14,21 +14,21 @@
 #include "../../../../src/ginput/ginput_driver_mouse.h"
 
 GMouse* qwidgetMouse;
-gCoord qwidgetMouseX;
-gCoord qwidgetMouseY;
-gCoord qwidgetMouseZ;
+coord_t qwidgetMouseX;
+coord_t qwidgetMouseY;
+coord_t qwidgetMouseZ;
 uint16_t qwidgetMouseButtons;
 
-static gBool _init(GMouse* m, unsigned driverinstance)
+static bool_t _init(GMouse* m, unsigned driverinstance)
 {
     (void)driverinstance;
 
     qwidgetMouse = m;
 
-	return gTrue;
+	return TRUE;
 }
 
-static gBool _read(GMouse* m, GMouseReading* pdr)
+static bool_t _read(GMouse* m, GMouseReading* pdr)
 {
     (void)m;
 
@@ -37,7 +37,7 @@ static gBool _read(GMouse* m, GMouseReading* pdr)
     pdr->z = qwidgetMouseZ;
     pdr->buttons = qwidgetMouseButtons;
 
-	return gTrue;
+	return TRUE;
 }
 
 const GMouseVMT GMOUSE_DRIVER_VMT[1] = {{

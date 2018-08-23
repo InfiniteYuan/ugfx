@@ -46,7 +46,7 @@ static const SPIConfig spicfg = {
  * TP_IRQ       PB6
  */
 
-static gBool init_board(GMouse* m, unsigned driverinstance) {
+static bool_t init_board(GMouse* m, unsigned driverinstance) {
   (void) m;
   (void) driverinstance;
 
@@ -63,7 +63,7 @@ static gBool init_board(GMouse* m, unsigned driverinstance) {
 /*
  * PB6 is connected to TP_IRQ (low active).
  */
-static GFXINLINE gBool getpin_pressed(GMouse* m) {
+static GFXINLINE bool_t getpin_pressed(GMouse* m) {
   (void)m;
   return (!palReadPad(GPIOB, 6));
 }

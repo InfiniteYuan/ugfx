@@ -41,7 +41,7 @@ typedef struct GKeyboardVMT {
 		#define GKEYBOARD_VFLG_NOPOLL			0x0001		// Do not poll this device - it is purely interrupt driven
 		#define GKEYBOARD_VFLG_DYNAMICONLY		0x8000		// This keyboard driver should not be statically initialized eg Win32
 	const uint8_t *	defLayout;								// The default keyboard layout
-	gBool	(*init)(GKeyboard *m, unsigned driverinstance);	// Required
+	bool_t	(*init)(GKeyboard *m, unsigned driverinstance);	// Required
 	void	(*deinit)(GKeyboard *m);						// Optional
 	int		(*getdata)(GKeyboard *k, uint8_t *pch, int sz);	// Required. Get zero or more scancode bytes. Returns the number of scancode bytes returns
 	void	(*putdata)(GKeyboard *k, char ch);				// Optional. Send a single byte to the keyboard.
@@ -70,13 +70,13 @@ extern "C" {
 	 * @param[in] driverinstance	The driver instance		ToDo: Add some more details
 	 * @param[in] systeminstance	The mouse instance		ToDo: Add some more details
 	 *
-	 * @return	gTrue on success, gFalse otherwise
+	 * @return	TRUE on success, FALSE otherwise
 	 * @note	This routine is provided by the high level code for
 	 * 			use in the driver VMT's GMouseVMT.d structure.
 	 *
 	 * @notapi
 	 */
-	gBool _gkeyboardInitDriver(GDriver *g, void *param, unsigned driverinstance, unsigned systeminstance);
+	bool_t _gkeyboardInitDriver(GDriver *g, void *param, unsigned driverinstance, unsigned systeminstance);
 
 	/**
 	 * @brief	Routine that is called after initialization

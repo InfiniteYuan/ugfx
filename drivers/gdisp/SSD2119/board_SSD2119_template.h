@@ -16,7 +16,7 @@ static GFXINLINE void post_init_board(GDisplay *g) {
 	(void) g;
 }
 
-static GFXINLINE void setpin_reset(GDisplay *g, gBool state) {
+static GFXINLINE void setpin_reset(GDisplay *g, bool_t state) {
 	(void) g;
 	(void) state;
 }
@@ -58,20 +58,20 @@ static GFXINLINE uint16_t read_data(GDisplay *g) {
 }
 
 //Optional define if your board interface supports it
-//#define GDISP_USE_DMA			GFXON
+//#define GDISP_USE_DMA			TRUE
 
-// Optional define - valid only when GDISP_USE_DMA is GFXON
-//#define GDISP_NO_DMA_FROM_STACK	GFXOFF
+// Optional define - valid only when GDISP_USE_DMA is TRUE
+//#define GDISP_NO_DMA_FROM_STACK	FALSE
 
 #if defined(GDISP_USE_DMA) && GDISP_USE_DMA
 
-	static GFXINLINE void dma_with_noinc(GDisplay *g, gColor *buffer, int area) {
+	static GFXINLINE void dma_with_noinc(GDisplay *g, color_t *buffer, int area) {
 		(void) g;
 		(void) buffer;
 		(void) area;
 	}
 
-	static GFXINLINE void dma_with_inc(GDisplay *g, gColor *buffer, int area) {
+	static GFXINLINE void dma_with_inc(GDisplay *g, color_t *buffer, int area) {
 		(void) g;
 		(void) buffer;
 		(void) area;

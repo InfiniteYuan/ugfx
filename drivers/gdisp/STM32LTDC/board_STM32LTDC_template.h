@@ -8,7 +8,7 @@
 #ifndef _GDISP_LLD_BOARD_H
 #define _GDISP_LLD_BOARD_H
 
-#define ALLOW_2ND_LAYER		GFXON
+#define ALLOW_2ND_LAYER		TRUE
 
 static const ltdcConfig driverCfg = {
 	480, 272,								// Width, Height (pixels)

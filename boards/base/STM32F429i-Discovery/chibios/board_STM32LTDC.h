@@ -23,7 +23,7 @@ static const SPIConfig spi_cfg = {
 	((1 << 3) & SPI_CR1_BR) | SPI_CR1_SSM | SPI_CR1_SSI | SPI_CR1_MSTR
 };
 
-#define ALLOW_2ND_LAYER		GFXON
+#define ALLOW_2ND_LAYER		TRUE
 
 static const ltdcConfig driverCfg = {
 	240, 320,
@@ -189,7 +189,6 @@ static void init_board(GDisplay *g) {
 	RCC->PLLSAICFGR = (STM32_PLLSAIN_VALUE << 6) | (STM32_PLLSAIR_VALUE << 28) | (STM32_PLLSAIQ_VALUE << 24);
 	RCC->DCKCFGR = (RCC->DCKCFGR & ~RCC_DCKCFGR_PLLSAIDIVR) | STM32_PLLSAIR_POST;
 	RCC->CR |= RCC_CR_PLLSAION;
-	while(!(RCC->CR & RCC_CR_PLLSAIRDY));			// wait for PLLSAI to lock
 
 	// Initialise the SDRAM
 	SDRAM_Init();

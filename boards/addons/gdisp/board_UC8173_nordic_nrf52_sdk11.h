@@ -16,7 +16,7 @@
 
 static const nrf_drv_spi_t spi = NRF_DRV_SPI_INSTANCE(SPI_INSTANCE);
 
-static GFXINLINE gBool init_board(GDisplay* g)
+static GFXINLINE bool_t init_board(GDisplay* g)
 {
 	nrf_drv_spi_config_t spi_config;
 	ret_code_t err = NRF_SUCCESS;
@@ -47,10 +47,10 @@ static GFXINLINE gBool init_board(GDisplay* g)
 	spi_config.bit_order	= NRF_DRV_SPI_BIT_ORDER_MSB_FIRST;
 	err = nrf_drv_spi_init(&spi, &spi_config, 0);
 	if (err != NRF_SUCCESS) {
-		return gFalse;
+		return FALSE;
 	}
 
-	return gTrue;
+	return TRUE;
 }
 
 static GFXINLINE void post_init_board(GDisplay* g)
@@ -58,7 +58,7 @@ static GFXINLINE void post_init_board(GDisplay* g)
 	(void)g;
 }
 
-static GFXINLINE void setpin_reset(GDisplay *g, gBool state)
+static GFXINLINE void setpin_reset(GDisplay* g, bool_t state)
 {
 	(void)g;
 
@@ -69,14 +69,14 @@ static GFXINLINE void setpin_reset(GDisplay *g, gBool state)
 	}
 }
 
-static GFXINLINE gBool getpin_busy(GDisplay* g)
+static GFXINLINE bool_t getpin_busy(GDisplay* g)
 {
 	(void)g;
 	
 	if (nrf_gpio_pin_read(PIN_BUSY) == 1) {
-		return gTrue;
+		return TRUE;
 	} else {
-		return gFalse;
+		return FALSE;
 	}
 }
 

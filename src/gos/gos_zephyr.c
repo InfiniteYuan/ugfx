@@ -9,7 +9,7 @@
 
 #if GFX_USE_OS_ZEPHYR
 
-gTicks gfxSystemTicks(void)
+systemticks_t gfxSystemTicks(void)
 {
 	s32_t ms = k_uptime_get_32();
 	return CONFIG_SYS_CLOCK_TICKS_PER_SEC*ms/1000;

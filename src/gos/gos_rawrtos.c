@@ -25,7 +25,7 @@
 void _gosInit(void)
 {
 	#if !GFX_OS_NO_INIT
-		#error "GOS: Operating System initialization for RawRTOS is not yet implemented in uGFX. Please set GFX_OS_NO_INIT to GFXON in your gfxconf.h"
+		#error "GOS: Operating System initialization for RawRTOS is not yet implemented in uGFX. Please set GFX_OS_NO_INIT to TRUE in your gfxconf.h"
 	#endif
 	#if !GFX_OS_INIT_NO_WARNING
 		#if GFX_COMPILER_WARNING_TYPE == GFX_COMPILER_WARNING_DIRECT
@@ -45,40 +45,40 @@ void _gosDeinit(void)
 }
 
 
-void gfxSleepMilliseconds(gDelay ms)
+void gfxSleepMilliseconds(delaytime_t ms)
 {
-	gTicks ticks = ms*RAW_TICKS_PER_SECOND/1000;
+	systemticks_t ticks = ms*RAW_TICKS_PER_SECOND/1000;
 	if(!ticks)ticks = 1;
 	raw_sleep(ticks);
 }
 
-void gfxSleepMicroseconds(gDelay us)
+void gfxSleepMicroseconds(delaytime_t us)
 {
-	gTicks ticks = (us/1000)*RAW_TICKS_PER_SECOND/1000;
+	systemticks_t ticks = (us/1000)*RAW_TICKS_PER_SECOND/1000;
 	if(!ticks)ticks = 1;
 	raw_sleep(ticks);
 }
 
-gBool gfxSemWait(gfxSem* psem, gDelay ms)
+bool_t gfxSemWait(gfxSem* psem, delaytime_t ms)
 {
-	gTicks ticks = ms*RAW_TICKS_PER_SECOND/1000;
+	systemticks_t ticks = ms*RAW_TICKS_PER_SECOND/1000;
 	if(!ticks)ticks=1;
 	if(raw_semaphore_get((psem), ticks)==RAW_SUCCESS)
-		return gTrue;
-	return gFalse;
+		return TRUE;
+	return FALSE;
 }
 
-gBool gfxSemWaitI(gfxSem* psem)
+bool_t gfxSemWaitI(gfxSem* psem)
 {
-	if(raw_semaphore_get((psem), RAW_NO_WAIT)==RAW_SUCCESS)
-		return gTrue;
-	return gFalse;
+	if(raw_semaphore_get((psem), TIME_IMMEDIATE)==RAW_SUCCESS)
+		return TRUE;
+	return FALSE;
 }
 
-gThread gfxThreadCreate(void *stackarea, size_t stacksz, gThreadpriority prio, DECLARE_THREAD_FUNCTION((*fn),p), void *param)
+gfxThreadHandle gfxThreadCreate(void *stackarea, size_t stacksz, threadpriority_t prio, DECLARE_THREAD_FUNCTION((*fn),p), void *param)
 {
 	RAW_U16 ret;
-	gThread taskobj;
+	gfxThreadHandle taskobj;
 
 	taskobj = gfxAlloc(sizeof(RAW_TASK_OBJ));
 	ret = raw_task_create(taskobj, (RAW_U8  *)"uGFX_TASK", param,

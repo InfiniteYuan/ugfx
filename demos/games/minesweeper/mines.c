@@ -4,16 +4,16 @@
 
 typedef struct {            // Node properties
       uint8_t num;          // Node number, how many mines around
-      gBool open;          // Node shown or hidden
-      gBool check;         // Node needs to be checked or not, used for opening up empty nodes
-      gBool flag;          // Node is marked with flag by player
+      bool_t open;          // Node shown or hidden
+      bool_t check;         // Node needs to be checked or not, used for opening up empty nodes
+      bool_t flag;          // Node is marked with flag by player
       uint16_t fieldNum;    // Node number, used to randomize gamestart "animation"
 } nodeProps;
 
 static GEventMouse ev;
 static nodeProps minesField[MINES_FIELD_WIDTH][MINES_FIELD_HEIGHT];   // Mines field array
-static gBool minesGameOver = gFalse;
-static gBool minesGameWinner = gFalse;
+static bool_t minesGameOver = FALSE;
+static bool_t minesGameWinner = FALSE;
 static int16_t minesEmptyNodes;                        // Empty node counter
 static int16_t minesFlags;                             // Flag counter
 static int16_t minesTime;                              // Time counter
@@ -22,8 +22,8 @@ static const char* minesGraph[] = {"1.bmp","2.bmp","3.bmp","4.bmp","5.bmp","6.bm
 static gdispImage minesImage;
 static uint8_t minesStatusIconWidth = 0;
 static uint8_t minesStatusIconHeight = 0;
-static gBool minesFirstGame = gTrue;                  // Just don't clear field for the first time, as we have black screen already... :/
-static gBool minesSplashTxtVisible = gFalse;
+static bool_t minesFirstGame = TRUE;                  // Just don't clear field for the first time, as we have black screen already... :/
+static bool_t minesSplashTxtVisible = FALSE;
 #if MINES_SHOW_SPLASH
     static GTimer minesSplashBlink;
 #endif
@@ -93,13 +93,13 @@ static void printStats(void)
 {
     char pps_str[12];
 
-    gFont font = gdispOpenFont("fixed_5x8");
+    font_t font = gdispOpenFont("fixed_5x8");
     uitoa(MINES_MINE_COUNT, pps_str, sizeof(pps_str));
-    gdispFillString(minesStatusIconWidth+8, gdispGetHeight()-11, "    ", font, GFX_BLACK, GFX_BLACK);
-    gdispDrawString(minesStatusIconWidth+8, gdispGetHeight()-11, pps_str, font, GFX_WHITE);
+    gdispFillString(minesStatusIconWidth+8, gdispGetHeight()-11, "    ", font, Black, Black);
+    gdispDrawString(minesStatusIconWidth+8, gdispGetHeight()-11, pps_str, font, White);
     uitoa(minesFlags, pps_str, sizeof(pps_str));
-    gdispFillString(8+(minesStatusIconWidth*2)+gdispGetStringWidth("99999", font), gdispGetHeight()-11, "    ", font, GFX_BLACK, GFX_BLACK);
-    gdispDrawString(8+(minesStatusIconWidth*2)+gdispGetStringWidth("99999", font), gdispGetHeight()-11, pps_str, font, GFX_WHITE);
+    gdispFillString(8+(minesStatusIconWidth*2)+gdispGetStringWidth("99999", font), gdispGetHeight()-11, "    ", font, Black, Black);
+    gdispDrawString(8+(minesStatusIconWidth*2)+gdispGetStringWidth("99999", font), gdispGetHeight()-11, pps_str, font, White);
     gdispCloseFont(font);
 }
 
@@ -110,10 +110,10 @@ static void minesUpdateTime(void)
     if (minesTime > 9999)
         minesTime = 9999;
 
-    gFont font = gdispOpenFont("digital_7__mono_20");
+    font_t font = gdispOpenFont("digital_7__mono_20");
     uitoa(minesTime, pps_str, sizeof(pps_str));
-    gdispFillArea((MINES_FIELD_WIDTH*MINES_CELL_WIDTH)-gdispGetStringWidth("9999", font), gdispGetHeight()-15, gdispGetWidth(), 15, GFX_BLACK);
-    gdispDrawString((MINES_FIELD_WIDTH*MINES_CELL_WIDTH)-gdispGetStringWidth(pps_str, font), gdispGetHeight()-15, pps_str, font, GFX_LIME);
+    gdispFillArea((MINES_FIELD_WIDTH*MINES_CELL_WIDTH)-gdispGetStringWidth("9999", font), gdispGetHeight()-15, gdispGetWidth(), 15, Black);
+    gdispDrawString((MINES_FIELD_WIDTH*MINES_CELL_WIDTH)-gdispGetStringWidth(pps_str, font), gdispGetHeight()-15, pps_str, font, Lime);
     gdispCloseFont(font);
 }
 
@@ -125,23 +125,23 @@ static void minesTimeCounter(void* arg)
     minesUpdateTime();
 }
 
-static gBool inRange(int16_t x, int16_t y)
+static bool_t inRange(int16_t x, int16_t y)
 {
     if ((x >= 0) && (x < MINES_FIELD_WIDTH) && (y >= 0) && (y < MINES_FIELD_HEIGHT))
-        return gTrue;
+        return TRUE;
     else
-        return gFalse;
+        return FALSE;
 }
 
 static void showOne(int16_t x, int16_t y)
 {
-    minesField[x][y].open = gTrue;
+    minesField[x][y].open = TRUE;
     if (minesField[x][y].flag) {
-        minesField[x][y].flag = gFalse;
+        minesField[x][y].flag = FALSE;
         minesFlags--;
     }
 
-    gdispFillArea((x*MINES_CELL_WIDTH)+1, (y*MINES_CELL_HEIGHT)+1, MINES_CELL_WIDTH-1, MINES_CELL_HEIGHT-1, GFX_BLACK);
+    gdispFillArea((x*MINES_CELL_WIDTH)+1, (y*MINES_CELL_HEIGHT)+1, MINES_CELL_WIDTH-1, MINES_CELL_HEIGHT-1, Black);
 
     if ((minesField[x][y].num > 0) && (minesField[x][y].num < 9)) {
         gdispImageOpenFile(&minesImage, minesGraph[minesField[x][y].num-1]);
@@ -149,8 +149,8 @@ static void showOne(int16_t x, int16_t y)
         gdispImageClose(&minesImage);
         minesEmptyNodes--;
     } else if (minesField[x][y].num == 9) {
-        minesGameOver = gTrue;
-        minesGameWinner = gFalse;
+        minesGameOver = TRUE;
+        minesGameWinner = FALSE;
         gdispImageOpenFile(&minesImage, minesGraph[10]);
         gdispImageDraw(&minesImage, (x*MINES_CELL_HEIGHT)+1, (y*MINES_CELL_WIDTH)+1, MINES_CELL_WIDTH, MINES_CELL_HEIGHT, 0, 0);
         gdispImageClose(&minesImage);
@@ -160,7 +160,7 @@ static void showOne(int16_t x, int16_t y)
         gdispImageOpenFile(&minesImage, minesGraph[9]);
         gdispImageDraw(&minesImage, (x*MINES_CELL_HEIGHT)+1, (y*MINES_CELL_WIDTH)+1, MINES_CELL_WIDTH, MINES_CELL_HEIGHT, 0, 0);
         gdispImageClose(&minesImage);
-        minesField[x][y].check = gTrue;
+        minesField[x][y].check = TRUE;
         minesEmptyNodes--;
     }
 }
@@ -168,10 +168,10 @@ static void showOne(int16_t x, int16_t y)
 static void openEmptyNodes(void)
 {
     int16_t x, y, i, j;
-    gBool needToCheck = gTrue;
+    bool_t needToCheck = TRUE;
 
     while (needToCheck) {
-        needToCheck = gFalse;
+        needToCheck = FALSE;
         for (x = 0; x < MINES_FIELD_WIDTH; x++) {
             for (y = 0; y < MINES_FIELD_HEIGHT; y++) {
                 if (minesField[x][y].check) {
@@ -180,12 +180,12 @@ static void openEmptyNodes(void)
                             if ((i != 0) || (j != 0)) {                 // We don't need to check middle node as it is the one we are checking right now! :D
                                 if (inRange(x+i,y+j)) {
                                     if (!minesField[x+i][y+j].open) showOne(x+i,y+j);
-                                    if (minesField[x+i][y+j].check) needToCheck = gTrue;
+                                    if (minesField[x+i][y+j].check) needToCheck = TRUE;
                                 }
                             }
                         }
                     }
-                    minesField[x][y].check = gFalse;
+                    minesField[x][y].check = FALSE;
                 }
             }
         }
@@ -196,15 +196,15 @@ static DECLARE_THREAD_FUNCTION(thdMines, msg)
 {
     (void)msg;
     uint16_t x,y, delay;
-    gBool delayed = gFalse;
+    bool_t delayed = FALSE;
     while (!minesGameOver) {
         if (minesEmptyNodes == 0) {
-            minesGameOver = gTrue;
-            minesGameWinner = gTrue;
+            minesGameOver = TRUE;
+            minesGameWinner = TRUE;
         }
         initRng();
         ginputGetMouseStatus(0, &ev);
-        delayed = gFalse;
+        delayed = FALSE;
         if (ev.buttons & GINPUT_MOUSE_BTN_LEFT) {
             x = ev.x/MINES_CELL_WIDTH;
             y = ev.y/MINES_CELL_WIDTH;
@@ -220,18 +220,18 @@ static DECLARE_THREAD_FUNCTION(thdMines, msg)
                             gdispImageOpenFile(&minesImage, minesGraph[8]);
                             gdispImageDraw(&minesImage, (x*MINES_CELL_HEIGHT)+1, (y*MINES_CELL_WIDTH)+1, MINES_CELL_WIDTH-1, MINES_CELL_HEIGHT-1, 0, 0);
                             gdispImageClose(&minesImage);
-                            minesField[x][y].flag = gFalse;
+                            minesField[x][y].flag = FALSE;
                             minesFlags--;
                             printStats();
                         } else {
                             gdispImageOpenFile(&minesImage, minesGraph[11]);
                             gdispImageDraw(&minesImage, (x*MINES_CELL_HEIGHT)+1, (y*MINES_CELL_WIDTH)+1, MINES_CELL_WIDTH, MINES_CELL_HEIGHT, 0, 0);
                             gdispImageClose(&minesImage);
-                            minesField[x][y].flag = gTrue;
+                            minesField[x][y].flag = TRUE;
                             minesFlags++;
                             printStats();
                         }
-                        delayed = gTrue;
+                        delayed = TRUE;
                     }
                 }
             }
@@ -251,15 +251,15 @@ static DECLARE_THREAD_FUNCTION(thdMines, msg)
 static void printGameOver(void)
 {
     if (minesGameOver) {
-        gFont font = gdispOpenFont("DejaVuSans16");
+        font_t font = gdispOpenFont("DejaVuSans16");
         if (minesGameWinner) {
-            gdispDrawString((gdispGetWidth()-gdispGetStringWidth("You LIVE!", font))/2, gdispGetHeight()-15, "You LIVE!", font, GFX_WHITE);
+            gdispDrawString((gdispGetWidth()-gdispGetStringWidth("You LIVE!", font))/2, gdispGetHeight()-15, "You LIVE!", font, White);
         } else {
-            gdispDrawString((gdispGetWidth()-gdispGetStringWidth("You DIED!", font))/2, gdispGetHeight()-15, "You DIED!", font, GFX_WHITE);
+            gdispDrawString((gdispGetWidth()-gdispGetStringWidth("You DIED!", font))/2, gdispGetHeight()-15, "You DIED!", font, White);
         }
         gdispCloseFont(font);
     } else {
-        gdispFillArea(0, gdispGetHeight()-25, gdispGetWidth(), 25, GFX_BLACK);
+        gdispFillArea(0, gdispGetHeight()-25, gdispGetWidth(), 25, Black);
     }
 }
 
@@ -268,10 +268,10 @@ static void initField(void)
     int16_t x, y, mines, i, j;
 
     minesFlags = 0;
-    minesGameOver = gFalse;
+    minesGameOver = FALSE;
     printGameOver();
 
-    gFont font = gdispOpenFont("fixed_5x8");
+    font_t font = gdispOpenFont("fixed_5x8");
     gdispImageOpenFile(&minesImage, "plainmine.bmp");
     // Saving status icons width/height for later use
     minesStatusIconWidth = minesImage.width;
@@ -291,9 +291,9 @@ static void initField(void)
     for (x = 0; x < MINES_FIELD_WIDTH; x++) {
         for (y = 0; y < MINES_FIELD_HEIGHT; y++) {
             minesField[x][y].num = 0;
-            minesField[x][y].open = gFalse;
-            minesField[x][y].check = gFalse;
-            minesField[x][y].flag = gFalse;
+            minesField[x][y].open = FALSE;
+            minesField[x][y].check = FALSE;
+            minesField[x][y].flag = FALSE;
             minesField[x][y].fieldNum = i;
             i++;
         }
@@ -317,12 +317,12 @@ static void initField(void)
             for (y = 0; y < MINES_FIELD_HEIGHT; y++) {
                 i = minesField[x][y].fieldNum/MINES_FIELD_HEIGHT;
                 j = minesField[x][y].fieldNum-(i*MINES_FIELD_HEIGHT);
-                gdispFillArea((i*MINES_CELL_WIDTH)+1, (j*MINES_CELL_HEIGHT)+1, MINES_CELL_WIDTH, MINES_CELL_HEIGHT, GFX_BLACK);
+                gdispFillArea((i*MINES_CELL_WIDTH)+1, (j*MINES_CELL_HEIGHT)+1, MINES_CELL_WIDTH, MINES_CELL_HEIGHT, Black);
                 gfxSleepMilliseconds(2);
             }
         }
     } else {
-        minesFirstGame = gFalse;
+        minesFirstGame = FALSE;
     }
 
     // Drawing closed nodes randomly
@@ -369,7 +369,7 @@ static void initField(void)
 
     minesTime = 0;
     minesUpdateTime();
-    gtimerStart(&minesTimeCounterTimer, minesTimeCounter, 0, gTrue, 1000);
+    gtimerStart(&minesTimeCounterTimer, minesTimeCounter, 0, TRUE, 1000);
 }
 
 void minesStart(void)
@@ -378,11 +378,11 @@ void minesStart(void)
 
 #if MINES_SHOW_SPLASH
     gtimerStop(&minesSplashBlink);
-    gdispClear(GFX_BLACK);
+    gdispClear(Black);
 #endif
 
     initField();
-    gfxThreadCreate(0, 1024, gThreadpriorityNormal, thdMines, 0); 
+    gfxThreadCreate(0, 1024, NORMAL_PRIORITY, thdMines, 0); 
     while (!minesGameOver) {
         gfxSleepMilliseconds(100);
     }
@@ -391,7 +391,7 @@ void minesStart(void)
 
     if (!minesGameWinner) {
         // Print generated mines for player to see
-        gFont font = gdispOpenFont("fixed_10x20");
+        font_t font = gdispOpenFont("fixed_10x20");
         for (x = 0; x < MINES_FIELD_WIDTH; x++) {
             for (y = 0; y < MINES_FIELD_HEIGHT; y++) {
                 if (minesField[x][y].num == 9 && !minesField[x][y].flag) {
@@ -434,7 +434,7 @@ void minesStart(void)
         gdispImageDraw(&minesImage, (gdispGetWidth()/2)-150, (gdispGetHeight()/2)-100, 300, 200, 0, 0);
         gdispImageClose(&minesImage);
     
-        gtimerStart(&minesSplashBlink, minesSplashBlinker, 0, gTrue, 400);
+        gtimerStart(&minesSplashBlink, minesSplashBlinker, 0, TRUE, 400);
     }
 #endif
 
@@ -442,5 +442,5 @@ void minesInit(void)
 {
     initRng();
 
-    gdispClear(GFX_BLACK);
+    gdispClear(Black);
 }

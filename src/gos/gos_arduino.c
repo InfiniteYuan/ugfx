@@ -72,10 +72,10 @@ void gfxExit(void) {
  * Sleep functions
  *********************************************************/
 
-gTicks gfxSystemTicks(void) {
+systemticks_t gfxSystemTicks(void) {
 	return millis();
 }
-gTicks gfxMillisecondsToTicks(gDelay ms) {
+systemticks_t gfxMillisecondsToTicks(delaytime_t ms) {
 	return ms;
 }
 

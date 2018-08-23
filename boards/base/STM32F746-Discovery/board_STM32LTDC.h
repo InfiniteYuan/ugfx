@@ -11,7 +11,7 @@
 #include "stm32f746g_discovery_sdram.h"
 
 #ifndef GFX_LTDC_USE_DIRECTIO
-	#define GFX_LTDC_USE_DIRECTIO	GFXON
+	#define GFX_LTDC_USE_DIRECTIO	TRUE
 #endif
 #ifndef GFX_LTDC_TIMING_SET
 	/* Options are:
@@ -36,7 +36,7 @@
 	#define AFRH	AFR[1]
 #endif
 
-#define ALLOW_2ND_LAYER		GFXON
+#define ALLOW_2ND_LAYER		TRUE
 
 static const ltdcConfig driverCfg = {
 	480, 272,								// Width, Height (pixels)
@@ -450,7 +450,6 @@ static GFXINLINE void init_board(GDisplay *g) {
 			RCC->PLLSAICFGR = ((STM32_PLLSAIP_VALUE/2-1)<<16) | (STM32_PLLSAIN_VALUE << 6) | (STM32_PLLSAIR_VALUE << 28) | (STM32_PLLSAIQ_VALUE << 24);
 			RCC->DCKCFGR1 = (RCC->DCKCFGR1 & ~RCC_DCKCFGR1_PLLSAIDIVR) | STM32_PLLSAIR_POST;
 			RCC->CR |= RCC_CR_PLLSAION;
-			while(!(RCC->CR & RCC_CR_PLLSAIRDY));			// wait for PLLSAI to lock
 	#endif
 
 	// Initialise the SDRAM

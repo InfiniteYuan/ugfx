@@ -76,7 +76,7 @@ GHandle gwinGScopeCreate(GDisplay *g, GScopeObject *gs, GWindowInit *pInit, uint
 	/* Initialise the scope object members and allocate memory for buffers */
 	gs->format = format;
 	gs->nextx = 0;
-	if (!(gs->lastscopetrace = (gCoord *)gfxAlloc(gs->g.width * sizeof(gCoord))))
+	if (!(gs->lastscopetrace = (coord_t *)gfxAlloc(gs->g.width * sizeof(coord_t))))
 		return 0;
 	#if TRIGGER_METHOD == TRIGGER_POSITIVERAMP
 		gs->lasty = gs->g.height/2;
@@ -98,27 +98,27 @@ void gwinScopeWaitForTrace(GHandle gh) {
 	#define 		gs	((GScopeObject *)(gh))
 	GDataBuffer		*paud;
 	int				i;
-	gCoord			x, y;
-	gCoord			yoffset;
+	coord_t			x, y;
+	coord_t			yoffset;
 	uint8_t			*pa8;
 	uint16_t		*pa16;
-	gCoord			*pc;
+	coord_t			*pc;
 	uint8_t			shr;
 
 	#if TRIGGER_METHOD == TRIGGER_POSITIVERAMP
-		gBool			rdytrigger;
+		bool_t			rdytrigger;
 		int				flsamples;
 	#elif TRIGGER_METHOD == TRIGGER_MINVALUE
-		gBool			rdytrigger;
+		bool_t			rdytrigger;
 		int				flsamples;
-		gCoord			scopemin;
+		coord_t			scopemin;
 	#endif
 
 	if (gh->vmt != &scopeVMT)
 		return;
 
 	/* Wait for a set of audio conversions */
-	paud = gaudioRecordGetData(gDelayForever);
+	paud = gaudioRecordGetData(TIME_INFINITE);
 
 	/* Ensure we are drawing in the right area */
 	#if GDISP_NEED_CLIP
@@ -136,10 +136,10 @@ void gwinScopeWaitForTrace(GHandle gh) {
 	pa16 = (uint16_t *)(paud+1);
 
 	#if TRIGGER_METHOD == TRIGGER_POSITIVERAMP
-		rdytrigger = gFalse;
+		rdytrigger = FALSE;
 		flsamples = 0;
 	#elif TRIGGER_METHOD == TRIGGER_MINVALUE
-		rdytrigger = gFalse;
+		rdytrigger = FALSE;
 		flsamples = 0;
 		scopemin = 0;
 	#endif
@@ -148,9 +148,9 @@ void gwinScopeWaitForTrace(GHandle gh) {
 
 		/* Calculate the new scope value - re-scale using simple shifts for efficiency, re-center and y-invert */
 		if (gfxSampleFormatBits(gs->format) <= 8)
-			y = yoffset - (((gCoord)(*pa8++ ) << shr) >> (16-SCOPE_Y_BITS));
+			y = yoffset - (((coord_t)(*pa8++ ) << shr) >> (16-SCOPE_Y_BITS));
 		else
-			y = yoffset - (((gCoord)(*pa16++) << shr) >> (16-SCOPE_Y_BITS));
+			y = yoffset - (((coord_t)(*pa16++) << shr) >> (16-SCOPE_Y_BITS));
 
 		#if TRIGGER_METHOD == TRIGGER_MINVALUE
 			/* Calculate the scopemin ready for the next trace */
@@ -167,7 +167,7 @@ void gwinScopeWaitForTrace(GHandle gh) {
 				#if TRIGGER_METHOD == TRIGGER_MINVALUE
 					/* Arm when we reach the sample minimum (y value maximum) of the previous trace */
 					if (!rdytrigger && y >= gs->scopemin)
-						rdytrigger = gTrue;
+						rdytrigger = TRUE;
 				#endif
 
 				if (y == gs->lasty) {
@@ -180,7 +180,7 @@ void gwinScopeWaitForTrace(GHandle gh) {
 					flsamples = 0;
 					#if TRIGGER_METHOD == TRIGGER_POSITIVERAMP
 						/* Arm the trigger when samples fall (y increases) ie. negative slope */
-						rdytrigger = gTrue;
+						rdytrigger = TRUE;
 					#endif
 					continue;
 				} else {
@@ -192,7 +192,7 @@ void gwinScopeWaitForTrace(GHandle gh) {
 				}
 
 				/* Ready for a the next trigger cycle */
-				rdytrigger = gFalse;
+				rdytrigger = FALSE;
 			#endif
 
 			/* Prepare for a scope trace */

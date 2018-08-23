@@ -13,7 +13,7 @@
 #if GFX_USE_OS_LINUX
 
 // Linux seems to have deprecated pthread_yield() and now says to use sched_yield()
-#define		USE_SCHED_NOT_PTHREAD_YIELD		GFXON
+#define		USE_SCHED_NOT_PTHREAD_YIELD		TRUE
 
 #include <stdio.h>
 #include <unistd.h>
@@ -60,15 +60,15 @@ void gfxHalt(const char *msg) {
 	exit(1);
 }
 
-void gfxSleepMilliseconds(gDelay ms) {
+void gfxSleepMilliseconds(delaytime_t ms) {
 	struct timespec	ts;
 
 	switch(ms) {
-		case gDelayNone:
+		case TIME_IMMEDIATE:
 			linuxyield();
 			return;
 
-		case gDelayForever:
+		case TIME_INFINITE:
 			while(1)
 				sleep(60);
 			return;
@@ -81,15 +81,15 @@ void gfxSleepMilliseconds(gDelay ms) {
 	}
 }
 
-void gfxSleepMicroseconds(gDelay us) {
+void gfxSleepMicroseconds(delaytime_t us) {
 	struct timespec	ts;
 
 	switch(us) {
-		case gDelayNone:
+		case TIME_IMMEDIATE:
 			linuxyield();
 			return;
 
-		case gDelayForever:
+		case TIME_INFINITE:
 			while(1)
 				sleep(60);
 			return;
@@ -102,15 +102,15 @@ void gfxSleepMicroseconds(gDelay us) {
 	}
 }
 
-gTicks gfxSystemTicks(void) {
+systemticks_t gfxSystemTicks(void) {
 	struct timespec	ts;
 
 	clock_gettime(CLOCK_MONOTONIC, &ts);
 	return ts.tv_sec * 1000 + ts.tv_nsec / 1000000;
 }
 
-gThread gfxThreadCreate(void *stackarea, size_t stacksz, gThreadpriority prio, DECLARE_THREAD_FUNCTION((*fn),p), void *param) {
-	gThread		th;
+gfxThreadHandle gfxThreadCreate(void *stackarea, size_t stacksz, threadpriority_t prio, DECLARE_THREAD_FUNCTION((*fn),p), void *param) {
+	gfxThreadHandle		th;
 	(void)				stackarea;
 	(void)				stacksz;
 	(void)				prio;
@@ -128,8 +128,8 @@ gThread gfxThreadCreate(void *stackarea, size_t stacksz, gThreadpriority prio, D
 	return th;
 }
 
-gThreadreturn gfxThreadWait(gThread thread) {
-	gThreadreturn	retval;
+threadreturn_t gfxThreadWait(gfxThreadHandle thread) {
+	threadreturn_t	retval;
 
 	if (pthread_join(thread, &retval))
 		return 0;
@@ -138,20 +138,20 @@ gThreadreturn gfxThreadWait(gThread thread) {
 }
 
 #if GFX_USE_POSIX_SEMAPHORES
-	void gfxSemInit(gfxSem *pSem, gSemcount val, gSemcount limit) {
+	void gfxSemInit(gfxSem *pSem, semcount_t val, semcount_t limit) {
 		pSem->max = limit;
 		sem_init(&pSem->sem, 0, val);
 	}
 	void gfxSemDestroy(gfxSem *pSem) {
 		sem_destroy(&pSem->sem);
 	}
-	gBool gfxSemWait(gfxSem *pSem, gDelay ms) {
+	bool_t gfxSemWait(gfxSem *pSem, delaytime_t ms) {
 		switch (ms) {
-		case gDelayForever:
-			return sem_wait(&pSem->sem) ? gFalse : gTrue;
+		case TIME_INFINITE:
+			return sem_wait(&pSem->sem) ? FALSE : TRUE;
 
-		case gDelayNone:
-			return sem_trywait(&pSem->sem) ? gFalse : gTrue;
+		case TIME_IMMEDIATE:
+			return sem_trywait(&pSem->sem) ? FALSE : TRUE;
 
 		default:
 			{
@@ -160,7 +160,7 @@ gThreadreturn gfxThreadWait(gThread thread) {
 				clock_gettime(CLOCK_REALTIME, &tm);
 				tm.tv_sec += ms / 1000;
 				tm.tv_nsec += (ms % 1000) * 1000000;
-				return sem_timedwait(&pSem->sem, &tm) ? gFalse : gTrue;
+				return sem_timedwait(&pSem->sem, &tm) ? FALSE : TRUE;
 			}
 		}
 	}
@@ -173,7 +173,7 @@ gThreadreturn gfxThreadWait(gThread thread) {
 			sem_post(&pSem->sem);
 	}
 #else
-	void gfxSemInit(gfxSem *pSem, gSemcount val, gSemcount limit) {
+	void gfxSemInit(gfxSem *pSem, semcount_t val, semcount_t limit) {
 		pthread_mutex_init(&pSem->mtx, 0);
 		pthread_cond_init(&pSem->cond, 0);
 		pthread_mutex_lock(&pSem->mtx);
@@ -185,19 +185,19 @@ gThreadreturn gfxThreadWait(gThread thread) {
 		pthread_mutex_destroy(&pSem->mtx);
 		pthread_cond_destroy(&pSem->cond);
 	}
-	gBool gfxSemWait(gfxSem *pSem, gDelay ms) {
+	bool_t gfxSemWait(gfxSem *pSem, delaytime_t ms) {
 		pthread_mutex_lock(&pSem->mtx);
 
 		switch (ms) {
-			case gDelayForever:
+			case TIME_INFINITE:
 				while (!pSem->cnt)
 					pthread_cond_wait(&pSem->cond, &pSem->mtx);
 				break;
 
-			case gDelayNone:
+			case TIME_IMMEDIATE:
 				if (!pSem->cnt) {
 					pthread_mutex_unlock(&pSem->mtx);
-					return gFalse;
+					return FALSE;
 				}
 				break;
 
@@ -211,11 +211,11 @@ gThreadreturn gfxThreadWait(gThread thread) {
 					while (!pSem->cnt) {
 						// We used to test the return value for ETIMEDOUT. This doesn't
 						//	work in some current pthread libraries which return -1 instead
-						//	and set errno to ETIMEDOUT. So, we will return gFalse on any error
+						//	and set errno to ETIMEDOUT. So, we will return FALSE on any error
 						//	including a ETIMEDOUT.
 						if (pthread_cond_timedwait(&pSem->cond, &pSem->mtx, &tm)) {
 							pthread_mutex_unlock(&pSem->mtx);
-							return gFalse;
+							return FALSE;
 						}
 					}
 				}
@@ -224,7 +224,7 @@ gThreadreturn gfxThreadWait(gThread thread) {
 
 		pSem->cnt--;
 		pthread_mutex_unlock(&pSem->mtx);
-		return gTrue;
+		return TRUE;
 	}
 	void gfxSemSignal(gfxSem *pSem) {
 		pthread_mutex_lock(&pSem->mtx);

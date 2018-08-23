@@ -15,7 +15,7 @@
  *
  * @details		The GDISP module provides high level abstraction to interface pixel oriented graphic displays.
  *
- * @pre			GFX_USE_GDISP must be set to GFXON in gfxconf.h
+ * @pre			GFX_USE_GDISP must be set to TRUE in gfxconf.h
  *
  * @note		Each drawing routine supports a gdispXXXX and a gdispGXXXX function. The difference is that the
  * 				gdispXXXX function does not require a display to be specified. Note there is a slight anomaly
@@ -30,13 +30,13 @@
 #include "../../gfx.h"
 
 /* This type definition is defined here as it gets used in other gfx sub-systems even
- * if GFX_USE_GDISP is GFXOFF.
+ * if GFX_USE_GDISP is FALSE.
  */
 
 /**
  * @brief   The type for a coordinate or length on the screen.
  */
-typedef int16_t	gCoord;
+typedef int16_t	coord_t;
 
 #if GFX_USE_GDISP || defined(__DOXYGEN__)
 
@@ -45,78 +45,78 @@ typedef int16_t	gCoord;
 /*===========================================================================*/
 
 /**
- * @struct gPoint
+ * @struct point
  * @brief   Type for a 2D point on the screen.
  */
-typedef struct gPoint {
-	gCoord x;		/**< The x coordinate of the point. */
-	gCoord y;		/**< The y coordinate of the point. */
-} gPoint;
+typedef struct point {
+	coord_t x;		/**< The x coordinate of the point. */
+	coord_t y;		/**< The y coordinate of the point. */
+} point, point_t;
 
 /**
- * @enum gJustify
+ * @enum justify
  * @brief   Type for the text justification.
  */
-typedef enum gJustify {
-	gJustifyLeft = 0x00,		/**< Justify Left (the default) */
-	gJustifyCenter = 0x01,		/**< Justify Center */
-	gJustifyRight = 0x02,		/**< Justify Right */
-	gJustifyTop = 0x10,			/**< Justify Top */
-	gJustifyMiddle = 0x00,		/**< Justify Middle (the default) */
-	gJustifyBottom = 0x20,		/**< Justify Bottom */
-	gJustifyWordWrap = 0x00,	/**< Word wrap (the default if GDISP_NEED_TEXT_WORDWRAP is on) */
-	gJustifyNoWordWrap = 0x40,	/**< No word wrap */
-	gJustifyPad = 0x00,			/**< Pad the text box (the default) */
-	gJustifyNoPad = 0x04		/**< No padding the text box */
-} gJustify;
-#define JUSTIFYMASK_HORIZONTAL	(gJustifyLeft|gJustifyCenter|gJustifyRight)
-#define JUSTIFYMASK_VERTICAL	(gJustifyTop|gJustifyMiddle|gJustifyBottom)
+typedef enum justify {
+	justifyLeft = 0x00,			/**< Justify Left (the default) */
+	justifyCenter = 0x01,		/**< Justify Center */
+	justifyRight = 0x02,		/**< Justify Right */
+	justifyTop = 0x10,			/**< Justify Top */
+	justifyMiddle = 0x00,		/**< Justify Middle (the default) */
+	justifyBottom = 0x20,		/**< Justify Bottom */
+	justifyWordWrap = 0x00,		/**< Word wrap (the default if GDISP_NEED_TEXT_WORDWRAP is on) */
+	justifyNoWordWrap = 0x40,	/**< No word wrap */
+	justifyPad = 0x00,			/**< Pad the text box (the default) */
+	justifyNoPad = 0x04			/**< No padding the text box */
+} justify_t;
+#define JUSTIFYMASK_LEFTRIGHT	(justifyLeft|justifyCenter|justifyRight)
+#define JUSTIFYMASK_TOPBOTTOM	(justifyTop|justifyMiddle|justifyBottom)
 
 /**
- * @enum gFontmetric
+ * @enum fontmetric
  * @brief   Type for the font metric.
  */
-typedef enum gFontmetric {
-	gFontHeight,			/**< The height of the font */
-	gFontDescendersHeight,	/**< The descenders height */
-	gFontLineSpacing,		/**< The line spacing */
-	gFontCharPadding,		/**< The char padding */
-	gFontMinWidth,			/**< The minimum width */
-	gFontMaxWidth,			/**< The maximum width */
-	gFontBaselineX,			/**< The base line in x direction */
-	gFontBaselineY			/**< The base line in y direction */
-} gFontmetric;
+typedef enum fontmetric {
+	fontHeight,				/**< The height of the font */
+	fontDescendersHeight,	/**< The descenders height */
+	fontLineSpacing,		/**< The line spacing */
+	fontCharPadding,		/**< The char padding */
+	fontMinWidth,			/**< The minimum width */
+	fontMaxWidth,			/**< The maximum width */
+	fontBaselineX,			/**< The base line in x direction */
+	fontBaselineY			/**< The base line in y direction */
+} fontmetric_t;
 
 /**
  * @brief   The type of a font.
  */
-typedef const struct mf_font_s* gFont;
+typedef const struct mf_font_s* font_t;
 
 /**
- * @enum 	gOrientation
+ * @enum 	orientation
  * @brief   Type for the screen orientation.
- * @note	gOrientationLandscape and gOrientationPortrait are internally converted to the
+ * @note	GDISP_ROTATE_LANDSCAPE and GDISP_ROTATE_PORTRAIT are internally converted to the
  * 			most appropriate other orientation.
  */
-typedef enum gOrientation {
-	gOrientation0 = 0,				/**< Don't rotate. This is the displays native orientation. */
-	gOrientation90 = 90,			/**< Rotate by 90 degrees absolute to the native rotation. */
-	gOrientation180 = 180,			/**< Rotate by 180 degrees absolute to the native rotation. */
-	gOrientation270 = 270,			/**< Rotate by 270 degrees absolute to the native rotation. */
-	gOrientationPortrait = 1000,	/**< Put the display into portrait mode. */
-	gOrientationLandscape = 1001	/**< Put the display into landscape mode. */
-} gOrientation;
+typedef enum orientation {
+	GDISP_ROTATE_0 = 0,				/**< Don't rotate. This is the displays native orientation. */
+	GDISP_ROTATE_90 = 90,			/**< Rotate by 90 degrees absolute to the native rotation. */
+	GDISP_ROTATE_180 = 180,			/**< Rotate by 180 degrees absolute to the native rotation. */
+	GDISP_ROTATE_270 = 270,			/**< Rotate by 270 degrees absolute to the native rotation. */
+	GDISP_ROTATE_PORTRAIT = 1000,	/**< Put the display into portrait mode. */
+	GDISP_ROTATE_LANDSCAPE = 1001	/**< Put the display into landscape mode. */
+} orientation_t;
 
 /**
- * @enum 	gPowermode
+ * @enum 	powermode
  * @brief   Type for the available power modes for the screen.
  */
-typedef enum gPowermode {
-	gPowerOff,						/**< Turn the display off. */
-	gPowerSleep,						/**< Put the display into sleep mode. */
-	gPowerDeepSleep,					/**< Put the display into deep-sleep mode. */
-	gPowerOn							/**< Turn the display on. */
-} gPowermode;
+typedef enum powermode {
+	powerOff,						/**< Turn the display off. */
+	powerSleep,						/**< Put the display into sleep mode. */
+	powerDeepSleep,					/**< Put the display into deep-sleep mode. */
+	powerOn							/**< Turn the display on. */
+} powermode_t;
 
 /*
  * Our black box display structure.
@@ -139,7 +139,7 @@ extern GDisplay	*GDISP;
  * @details	Unsupported control codes are ignored.
  * @note	The value parameter should always be typecast to (void *).
  * @note	There are some predefined and some specific to the low level driver.
- * @note	GDISP_CONTROL_POWER			- Takes a gPowermode
+ * @note	GDISP_CONTROL_POWER			- Takes a gdisp_powermode_t
  * 			GDISP_CONTROL_ORIENTATION	- Takes a gdisp_orientation_t
  * 			GDISP_CONTROL_BACKLIGHT -	 Takes an int from 0 to 100. For a driver
  * 											that only supports off/on anything other
@@ -201,15 +201,15 @@ extern GDisplay	*GDISP;
 	 * @note	Packed pixels are not really supported at this point.
 	 */
 	#ifndef GDISP_PACKED_PIXELS
-		#define GDISP_PACKED_PIXELS			GFXOFF
+		#define GDISP_PACKED_PIXELS			FALSE
 	#endif
 
 	/**
 	 * @brief   Do lines of pixels require packing for a blit
-	 * @note	Ignored if GDISP_PACKED_PIXELS is GFXOFF
+	 * @note	Ignored if GDISP_PACKED_PIXELS is FALSE
 	 */
 	#ifndef GDISP_PACKED_LINES
-		#define GDISP_PACKED_LINES			GFXOFF
+		#define GDISP_PACKED_LINES			FALSE
 	#endif
 /** @} */
 
@@ -223,7 +223,11 @@ extern GDisplay	*GDISP;
 /**
  * @brief   The type of a pixel.
  */
-typedef gColor		gPixel;
+typedef color_t		pixel_t;
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /* Color Utility Functions */
 
@@ -237,7 +241,7 @@ typedef gColor		gPixel;
  *
  * @api
  */
-gColor gdispBlendColor(gColor fg, gColor bg, uint8_t alpha);
+color_t gdispBlendColor(color_t fg, color_t bg, uint8_t alpha);
 
 /**
  * @brief   Find a contrasting color
@@ -247,7 +251,7 @@ gColor gdispBlendColor(gColor fg, gColor bg, uint8_t alpha);
  *
  * @api
  */
-gColor gdispContrastColor(gColor color);
+color_t gdispContrastColor(color_t color);
 
 /* Base Functions */
 
@@ -298,7 +302,7 @@ unsigned gdispGetDisplayCount(void);
  *
  * @api
  */
-gCoord gdispGGetWidth(GDisplay *g);
+coord_t gdispGGetWidth(GDisplay *g);
 #define gdispGetWidth()								gdispGGetWidth(GDISP)
 
 /**
@@ -310,7 +314,7 @@ gCoord gdispGGetWidth(GDisplay *g);
  *
  * @api
  */
-gCoord gdispGGetHeight(GDisplay *g);
+coord_t gdispGGetHeight(GDisplay *g);
 #define gdispGetHeight()							gdispGGetHeight(GDISP)
 
 /**
@@ -322,7 +326,7 @@ gCoord gdispGGetHeight(GDisplay *g);
  *
  * @api
  */
-gPowermode gdispGGetPowerMode(GDisplay *g);
+powermode_t gdispGGetPowerMode(GDisplay *g);
 #define gdispGetPowerMode()							gdispGGetPowerMode(GDISP)
 
 /**
@@ -334,7 +338,7 @@ gPowermode gdispGGetPowerMode(GDisplay *g);
  *
  * @api
  */
-gOrientation gdispGGetOrientation(GDisplay *g);
+orientation_t gdispGGetOrientation(GDisplay *g);
 #define gdispGetOrientation()						gdispGGetOrientation(GDISP)
 
 /**
@@ -373,7 +377,7 @@ uint8_t gdispGGetContrast(GDisplay *g);
  * 			know your controller does not need to be flushed there is no
  * 			need to call it (which is in reality most controllers).
  * @note	Even for displays that require flushing, there is no need to
- * 			call this function if GDISP_NEED_AUTOFLUSH is GFXON.
+ * 			call this function if GDISP_NEED_AUTOFLUSH is TRUE.
  * 			Calling it again won't hurt though.
  *
  *
@@ -392,7 +396,7 @@ void gdispGFlush(GDisplay *g);
  *
  * @api
  */
-void gdispGClear(GDisplay *g, gColor color);
+void gdispGClear(GDisplay *g, color_t color);
 #define gdispClear(c)									gdispGClear(GDISP, c)
 
 /**
@@ -404,7 +408,7 @@ void gdispGClear(GDisplay *g, gColor color);
  *
  * @api
  */
-void gdispGDrawPixel(GDisplay *g, gCoord x, gCoord y, gColor color);
+void gdispGDrawPixel(GDisplay *g, coord_t x, coord_t y, color_t color);
 #define gdispDrawPixel(x,y,c)							gdispGDrawPixel(GDISP,x,y,c)
 
 /**
@@ -417,7 +421,7 @@ void gdispGDrawPixel(GDisplay *g, gCoord x, gCoord y, gColor color);
  *
  * @api
  */
-void gdispGDrawLine(GDisplay *g, gCoord x0, gCoord y0, gCoord x1, gCoord y1, gColor color);
+void gdispGDrawLine(GDisplay *g, coord_t x0, coord_t y0, coord_t x1, coord_t y1, color_t color);
 #define gdispDrawLine(x0,y0,x1,y1,c)					gdispGDrawLine(GDISP,x0,y0,x1,y1,c)
 
 /**
@@ -430,7 +434,7 @@ void gdispGDrawLine(GDisplay *g, gCoord x0, gCoord y0, gCoord x1, gCoord y1, gCo
  *
  * @api
  */
-void gdispGFillArea(GDisplay *g, gCoord x, gCoord y, gCoord cx, gCoord cy, gColor color);
+void gdispGFillArea(GDisplay *g, coord_t x, coord_t y, coord_t cx, coord_t cy, color_t color);
 #define gdispFillArea(x,y,cx,cy,c)						gdispGFillArea(GDISP,x,y,cx,cy,c)
 
 /**
@@ -441,7 +445,7 @@ void gdispGFillArea(GDisplay *g, gCoord x, gCoord y, gCoord cx, gCoord cy, gColo
  *			non-byte boundary (no end-of-line padding).
  * @note	If GDISP_NEED_ASYNC is defined then the buffer must be static
  * 			or at least retained until this call has finished the blit. You can
- * 			tell when all graphics drawing is finished by @p gdispIsBusy() going gFalse.
+ * 			tell when all graphics drawing is finished by @p gdispIsBusy() going FALSE.
  *
  * @param[in] g 		The display to use
  * @param[in] x,y		The start position
@@ -452,7 +456,7 @@ void gdispGFillArea(GDisplay *g, gCoord x, gCoord y, gCoord cx, gCoord cy, gColo
  *
  * @api
  */
-void gdispGBlitArea(GDisplay *g, gCoord x, gCoord y, gCoord cx, gCoord cy, gCoord srcx, gCoord srcy, gCoord srccx, const gPixel *buffer);
+void gdispGBlitArea(GDisplay *g, coord_t x, coord_t y, coord_t cx, coord_t cy, coord_t srcx, coord_t srcy, coord_t srccx, const pixel_t *buffer);
 #define gdispBlitAreaEx(x,y,cx,cy,sx,sy,rx,b)			gdispGBlitArea(GDISP,x,y,cx,cy,sx,sy,rx,b)
 
 /**
@@ -465,7 +469,7 @@ void gdispGBlitArea(GDisplay *g, gCoord x, gCoord y, gCoord cx, gCoord cy, gCoor
  *
  * @api
  */
-void gdispGDrawBox(GDisplay *g, gCoord x, gCoord y, gCoord cx, gCoord cy, gColor color);
+void gdispGDrawBox(GDisplay *g, coord_t x, coord_t y, coord_t cx, coord_t cy, color_t color);
 #define gdispDrawBox(x,y,cx,cy,c)						gdispGDrawBox(GDISP,x,y,cx,cy,c)
 
 /* Streaming Functions */
@@ -474,7 +478,7 @@ void gdispGDrawBox(GDisplay *g, gCoord x, gCoord y, gCoord cx, gCoord cy, gColor
 	/**
 	 * @brief   Start a streaming operation.
 	 * @details Stream data to a window on the display sequentially and very fast.
-	 * @pre		GDISP_NEED_STREAMING must be GFXON in your gfxconf.h
+	 * @pre		GDISP_NEED_STREAMING must be TRUE in your gfxconf.h
 	 * @note	While streaming is in operation - no other calls to GDISP functions
 	 * 			can be made (with the exception of @p gdispBlendColor() and streaming
 	 * 			functions). If a call is made (eg in a multi-threaded application) the other
@@ -495,13 +499,13 @@ void gdispGDrawBox(GDisplay *g, gCoord x, gCoord y, gCoord cx, gCoord cy, gColor
 	 *
 	 * @api
 	 */
-	void gdispGStreamStart(GDisplay *g, gCoord x, gCoord y, gCoord cx, gCoord cy);
+	void gdispGStreamStart(GDisplay *g, coord_t x, coord_t y, coord_t cx, coord_t cy);
 	#define gdispStreamStart(x,y,cx,cy)						gdispGStreamStart(GDISP,x,y,cx,cy)
 
 	/**
 	 * @brief   Send pixel data to the stream.
 	 * @details Write a pixel to the next position in the streamed area and increment the position
-	 * @pre		GDISP_NEED_STREAMING must be GFXON in your gfxconf.h
+	 * @pre		GDISP_NEED_STREAMING must be TRUE in your gfxconf.h
 	 * @pre		@p gdispStreamStart() has been called.
 	 * @note	If the gdispStreamStart() has not been called (or failed due to clipping), the
 	 * 			data provided here is simply thrown away.
@@ -511,13 +515,13 @@ void gdispGDrawBox(GDisplay *g, gCoord x, gCoord y, gCoord cx, gCoord cy, gColor
 	 *
 	 * @api
 	 */
-	void gdispGStreamColor(GDisplay *g, gColor color);
+	void gdispGStreamColor(GDisplay *g, color_t color);
 	#define gdispStreamColor(c)								gdispGStreamColor(GDISP,c)
 
 	/**
 	 * @brief   Finish the current streaming operation.
 	 * @details	Completes the current streaming operation and allows other GDISP calls to operate again.
-	 * @pre		GDISP_NEED_STREAMING must be GFXON in your gfxconf.h
+	 * @pre		GDISP_NEED_STREAMING must be TRUE in your gfxconf.h
 	 * @pre		@p gdispStreamStart() has been called.
 	 * @note	If the gdispStreamStart() has not been called (or failed due to clipping), this
 	 * 			call is simply ignored.
@@ -535,7 +539,7 @@ void gdispGDrawBox(GDisplay *g, gCoord x, gCoord y, gCoord cx, gCoord cy, gColor
 #if GDISP_NEED_CLIP || defined(__DOXYGEN__)
 	/**
 	 * @brief   Clip all drawing to the defined area.
-	 * @pre		GDISP_NEED_CLIP must be GFXON in your gfxconf.h
+	 * @pre		GDISP_NEED_CLIP must be TRUE in your gfxconf.h
 	 *
 	 * @param[in] g 		The display to use
 	 * @param[in] x,y		The start position
@@ -543,7 +547,7 @@ void gdispGDrawBox(GDisplay *g, gCoord x, gCoord y, gCoord cx, gCoord cy, gColor
 	 *
 	 * @api
 	 */
-	void gdispGSetClip(GDisplay *g, gCoord x, gCoord y, gCoord cx, gCoord cy);
+	void gdispGSetClip(GDisplay *g, coord_t x, coord_t y, coord_t cx, coord_t cy);
 	#define gdispSetClip(x,y,cx,cy)							gdispGSetClip(GDISP,x,y,cx,cy)
 #endif
 
@@ -552,7 +556,7 @@ void gdispGDrawBox(GDisplay *g, gCoord x, gCoord y, gCoord cx, gCoord cy, gColor
 #if GDISP_NEED_CIRCLE || defined(__DOXYGEN__)
 	/**
 	 * @brief   Draw a circle.
-	 * @pre		GDISP_NEED_CIRCLE must be GFXON in your gfxconf.h
+	 * @pre		GDISP_NEED_CIRCLE must be TRUE in your gfxconf.h
 	 *
 	 * @param[in] g 		The display to use
 	 * @param[in] x,y		The center of the circle
@@ -561,12 +565,12 @@ void gdispGDrawBox(GDisplay *g, gCoord x, gCoord y, gCoord cx, gCoord cy, gColor
 	 *
 	 * @api
 	 */
-	void gdispGDrawCircle(GDisplay *g, gCoord x, gCoord y, gCoord radius, gColor color);
+	void gdispGDrawCircle(GDisplay *g, coord_t x, coord_t y, coord_t radius, color_t color);
 	#define gdispDrawCircle(x,y,r,c)						gdispGDrawCircle(GDISP,x,y,r,c)
 
 	/**
 	 * @brief   Draw a filled circle.
-	 * @pre		GDISP_NEED_CIRCLE must be GFXON in your gfxconf.h
+	 * @pre		GDISP_NEED_CIRCLE must be TRUE in your gfxconf.h
 	 *
 	 * @param[in] g 		The display to use
 	 * @param[in] x,y		The center of the circle
@@ -575,14 +579,14 @@ void gdispGDrawBox(GDisplay *g, gCoord x, gCoord y, gCoord cx, gCoord cy, gColor
 	 *
 	 * @api
 	 */
-	void gdispGFillCircle(GDisplay *g, gCoord x, gCoord y, gCoord radius, gColor color);
+	void gdispGFillCircle(GDisplay *g, coord_t x, coord_t y, coord_t radius, color_t color);
 	#define gdispFillCircle(x,y,r,c)						gdispGFillCircle(GDISP,x,y,r,c)
 #endif
 
 #if GDISP_NEED_DUALCIRCLE || defined(__DOXYGEN__)
 	/**
 	 * @brief   Draw two filled circles with the same centre.
-	 * @pre		GDISP_NEED_DUALCIRCLE must be GFXON in your gfxconf.h
+	 * @pre		GDISP_NEED_DUALCIRCLE must be TRUE in your gfxconf.h
 	 *
 	 * @param[in] g 		The display to use
 	 * @param[in] x,y		The center of the circle
@@ -593,7 +597,7 @@ void gdispGDrawBox(GDisplay *g, gCoord x, gCoord y, gCoord cx, gCoord cy, gColor
 	 *
 	 * @api
 	 */
-	void gdispGFillDualCircle(GDisplay *g, gCoord x, gCoord y, gCoord radius1, gColor color1, gCoord radius2, gColor color2);
+	void gdispGFillDualCircle(GDisplay *g, coord_t x, coord_t y, coord_t radius1, color_t color1, coord_t radius2, color_t color2);
 	#define gdispFillDualCircle(x,y,r1,c1,r2,c2)			gdispGFillDualCircle(GDISP,x,y,r1,c1,r2,c2)
 #endif
 
@@ -602,7 +606,7 @@ void gdispGDrawBox(GDisplay *g, gCoord x, gCoord y, gCoord cx, gCoord cy, gColor
 #if GDISP_NEED_ELLIPSE || defined(__DOXYGEN__)
 	/**
 	 * @brief   Draw an ellipse.
-	 * @pre		GDISP_NEED_ELLIPSE must be GFXON in your gfxconf.h
+	 * @pre		GDISP_NEED_ELLIPSE must be TRUE in your gfxconf.h
 	 *
 	 * @param[in] g 		The display to use
 	 * @param[in] x,y		The center of the ellipse
@@ -611,12 +615,12 @@ void gdispGDrawBox(GDisplay *g, gCoord x, gCoord y, gCoord cx, gCoord cy, gColor
 	 *
 	 * @api
 	 */
-	void gdispGDrawEllipse(GDisplay *g, gCoord x, gCoord y, gCoord a, gCoord b, gColor color);
+	void gdispGDrawEllipse(GDisplay *g, coord_t x, coord_t y, coord_t a, coord_t b, color_t color);
 	#define gdispDrawEllipse(x,y,a,b,c)						gdispGDrawEllipse(GDISP,x,y,a,b,c)
 
 	/**
 	 * @brief   Draw a filled ellipse.
-	 * @pre		GDISP_NEED_ELLIPSE must be GFXON in your gfxconf.h
+	 * @pre		GDISP_NEED_ELLIPSE must be TRUE in your gfxconf.h
 	 *
 	 * @param[in] g 		The display to use
 	 * @param[in] x,y		The center of the ellipse
@@ -625,7 +629,7 @@ void gdispGDrawBox(GDisplay *g, gCoord x, gCoord y, gCoord cx, gCoord cy, gColor
 	 *
 	 * @api
 	 */
-	void gdispGFillEllipse(GDisplay *g, gCoord x, gCoord y, gCoord a, gCoord b, gColor color);
+	void gdispGFillEllipse(GDisplay *g, coord_t x, coord_t y, coord_t a, coord_t b, color_t color);
 	#define gdispFillEllipse(x,y,a,b,c)						gdispGFillEllipse(GDISP,x,y,a,b,c)
 #endif
 
@@ -633,7 +637,7 @@ void gdispGDrawBox(GDisplay *g, gCoord x, gCoord y, gCoord cx, gCoord cy, gColor
 #if GDISP_NEED_ARCSECTORS || defined(__DOXYGEN__)
 	/**
 	 * @brief	Draw a selection of 45 degree arcs of a circle
-	 * @pre		GDISP_NEED_ARCSECTORS must be GFXON in your gfxconf.h
+	 * @pre		GDISP_NEED_ARCSECTORS must be TRUE in your gfxconf.h
 	 *
 	 * @param[in] g 		The display to use
 	 * @param[in] x,y		The center of the circle
@@ -657,12 +661,12 @@ void gdispGDrawBox(GDisplay *g, gCoord x, gCoord y, gCoord cx, gCoord cy, gColor
 	 *
 	 * @api
 	 */
-	void gdispGDrawArcSectors(GDisplay *g, gCoord x, gCoord y, gCoord radius, uint8_t sectors, gColor color);
+	void gdispGDrawArcSectors(GDisplay *g, coord_t x, coord_t y, coord_t radius, uint8_t sectors, color_t color);
 	#define gdispDrawArcSectors(x,y,r,s,c)						gdispGDrawArcSectors(GDISP,x,y,r,s,c)
 
 	/**
 	 * @brief	Fill a selection of 45 degree arcs of a circle
-	 * @pre		GDISP_NEED_ARCSECTORS must be GFXON in your gfxconf.h
+	 * @pre		GDISP_NEED_ARCSECTORS must be TRUE in your gfxconf.h
 	 *
 	 * @param[in] g 		The display to use
 	 * @param[in] x,y		The center of the circle
@@ -686,14 +690,14 @@ void gdispGDrawBox(GDisplay *g, gCoord x, gCoord y, gCoord cx, gCoord cy, gColor
 	 *
 	 * @api
 	 */
-	void gdispGFillArcSectors(GDisplay *g, gCoord x, gCoord y, gCoord radius, uint8_t sectors, gColor color);
+	void gdispGFillArcSectors(GDisplay *g, coord_t x, coord_t y, coord_t radius, uint8_t sectors, color_t color);
 	#define gdispFillArcSectors(x,y,r,s,c)						gdispGFillArcSectors(GDISP,x,y,r,s,c)
 #endif
 
 #if GDISP_NEED_ARC || defined(__DOXYGEN__)
 	/**
 	 * @brief	Draw an arc.
-	 * @pre		GDISP_NEED_ARC must be GFXON in your gfxconf.h
+	 * @pre		GDISP_NEED_ARC must be TRUE in your gfxconf.h
 	 *
 	 * @param[in] g 			The display to use
 	 * @param[in] x,y			The center point
@@ -713,12 +717,12 @@ void gdispGDrawBox(GDisplay *g, gCoord x, gCoord y, gCoord cx, gCoord cy, gColor
 	 *
 	 * @api
 	 */
-	void gdispGDrawArc(GDisplay *g, gCoord x, gCoord y, gCoord radius, gCoord startangle, gCoord endangle, gColor color);
+	void gdispGDrawArc(GDisplay *g, coord_t x, coord_t y, coord_t radius, coord_t startangle, coord_t endangle, color_t color);
 	#define gdispDrawArc(x,y,r,s,e,c)						gdispGDrawArc(GDISP,x,y,r,s,e,c)
 
 	/**
 	 * @brief	Draw a thick arc.
-	 * @pre		GDISP_NEED_ARC must be GFXON in your gfxconf.h
+	 * @pre		GDISP_NEED_ARC must be TRUE in your gfxconf.h
 	 *
 	 * @param[in] g 			The display to use
 	 * @param[in] xc,yc			The center point
@@ -738,12 +742,12 @@ void gdispGDrawBox(GDisplay *g, gCoord x, gCoord y, gCoord cx, gCoord cy, gColor
 	 *
 	 * @api
 	 */
-	void gdispGDrawThickArc(GDisplay *g, gCoord xc, gCoord yc, gCoord startradius, gCoord endradius, gCoord startangle, gCoord endangle, gColor color);
+	void gdispGDrawThickArc(GDisplay *g, coord_t xc, coord_t yc, coord_t startradius, coord_t endradius, coord_t startangle, coord_t endangle, color_t color);
 	#define gdispDrawThickArc(x,y,rs,re,s,e,c)						gdispGDrawThickArc(GDISP,x,y,rs,re,s,e,c)
-
+	
 	/**
 	 * @brief	Draw a filled arc.
-	 * @pre		GDISP_NEED_ARC must be GFXON in your gfxconf.h
+	 * @pre		GDISP_NEED_ARC must be TRUE in your gfxconf.h
 	 *
 	 * @param[in] g 			The display to use
 	 * @param[in] x,y			The center point
@@ -763,7 +767,7 @@ void gdispGDrawBox(GDisplay *g, gCoord x, gCoord y, gCoord cx, gCoord cy, gColor
 	 *
 	 * @api
 	 */
-	void gdispGFillArc(GDisplay *g, gCoord x, gCoord y, gCoord radius, gCoord startangle, gCoord endangle, gColor color);
+	void gdispGFillArc(GDisplay *g, coord_t x, coord_t y, coord_t radius, coord_t startangle, coord_t endangle, color_t color);
 	#define gdispFillArc(x,y,r,s,e,c)						gdispGFillArc(GDISP,x,y,r,s,e,c)
 #endif
 
@@ -773,14 +777,14 @@ void gdispGDrawBox(GDisplay *g, gCoord x, gCoord y, gCoord cx, gCoord cy, gColor
 	/**
 	 * @brief   Get the color of a pixel.
 	 * @return  The color of the pixel.
-	 * @pre		GDISP_NEED_PIXELREAD must be GFXON in your gfxconf.h
+	 * @pre		GDISP_NEED_PIXELREAD must be TRUE in your gfxconf.h
 	 *
 	 * @param[in] g 		The display to use
 	 * @param[in] x,y		The position of the pixel
 	 *
 	 * @api
 	 */
-	gColor gdispGGetPixelColor(GDisplay *g, gCoord x, gCoord y);
+	color_t gdispGGetPixelColor(GDisplay *g, coord_t x, coord_t y);
 	#define gdispGetPixelColor(x,y)							gdispGGetPixelColor(GDISP,x,y)
 #endif
 
@@ -789,7 +793,7 @@ void gdispGDrawBox(GDisplay *g, gCoord x, gCoord y, gCoord cx, gCoord cy, gColor
 #if GDISP_NEED_SCROLL || defined(__DOXYGEN__)
 	/**
 	 * @brief   Scroll vertically a section of the screen.
-	 * @pre		GDISP_NEED_SCROLL must be set to GFXON in gfxconf.h
+	 * @pre		GDISP_NEED_SCROLL must be set to TRUE in gfxconf.h
 	 * @note    Optional.
 	 * @note    If lines is >= cy, it is equivelent to an area fill with bgcolor.
 	 *
@@ -801,7 +805,7 @@ void gdispGDrawBox(GDisplay *g, gCoord x, gCoord y, gCoord cx, gCoord cy, gColor
 	 *
 	 * @api
 	 */
-	void gdispGVerticalScroll(GDisplay *g, gCoord x, gCoord y, gCoord cx, gCoord cy, int lines, gColor bgcolor);
+	void gdispGVerticalScroll(GDisplay *g, coord_t x, coord_t y, coord_t cx, coord_t cy, int lines, color_t bgcolor);
 	#define gdispVerticalScroll(x,y,cx,cy,l,b)				gdispGVerticalScroll(GDISP,x,y,cx,cy,l,b)
 #endif
 
@@ -810,7 +814,7 @@ void gdispGDrawBox(GDisplay *g, gCoord x, gCoord y, gCoord cx, gCoord cy, gColor
 #if GDISP_NEED_CONTROL || defined(__DOXYGEN__)
 	/**
 	 * @brief   Control hardware specific parts of the display. eg powermodes, backlight etc
-	 * @pre		GDISP_NEED_CONTROL must be GFXON in your gfxconf.h
+	 * @pre		GDISP_NEED_CONTROL must be TRUE in your gfxconf.h
 	 * @note    Depending on the hardware implementation this function may not
 	 *          support some codes. They will be ignored.
 	 *
@@ -829,7 +833,7 @@ void gdispGDrawBox(GDisplay *g, gCoord x, gCoord y, gCoord cx, gCoord cy, gColor
 #if GDISP_NEED_QUERY || defined(__DOXYGEN__)
 	/**
 	 * @brief   Query a property of the display.
-	 * @pre		GDISP_NEED_QUERY must be GFXON in your gfxconf.h
+	 * @pre		GDISP_NEED_QUERY must be TRUE in your gfxconf.h
 	 * @note    The result must be typecast to the correct type.
 	 * @note    An unsupported query will return (void *)-1.
 	 *
@@ -845,7 +849,7 @@ void gdispGDrawBox(GDisplay *g, gCoord x, gCoord y, gCoord cx, gCoord cy, gColor
 #if GDISP_NEED_CONVEX_POLYGON || defined(__DOXYGEN__)
 	/**
 	 * @brief   Draw an enclosed polygon (convex, non-convex or complex).
-	 * @pre		GDISP_NEED_CONVEX_POLYGON must be GFXON in your gfxconf.h
+	 * @pre		GDISP_NEED_CONVEX_POLYGON must be TRUE in your gfxconf.h
 	 *
 	 * @param[in] g 		The display to use
 	 * @param[in] tx, ty	Transform all points in pntarray by tx, ty
@@ -855,13 +859,13 @@ void gdispGDrawBox(GDisplay *g, gCoord x, gCoord y, gCoord cx, gCoord cy, gColor
 	 *
 	 * @api
 	 */
-	void gdispGDrawPoly(GDisplay *g, gCoord tx, gCoord ty, const gPoint *pntarray, unsigned cnt, gColor color);
+	void gdispGDrawPoly(GDisplay *g, coord_t tx, coord_t ty, const point *pntarray, unsigned cnt, color_t color);
 	#define gdispDrawPoly(x,y,p,i,c)						gdispGDrawPoly(GDISP,x,y,p,i,c)
 
 	/**
 	 * @brief   Fill a convex polygon
 	 * @details Doesn't handle non-convex or complex polygons.
-	 * @pre		GDISP_NEED_CONVEX_POLYGON must be GFXON in your gfxconf.h
+	 * @pre		GDISP_NEED_CONVEX_POLYGON must be TRUE in your gfxconf.h
 	 *
 	 * @param[in] g 		The display to use
 	 * @param[in] tx, ty	Transform all points in pntarray by tx, ty
@@ -879,14 +883,14 @@ void gdispGDrawBox(GDisplay *g, gCoord x, gCoord y, gCoord cx, gCoord cy, gColor
 	 *
 	 * @api
 	 */
-	void gdispGFillConvexPoly(GDisplay *g, gCoord tx, gCoord ty, const gPoint *pntarray, unsigned cnt, gColor color);
+	void gdispGFillConvexPoly(GDisplay *g, coord_t tx, coord_t ty, const point *pntarray, unsigned cnt, color_t color);
 	#define gdispFillConvexPoly(x,y,p,i,c)					gdispGFillConvexPoly(GDISP,x,y,p,i,c)
 
 	/**
 	 * @brief   Draw a line with a specified thickness
 	 * @details The line thickness is specified in pixels. The line ends can
 	 *          be selected to be either flat or round.
-	 * @pre		GDISP_NEED_CONVEX_POLYGON must be GFXON in your gfxconf.h
+	 * @pre		GDISP_NEED_CONVEX_POLYGON must be TRUE in your gfxconf.h
 	 * @note	Uses gdispGFillConvexPoly() internally to perform the drawing.
 	 *
 	 * @param[in] g			The display to use
@@ -898,7 +902,7 @@ void gdispGDrawBox(GDisplay *g, gCoord x, gCoord y, gCoord cx, gCoord cy, gColor
 	 *
 	 * @api
 	 */
-	void gdispGDrawThickLine(GDisplay *g, gCoord x0, gCoord y0, gCoord x1, gCoord y1, gColor color, gCoord width, gBool round);
+	void gdispGDrawThickLine(GDisplay *g, coord_t x0, coord_t y0, coord_t x1, coord_t y1, color_t color, coord_t width, bool_t round);
 	#define gdispDrawThickLine(x0,y0,x1,y1,c,w,r)			gdispGDrawThickLine(GDISP,x0,y0,x1,y1,c,w,r)
 #endif
 
@@ -907,7 +911,7 @@ void gdispGDrawBox(GDisplay *g, gCoord x, gCoord y, gCoord cx, gCoord cy, gColor
 #if GDISP_NEED_TEXT || defined(__DOXYGEN__)
 	/**
 	 * @brief   Draw a text character.
-	 * @pre		GDISP_NEED_TEXT must be GFXON in your gfxconf.h
+	 * @pre		GDISP_NEED_TEXT must be TRUE in your gfxconf.h
 	 *
 	 * @param[in] g 		The display to use
 	 * @param[in] x,y		The position for the text
@@ -917,12 +921,12 @@ void gdispGDrawBox(GDisplay *g, gCoord x, gCoord y, gCoord cx, gCoord cy, gColor
 	 *
 	 * @api
 	 */
-	void gdispGDrawChar(GDisplay *g, gCoord x, gCoord y, uint16_t c, gFont font, gColor color);
+	void gdispGDrawChar(GDisplay *g, coord_t x, coord_t y, uint16_t c, font_t font, color_t color);
 	#define	gdispDrawChar(x,y,s,f,c)						gdispGDrawChar(GDISP,x,y,s,f,c)
 
 	/**
 	 * @brief   Draw a text character with a filled background.
-	 * @pre		GDISP_NEED_TEXT must be GFXON in your gfxconf.h
+	 * @pre		GDISP_NEED_TEXT must be TRUE in your gfxconf.h
 	 *
 	 * @param[in] g 		The display to use
 	 * @param[in] x,y		The position for the text
@@ -933,12 +937,12 @@ void gdispGDrawBox(GDisplay *g, gCoord x, gCoord y, gCoord cx, gCoord cy, gColor
 	 *
 	 * @api
 	 */
-	void gdispGFillChar(GDisplay *g, gCoord x, gCoord y, uint16_t c, gFont font, gColor color, gColor bgcolor);
+	void gdispGFillChar(GDisplay *g, coord_t x, coord_t y, uint16_t c, font_t font, color_t color, color_t bgcolor);
 	#define	gdispFillChar(x,y,s,f,c,b)						gdispGFillChar(GDISP,x,y,s,f,c,b)
 
 	/**
 	 * @brief   Draw a text string.
-	 * @pre		GDISP_NEED_TEXT must be GFXON in your gfxconf.h
+	 * @pre		GDISP_NEED_TEXT must be TRUE in your gfxconf.h
 	 *
 	 * @param[in] g 		The display to use
 	 * @param[in] x,y		The position for the text
@@ -948,12 +952,12 @@ void gdispGDrawBox(GDisplay *g, gCoord x, gCoord y, gCoord cx, gCoord cy, gColor
 	 *
 	 * @api
 	 */
-	void gdispGDrawString(GDisplay *g, gCoord x, gCoord y, const char *str, gFont font, gColor color);
+	void gdispGDrawString(GDisplay *g, coord_t x, coord_t y, const char *str, font_t font, color_t color);
 	#define	gdispDrawString(x,y,s,f,c)						gdispGDrawString(GDISP,x,y,s,f,c)
 
 	/**
 	 * @brief   Draw a text string.
-	 * @pre		GDISP_NEED_TEXT must be GFXON in your gfxconf.h
+	 * @pre		GDISP_NEED_TEXT must be TRUE in your gfxconf.h
 	 *
 	 * @param[in] g 		The display to use
 	 * @param[in] x,y		The position for the text
@@ -964,12 +968,12 @@ void gdispGDrawBox(GDisplay *g, gCoord x, gCoord y, gCoord cx, gCoord cy, gColor
 	 *
 	 * @api
 	 */
-	void gdispGFillString(GDisplay *g, gCoord x, gCoord y, const char *str, gFont font, gColor color, gColor bgcolor);
+	void gdispGFillString(GDisplay *g, coord_t x, coord_t y, const char *str, font_t font, color_t color, color_t bgcolor);
 	#define	gdispFillString(x,y,s,f,c,b)					gdispGFillString(GDISP,x,y,s,f,c,b)
 
 	/**
 	 * @brief   Draw a text string vertically centered within the specified box.
-	 * @pre		GDISP_NEED_TEXT must be GFXON in your gfxconf.h
+	 * @pre		GDISP_NEED_TEXT must be TRUE in your gfxconf.h
 	 *
 	 * @param[in] g 		The display to use
 	 * @param[in] x,y		The position for the text (need to define top-right or base-line - check code)
@@ -981,12 +985,12 @@ void gdispGDrawBox(GDisplay *g, gCoord x, gCoord y, gCoord cx, gCoord cy, gColor
 	 *
 	 * @api
 	 */
-	void gdispGDrawStringBox(GDisplay *g, gCoord x, gCoord y, gCoord cx, gCoord cy, const char* str, gFont font, gColor color, gJustify justify);
+	void gdispGDrawStringBox(GDisplay *g, coord_t x, coord_t y, coord_t cx, coord_t cy, const char* str, font_t font, color_t color, justify_t justify);
 	#define	gdispDrawStringBox(x,y,cx,cy,s,f,c,j)			gdispGDrawStringBox(GDISP,x,y,cx,cy,s,f,c,j)
 
 	/**
 	 * @brief   Draw a text string vertically centered within the specified box. The box background is filled with the specified background color.
-	 * @pre		GDISP_NEED_TEXT must be GFXON in your gfxconf.h
+	 * @pre		GDISP_NEED_TEXT must be TRUE in your gfxconf.h
 	 * @note    The entire box is filled
 	 *
 	 * @param[in] g 		The display to use
@@ -1000,37 +1004,37 @@ void gdispGDrawBox(GDisplay *g, gCoord x, gCoord y, gCoord cx, gCoord cy, gColor
 	 *
 	 * @api
 	 */
-	void gdispGFillStringBox(GDisplay *g, gCoord x, gCoord y, gCoord cx, gCoord cy, const char* str, gFont font, gColor color, gColor bgColor, gJustify justify);
+	void gdispGFillStringBox(GDisplay *g, coord_t x, coord_t y, coord_t cx, coord_t cy, const char* str, font_t font, color_t color, color_t bgColor, justify_t justify);
 	#define	gdispFillStringBox(x,y,cx,cy,s,f,c,b,j)			gdispGFillStringBox(GDISP,x,y,cx,cy,s,f,c,b,j)
 
 	/**
 	 * @brief   Get a metric of a font.
 	 * @return  The metric requested in pixels.
-	 * @pre		GDISP_NEED_TEXT must be GFXON in your gfxconf.h
+	 * @pre		GDISP_NEED_TEXT must be TRUE in your gfxconf.h
 	 *
 	 * @param[in] font    The font to test
 	 * @param[in] metric  The metric to measure
 	 *
 	 * @api
 	 */
-	gCoord gdispGetFontMetric(gFont font, gFontmetric metric);
+	coord_t gdispGetFontMetric(font_t font, fontmetric_t metric);
 
 	/**
 	 * @brief   Get the pixel width of a character.
 	 * @return  The width of the character in pixels. Does not include any between character padding.
-	 * @pre		GDISP_NEED_TEXT must be GFXON in your gfxconf.h
+	 * @pre		GDISP_NEED_TEXT must be TRUE in your gfxconf.h
 	 *
 	 * @param[in] c       The character to draw
 	 * @param[in] font    The font to use
 	 *
 	 * @api
 	 */
-	gCoord gdispGetCharWidth(char c, gFont font);
+	coord_t gdispGetCharWidth(char c, font_t font);
 
 	/**
 	 * @brief   Get the pixel width of a string of a given character length.
 	 * @return  The width of the string in pixels.
-	 * @pre		GDISP_NEED_TEXT must be GFXON in your gfxconf.h
+	 * @pre		GDISP_NEED_TEXT must be TRUE in your gfxconf.h
 	 *
 	 * @note	Passing 0 to count has the same effect as calling gdispGetStringWidt()
 	 *
@@ -1040,25 +1044,25 @@ void gdispGDrawBox(GDisplay *g, gCoord x, gCoord y, gCoord cx, gCoord cy, gColor
 	 *
 	 * @api
 	 */
-	gCoord gdispGetStringWidthCount(const char* str, gFont font, uint16_t count);
+	coord_t gdispGetStringWidthCount(const char* str, font_t font, uint16_t count);
 
 	/**
 	 * @brief   Get the pixel width of an entire string.
 	 * @return  The width of the string in pixels.
-	 * @pre		GDISP_NEED_TEXT must be GFXON in your gfxconf.h
+	 * @pre		GDISP_NEED_TEXT must be TRUE in your gfxconf.h
 	 *
 	 * @param[in] str     The string to measure
 	 * @param[in] font    The font to use
 	 *
 	 * @api
 	 */
-	gCoord gdispGetStringWidth(const char* str, gFont font);
+	coord_t gdispGetStringWidth(const char* str, font_t font);
 
 	/**
 	 * @brief	Find a font and return it.
 	 * @details	The supplied name is matched against the font name. A '*' will replace 0 or more characters.
 	 * @return	Returns a font or NULL if no matching font could be found.
-	 * @pre		GDISP_NEED_TEXT must be GFXON in your gfxconf.h
+	 * @pre		GDISP_NEED_TEXT must be TRUE in your gfxconf.h
 	 *
 	 * @param[in] name		The font name to find.
 	 *
@@ -1066,23 +1070,23 @@ void gdispGDrawBox(GDisplay *g, gCoord x, gCoord y, gCoord cx, gCoord cy, gColor
 	 *
 	 * @api
 	 */
-	gFont gdispOpenFont(const char *name);
+	font_t gdispOpenFont(const char *name);
 
 	/**
 	 * @brief	Release a font after use.
-	 * @pre		GDISP_NEED_TEXT must be GFXON in your gfxconf.h
+	 * @pre		GDISP_NEED_TEXT must be TRUE in your gfxconf.h
 	 *
 	 * @param[in] font		The font to release.
 	 *
 	 * @api
 	 */
-	void gdispCloseFont(gFont font);
+	void gdispCloseFont(font_t font);
 
 	/**
 	 * @brief	Make a scaled copy of an existing font.
 	 * @details	Allocates memory for new font metadata using gfxAlloc, remember to close font after use!
 	 * @return	A new font or NULL if out of memory.
-	 * @pre		GDISP_NEED_TEXT must be GFXON in your gfxconf.h
+	 * @pre		GDISP_NEED_TEXT must be TRUE in your gfxconf.h
 	 * @note	A scaled font should probably not be added to the font list as it will prevent the
 	 *			unscaled font of the same name being found as it will be the scaled version that will be found.
 	 *
@@ -1090,29 +1094,29 @@ void gdispGDrawBox(GDisplay *g, gCoord x, gCoord y, gCoord cx, gCoord cy, gColor
 	 * @param[in] scale_x	The scale factor in horizontal direction.
 	 * @param[in] scale_y	The scale factor in vertical direction.
 	 */
-	gFont gdispScaleFont(gFont font, uint8_t scale_x, uint8_t scale_y);
+	font_t gdispScaleFont(font_t font, uint8_t scale_x, uint8_t scale_y);
 
 	/**
 	 * @brief	Get the name of the specified font.
 	 * @returns	The name of the font.
-	 * @pre		GDISP_NEED_TEXT must be GFXON in your gfxconf.h
+	 * @pre		GDISP_NEED_TEXT must be TRUE in your gfxconf.h
 	 *
 	 * @param[in] font		The font to get the name for.
 	 *
 	 * @api
 	 */
-	const char *gdispGetFontName(gFont font);
-
+	const char *gdispGetFontName(font_t font);
+	
 	/**
 	 * @brief	Add a font permanently to the font list.
-	 * @returns	gTrue on success. Reasons it may fail: out of memory, if it is already on the list, it is not a font loaded in RAM.
-	 * @pre		GDISP_NEED_TEXT must be GFXON in your gfxconf.h
+	 * @returns	TRUE on success. Reasons it may fail: out of memory, if it is already on the list, it is not a font loaded in RAM.
+	 * @pre		GDISP_NEED_TEXT must be TRUE in your gfxconf.h
 	 *
 	 * @param[in] font		The font to add to the font list.
 	 *
 	 * @api
 	 */
-	gBool gdispAddFont(gFont font);
+	bool_t gdispAddFont(font_t font);
 #endif
 
 /* Extra Arc Functions */
@@ -1120,7 +1124,7 @@ void gdispGDrawBox(GDisplay *g, gCoord x, gCoord y, gCoord cx, gCoord cy, gColor
 #if GDISP_NEED_ARC || GDISP_NEED_ARCSECTORS || defined(__DOXYGEN__)
 	/**
 	 * @brief   Draw a rectangular box with rounded corners
-	 * @pre		GDISP_NEED_ARC or GDISP_NEED_ARCSECTORS must be GFXON in your gfxconf.h
+	 * @pre		GDISP_NEED_ARC or GDISP_NEED_ARCSECTORS must be TRUE in your gfxconf.h
 	 *
 	 * @param[in] g 		The display to use
 	 * @param[in] x,y		The start position
@@ -1130,12 +1134,12 @@ void gdispGDrawBox(GDisplay *g, gCoord x, gCoord y, gCoord cx, gCoord cy, gColor
 	 *
 	 * @api
 	 */
-	void gdispGDrawRoundedBox(GDisplay *g, gCoord x, gCoord y, gCoord cx, gCoord cy, gCoord radius, gColor color);
+	void gdispGDrawRoundedBox(GDisplay *g, coord_t x, coord_t y, coord_t cx, coord_t cy, coord_t radius, color_t color);
 	#define gdispDrawRoundedBox(x,y,cx,cy,r,c)		gdispGDrawRoundedBox(GDISP,x,y,cx,cy,r,c)
 
 	/**
 	 * @brief   Draw a filled rectangular box with rounded corners
-	 * @pre		GDISP_NEED_ARC or GDISP_NEED_ARCSECTORS must be GFXON in your gfxconf.h
+	 * @pre		GDISP_NEED_ARC or GDISP_NEED_ARCSECTORS must be TRUE in your gfxconf.h
 	 *
 	 * @param[in] g 		The display to use
 	 * @param[in] x,y		The start position
@@ -1145,7 +1149,7 @@ void gdispGDrawBox(GDisplay *g, gCoord x, gCoord y, gCoord cx, gCoord cy, gColor
 	 *
 	 * @api
 	 */
-	void gdispGFillRoundedBox(GDisplay *g, gCoord x, gCoord y, gCoord cx, gCoord cy, gCoord radius, gColor color);
+	void gdispGFillRoundedBox(GDisplay *g, coord_t x, coord_t y, coord_t cx, coord_t cy, coord_t radius, color_t color);
 	#define gdispFillRoundedBox(x,y,cx,cy,r,c)		gdispGFillRoundedBox(GDISP,x,y,cx,cy,r,c)
 #endif
 
@@ -1167,8 +1171,8 @@ void gdispGDrawBox(GDisplay *g, gCoord x, gCoord y, gCoord cx, gCoord cy, gColor
  *
  * @api
  */
-#define gdispGSetPowerMode(g, powerMode)			gdispGControl((g), GDISP_CONTROL_POWER, (void *)(gPowermode)(powerMode))
-#define gdispSetPowerMode(powerMode)				gdispGControl(GDISP, GDISP_CONTROL_POWER, (void *)(gPowermode)(powerMode))
+#define gdispGSetPowerMode(g, powerMode)			gdispGControl((g), GDISP_CONTROL_POWER, (void *)(unsigned)(powerMode))
+#define gdispSetPowerMode(powerMode)				gdispGControl(GDISP, GDISP_CONTROL_POWER, (void *)(unsigned)(powerMode))
 
 /**
  * @brief   Set the display orientation.
@@ -1221,6 +1225,10 @@ void gdispGDrawBox(GDisplay *g, gCoord x, gCoord y, gCoord cx, gCoord cy, gColor
 #define gdispGUnsetClip(g)							gdispGSetClip((g),0,0,gdispGGetWidth(g),gdispGGetHeight(g))
 #define gdispUnsetClip()							gdispGUnsetClip(GDISP)
 
+#ifdef __cplusplus
+}
+#endif
+
 #if GDISP_NEED_IMAGE || defined(__DOXYGEN__)
 	#include "gdisp_image.h"
 #endif
@@ -1228,49 +1236,6 @@ void gdispGDrawBox(GDisplay *g, gCoord x, gCoord y, gCoord cx, gCoord cy, gColor
 	#include "gdisp_pixmap.h"
 #endif
 
-/* V2 compatibility */
-#if GFX_COMPAT_V2
-	typedef gColorformat	colorformat;
-	typedef gColor			color_t;
-	typedef gPixel			pixel_t;
-	typedef gCoord			coord_t;
-	typedef gPoint			point, point_t;
-	typedef gFont			font_t;
-	typedef gPowermode		powermode_t;
-		#define powerOff				gPowerOff
-		#define powerDeepSleep			gPowerDeepSleep
-		#define powerSleep				gPowerSleep
-		#define powerOn					gPowerOn
-	typedef gOrientation	orientation_t;
-		#define GDISP_ROTATE_0			gOrientation0
-		#define GDISP_ROTATE_90			gOrientation90
-		#define GDISP_ROTATE_180		gOrientation180
-		#define GDISP_ROTATE_270		gOrientation270
-		#define GDISP_ROTATE_PORTRAIT	gOrientationPortrait
-		#define GDISP_ROTATE_LANDSCAPE	gOrientationLandscape
-	typedef gJustify		justify_t;
-		#define justifyLeft				gJustifyLeft
-		#define justifyCenter			gJustifyCenter
-		#define justifyRight			gJustifyRight
-		#define justifyTop				gJustifyTop
-		#define justifyMiddle			gJustifyMiddle
-		#define justifyBottom			gJustifyBottom
-		#define justifyWordWrap			gJustifyWordWrap
-		#define justifyNoWordWrap		gJustifyNoWordWrap
-		#define justifyPad				gJustifyPad
-		#define justifyNoPad			gJustifyNoPad
-		#define JUSTIFYMASK_LEFTRIGHT	JUSTIFYMASK_HORIZONTAL
-		#define JUSTIFYMASK_TOPBOTTOM	JUSTIFYMASK_VERTICAL
-	typedef gFontmetric		fontmetric_t;
-		#define fontHeight				gFontHeight
-		#define fontDescendersHeight	gFontDescendersHeight
-		#define fontLineSpacing			gFontLineSpacing
-		#define fontCharPadding			gFontCharPadding
-		#define fontMinWidth			gFontMinWidth
-		#define fontMaxWidth			gFontMaxWidth
-		#define fontBaselineX			gFontBaselineX
-		#define fontBaselineY			gFontBaselineY
-#endif
 
 #endif /* GFX_USE_GDISP */
 

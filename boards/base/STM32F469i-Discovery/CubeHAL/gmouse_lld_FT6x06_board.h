@@ -30,7 +30,7 @@ I2C_HandleTypeDef i2cHandle;
 /* Maximum speed (400kHz) */
 #define CLOCKSPEED 400000;
 
-static gBool init_board(GMouse* m, unsigned instance) {
+static bool_t init_board(GMouse* m, unsigned instance) {
 	(void)m;
 	(void)instance;
 
@@ -69,9 +69,9 @@ static gBool init_board(GMouse* m, unsigned instance) {
     __HAL_RCC_I2C1_CLK_ENABLE();
 
 	if(HAL_I2C_Init(&i2cHandle) == HAL_OK)
-		return gTrue;
+		return TRUE;
 
-	return gFalse;
+	return FALSE;
 }
 
 static GFXINLINE void aquire_bus(GMouse* m) {

@@ -24,13 +24,13 @@
 #endif
 
 #ifndef LTDC_USE_DMA2D
- 	#define LTDC_USE_DMA2D 			GFXOFF
+ 	#define LTDC_USE_DMA2D 			FALSE
 #endif
 #ifndef LTDC_NO_CLOCK_INIT
-	#define LTDC_NO_CLOCK_INIT		GFXOFF
+	#define LTDC_NO_CLOCK_INIT		FALSE
 #endif
 #ifndef	LTDC_DMA_CACHE_FLUSH
-	#define	LTDC_DMA_CACHE_FLUSH	GFXOFF
+	#define	LTDC_DMA_CACHE_FLUSH	FALSE
 #endif
 
 #include "stm32_ltdc.h"
@@ -40,7 +40,7 @@
 
 	#if defined(STM32F7) || defined(STM32F746xx)
 		#undef 	LTDC_DMA_CACHE_FLUSH
-		#define	LTDC_DMA_CACHE_FLUSH	GFXON
+		#define	LTDC_DMA_CACHE_FLUSH	TRUE
 	#endif
 #endif
 
@@ -48,13 +48,13 @@
 typedef struct ltdcLayerConfig {
 	// Frame
 	LLDCOLOR_TYPE*	frame;			// Frame buffer address
-	gCoord			width, height;	// Frame size in pixels
-	gCoord			pitch;			// Line pitch, in bytes
+	coord_t			width, height;	// Frame size in pixels
+	coord_t			pitch;			// Line pitch, in bytes
 	uint16_t		fmt;			// Pixel format in LTDC format
 
 	// Window
-	gCoord			x, y;			// Start pixel position of the virtual layer
-	gCoord			cx, cy;			// Size of the virtual layer
+	coord_t			x, y;			// Start pixel position of the virtual layer
+	coord_t			cx, cy;			// Size of the virtual layer
 
 	uint32_t		defcolor;		// Default color, ARGB8888
 	uint32_t		keycolor;		// Color key, RGB888
@@ -66,10 +66,10 @@ typedef struct ltdcLayerConfig {
 } ltdcLayerConfig;
 
 typedef struct ltdcConfig {
-	gCoord		width, height;				// Screen size
-	gCoord		hsync, vsync;				// Horizontal and Vertical sync pixels
-	gCoord		hbackporch, vbackporch;		// Horizontal and Vertical back porch pixels
-	gCoord		hfrontporch, vfrontporch;	// Horizontal and Vertical front porch pixels
+	coord_t		width, height;				// Screen size
+	coord_t		hsync, vsync;				// Horizontal and Vertical sync pixels
+	coord_t		hbackporch, vbackporch;		// Horizontal and Vertical back porch pixels
+	coord_t		hfrontporch, vfrontporch;	// Horizontal and Vertical front porch pixels
 	uint32_t	syncflags;					// Sync flags
 	uint32_t	bgcolor;					// Clear screen color RGB888
 
@@ -233,7 +233,7 @@ static void _ltdc_init(void) {
 	_ltdc_reload();
 }
 
-LLDSPEC gBool gdisp_lld_init(GDisplay* g) {
+LLDSPEC bool_t gdisp_lld_init(GDisplay* g) {
 	// Initialize the private structure
 	g->priv = 0;
 	g->board = 0;
@@ -252,7 +252,7 @@ LLDSPEC gBool gdisp_lld_init(GDisplay* g) {
 		#endif
 
 		if (!(driverCfg.bglayer.layerflags & LTDC_LEF_ENABLE))
-			return gFalse;
+			return FALSE;
 
 		g->priv = (void *)&driverCfg.bglayer;
 
@@ -267,7 +267,7 @@ LLDSPEC gBool gdisp_lld_init(GDisplay* g) {
 	case 1:			// Display 1 is the foreground layer
 
 		if (!(driverCfg.fglayer.layerflags & LTDC_LEF_ENABLE))
-			return gFalse;
+			return FALSE;
 
 		// Load the foreground layer
 		_ltdc_layer_init(LTDC_Layer2, &driverCfg.fglayer);
@@ -281,18 +281,18 @@ LLDSPEC gBool gdisp_lld_init(GDisplay* g) {
 		break;
 
 	default:		// There is only 1 LTDC in the CPU and only the 2 layers in the LTDC.
-		return gFalse;
+		return FALSE;
 	}
 
 	// Initialise the GDISP structure
 	g->g.Width = ((ltdcLayerConfig *)g->priv)->width;
 	g->g.Height = ((ltdcLayerConfig *)g->priv)->height;
-	g->g.Orientation = gOrientation0;
-	g->g.Powermode = gPowerOn;
+	g->g.Orientation = GDISP_ROTATE_0;
+	g->g.Powermode = powerOn;
 	g->g.Backlight = GDISP_INITIAL_BACKLIGHT;
 	g->g.Contrast = GDISP_INITIAL_CONTRAST;
 
-	return gTrue;
+	return TRUE;
 }
 
 LLDSPEC void gdisp_lld_draw_pixel(GDisplay* g) {
@@ -300,17 +300,17 @@ LLDSPEC void gdisp_lld_draw_pixel(GDisplay* g) {
 
 	#if GDISP_NEED_CONTROL
 		switch(g->g.Orientation) {
-		case gOrientation0:
+		case GDISP_ROTATE_0:
 		default:
 			pos = PIXIL_POS(g, g->p.x, g->p.y);
 			break;
-		case gOrientation90:
+		case GDISP_ROTATE_90:
 			pos = PIXIL_POS(g, g->p.y, g->g.Width-g->p.x-1);
 			break;
-		case gOrientation180:
+		case GDISP_ROTATE_180:
 			pos = PIXIL_POS(g, g->g.Width-g->p.x-1, g->g.Height-g->p.y-1);
 			break;
-		case gOrientation270:
+		case GDISP_ROTATE_270:
 			pos = PIXIL_POS(g, g->g.Height-g->p.y-1, g->p.x);
 			break;
 		}
@@ -332,23 +332,23 @@ LLDSPEC void gdisp_lld_draw_pixel(GDisplay* g) {
 	#endif
 }
 
-LLDSPEC	gColor gdisp_lld_get_pixel_color(GDisplay* g) {
+LLDSPEC	color_t gdisp_lld_get_pixel_color(GDisplay* g) {
 	unsigned		pos;
 	LLDCOLOR_TYPE	color;
 
 	#if GDISP_NEED_CONTROL
 		switch(g->g.Orientation) {
-		case gOrientation0:
+		case GDISP_ROTATE_0:
 		default:
 			pos = PIXIL_POS(g, g->p.x, g->p.y);
 			break;
-		case gOrientation90:
+		case GDISP_ROTATE_90:
 			pos = PIXIL_POS(g, g->p.y, g->g.Width-g->p.x-1);
 			break;
-		case gOrientation180:
+		case GDISP_ROTATE_180:
 			pos = PIXIL_POS(g, g->g.Width-g->p.x-1, g->g.Height-g->p.y-1);
 			break;
-		case gOrientation270:
+		case GDISP_ROTATE_270:
 			pos = PIXIL_POS(g, g->g.Height-g->p.y-1, g->p.x);
 			break;
 		}
@@ -376,23 +376,23 @@ LLDSPEC	gColor gdisp_lld_get_pixel_color(GDisplay* g) {
 	LLDSPEC void gdisp_lld_control(GDisplay* g) {
 		switch(g->p.x) {
 		case GDISP_CONTROL_ORIENTATION:
-			if (g->g.Orientation == (gOrientation)g->p.ptr)
+			if (g->g.Orientation == (orientation_t)g->p.ptr)
 				return;
-			switch((gOrientation)g->p.ptr) {
-				case gOrientation0:
-				case gOrientation180:
-					if (g->g.Orientation == gOrientation90 || g->g.Orientation == gOrientation270) {
-						gCoord		tmp;
+			switch((orientation_t)g->p.ptr) {
+				case GDISP_ROTATE_0:
+				case GDISP_ROTATE_180:
+					if (g->g.Orientation == GDISP_ROTATE_90 || g->g.Orientation == GDISP_ROTATE_270) {
+						coord_t		tmp;
 
 						tmp = g->g.Width;
 						g->g.Width = g->g.Height;
 						g->g.Height = tmp;
 					}
 					break;
-				case gOrientation90:
-				case gOrientation270:
-					if (g->g.Orientation == gOrientation0 || g->g.Orientation == gOrientation180) {
-						gCoord		tmp;
+				case GDISP_ROTATE_90:
+				case GDISP_ROTATE_270:
+					if (g->g.Orientation == GDISP_ROTATE_0 || g->g.Orientation == GDISP_ROTATE_180) {
+						coord_t		tmp;
 
 						tmp = g->g.Width;
 						g->g.Width = g->g.Height;
@@ -402,7 +402,7 @@ LLDSPEC	gColor gdisp_lld_get_pixel_color(GDisplay* g) {
 				default:
 					return;
 			}
-			g->g.Orientation = (gOrientation)g->p.ptr;
+			g->g.Orientation = (orientation_t)g->p.ptr;
 			return;
 
 		case GDISP_CONTROL_BACKLIGHT:
@@ -452,23 +452,23 @@ LLDSPEC	gColor gdisp_lld_get_pixel_color(GDisplay* g) {
 
 		#if GDISP_NEED_CONTROL
 			switch(g->g.Orientation) {
-			case gOrientation0:
+			case GDISP_ROTATE_0:
 			default:
 				pos = PIXIL_POS(g, g->p.x, g->p.y);
 				lineadd = g->g.Width - g->p.cx;
 				shape = (g->p.cx << 16) | (g->p.cy);
 				break;
-			case gOrientation90:
+			case GDISP_ROTATE_90:
 				pos = PIXIL_POS(g, g->p.y, g->g.Width-g->p.x-g->p.cx);
 				lineadd = g->g.Height - g->p.cy;
 				shape = (g->p.cy << 16) | (g->p.cx);
 				break;
-			case gOrientation180:
+			case GDISP_ROTATE_180:
 				pos = PIXIL_POS(g, g->g.Width-g->p.x-g->p.cx, g->g.Height-g->p.y-g->p.cy);
 				lineadd = g->g.Width - g->p.cx;
 				shape = (g->p.cx << 16) | (g->p.cy);
 				break;
-			case gOrientation270:
+			case GDISP_ROTATE_270:
 				pos = PIXIL_POS(g, g->g.Height-g->p.y-g->p.cy, g->p.x);
 				lineadd = g->g.Height - g->p.cy;
 				shape = (g->p.cy << 16) | (g->p.cx);
@@ -520,7 +520,7 @@ LLDSPEC	gColor gdisp_lld_get_pixel_color(GDisplay* g) {
 		DMA2D->CR = DMA2D_CR_MODE_R2M | DMA2D_CR_START;
 	}
 
-	/* Oops - the DMA2D only supports gOrientation0.
+	/* Oops - the DMA2D only supports GDISP_ROTATE_0.
 	 *
 	 * Where the width is 1 we can trick it for other orientations.
 	 * That is worthwhile as a width of 1 is common. For other
@@ -531,7 +531,7 @@ LLDSPEC	gColor gdisp_lld_get_pixel_color(GDisplay* g) {
 	 * other formats we also need to fall back to pixel pushing.
 	 *
 	 * As the code to actually do all that for other than the
-	 * simplest case (orientation == gOrientation0 and
+	 * simplest case (orientation == GDISP_ROTATE_0 and
 	 * GDISP_PIXELFORMAT == GDISP_LLD_PIXELFORMAT) is very complex
 	 * we will always pixel push for now. In practice that is OK as
 	 * access to the framebuffer is fast - probably faster than DMA2D.

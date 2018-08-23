@@ -59,7 +59,7 @@
 /* Do a "blinking" clear, i.e. clear to opposite polarity first.
  * This reduces the image persistence. */
 #ifndef EINK_BLINKCLEAR
-	#define EINK_BLINKCLEAR GFXON
+	#define EINK_BLINKCLEAR TRUE
 #endif
 
 /* Number of passes to use when clearing the display */
@@ -109,9 +109,9 @@ static GFXINLINE void clockdelay(void)
 /* Fast vertical clock pulse for gate driver, used during initializations */
 static void vclock_quick(GDisplay *g)
 {
-	setpin_ckv(g, gTrue);
+	setpin_ckv(g, TRUE);
 	eink_delay(1);
-	setpin_ckv(g, gFalse);
+	setpin_ckv(g, FALSE);
 	eink_delay(4);
 }
 
@@ -119,9 +119,9 @@ static void vclock_quick(GDisplay *g)
 static void hclock(GDisplay *g)
 {
 	clockdelay();
-	setpin_cl(g, gTrue);
+	setpin_cl(g, TRUE);
 	clockdelay();
-	setpin_cl(g, gFalse);
+	setpin_cl(g, FALSE);
 }
 
 /* Start a new vertical gate driver scan from top.
@@ -131,11 +131,11 @@ static void hclock(GDisplay *g)
  */
 static void vscan_start(GDisplay *g)
 {
-	setpin_gmode(g, gTrue);
+	setpin_gmode(g, TRUE);
 	vclock_quick(g);
-	setpin_spv(g, gFalse);
+	setpin_spv(g, FALSE);
 	vclock_quick(g);
-	setpin_spv(g, gTrue);
+	setpin_spv(g, TRUE);
 	vclock_quick(g);
 }
 
@@ -145,11 +145,11 @@ static void vscan_start(GDisplay *g)
  */
 static void vscan_write(GDisplay *g)
 {
-	setpin_ckv(g, gTrue);
-	setpin_oe(g, gTrue);
+	setpin_ckv(g, TRUE);
+	setpin_oe(g, TRUE);
 	eink_delay(5);
-	setpin_oe(g, gFalse);
-	setpin_ckv(g, gFalse);
+	setpin_oe(g, FALSE);
+	setpin_ckv(g, FALSE);
 	eink_delay(200);
 }
 
@@ -158,9 +158,9 @@ static void vscan_write(GDisplay *g)
  */
 static void vscan_bulkwrite(GDisplay *g)
 {
-	setpin_ckv(g, gTrue);
+	setpin_ckv(g, TRUE);
 	eink_delay(20);
-	setpin_ckv(g, gFalse);
+	setpin_ckv(g, FALSE);
 	eink_delay(200);
 }
 
@@ -169,9 +169,9 @@ static void vscan_bulkwrite(GDisplay *g)
  */
 static void vscan_skip(GDisplay *g)
 {
-	setpin_ckv(g, gTrue);
+	setpin_ckv(g, TRUE);
 	eink_delay(1);
-	setpin_ckv(g, gFalse);
+	setpin_ckv(g, FALSE);
 	eink_delay(100);
 }
 
@@ -180,7 +180,7 @@ static void vscan_skip(GDisplay *g)
  */
 static void vscan_stop(GDisplay *g)
 {
-	setpin_gmode(g, gFalse);
+	setpin_gmode(g, FALSE);
 	vclock_quick(g);
 	vclock_quick(g);
 	vclock_quick(g);
@@ -192,11 +192,11 @@ static void vscan_stop(GDisplay *g)
 static void hscan_start(GDisplay *g)
 {
 	/* Disable latching and output enable while we are modifying the row. */
-	setpin_le(g, gFalse);
-	setpin_oe(g, gFalse);
+	setpin_le(g, FALSE);
+	setpin_oe(g, FALSE);
 	
 	/* The start pulse should remain low for the duration of the row. */
-	setpin_sph(g, gFalse);
+	setpin_sph(g, FALSE);
 }
 
 /* Write data to the horizontal row. */
@@ -217,13 +217,13 @@ static void hscan_write(GDisplay *g, const uint8_t *data, int count)
 static void hscan_stop(GDisplay *g)
 {
 	/* End the scan */
-	setpin_sph(g, gTrue);
+	setpin_sph(g, TRUE);
 	hclock(g);
 	
 	/* Latch the new data */
-	setpin_le(g, gTrue);
+	setpin_le(g, TRUE);
 	clockdelay();
-	setpin_le(g, gFalse);
+	setpin_le(g, FALSE);
 }
 
 /* Turn on the power to the E-Ink panel, observing proper power sequencing. */
@@ -232,25 +232,25 @@ static void power_on(GDisplay *g)
 	unsigned i;
 	
 	/* First the digital power supply and signal levels. */
-	setpower_vdd(g, gTrue);
-	setpin_le(g, gFalse);
-	setpin_oe(g, gFalse);
-	setpin_cl(g, gFalse);
-	setpin_sph(g, gTrue);
+	setpower_vdd(g, TRUE);
+	setpin_le(g, FALSE);
+	setpin_oe(g, FALSE);
+	setpin_cl(g, FALSE);
+	setpin_sph(g, TRUE);
 	setpins_data(g, 0);
-	setpin_ckv(g, gFalse);
-	setpin_gmode(g, gFalse);
-	setpin_spv(g, gTrue);
+	setpin_ckv(g, FALSE);
+	setpin_gmode(g, FALSE);
+	setpin_spv(g, TRUE);
 	
 	/* Min. 100 microsecond delay after digital supply */
 	gfxSleepMicroseconds(100);
 	
 	/* Then negative voltages and min. 1000 microsecond delay. */
-	setpower_vneg(g, gTrue);
+	setpower_vneg(g, TRUE);
 	gfxSleepMicroseconds(1000);
 	
 	/* Finally the positive voltages. */
-	setpower_vpos(g, gTrue);
+	setpower_vpos(g, TRUE);
 	
 	/* Clear the vscan shift register */
 	vscan_start(g);
@@ -263,22 +263,22 @@ static void power_on(GDisplay *g)
 static void power_off(GDisplay *g)
 {
 	/* First the high voltages */
-	setpower_vpos(g, gFalse);
-	setpower_vneg(g, gFalse);
+	setpower_vpos(g, FALSE);
+	setpower_vneg(g, FALSE);
 	
 	/* Wait for any capacitors to drain */
 	gfxSleepMilliseconds(100);
 	
 	/* Then put all signals and digital supply to ground. */
-	setpin_le(g, gFalse);
-	setpin_oe(g, gFalse);
-	setpin_cl(g, gFalse);
-	setpin_sph(g, gFalse);
+	setpin_le(g, FALSE);
+	setpin_oe(g, FALSE);
+	setpin_cl(g, FALSE);
+	setpin_sph(g, FALSE);
 	setpins_data(g, 0);
-	setpin_ckv(g, gFalse);
-	setpin_gmode(g, gFalse);
-	setpin_spv(g, gFalse);
-	setpower_vdd(g, gFalse);
+	setpin_ckv(g, FALSE);
+	setpin_gmode(g, FALSE);
+	setpin_spv(g, FALSE);
+	setpower_vdd(g, FALSE);
 }
 
 /* ====================================
@@ -332,17 +332,17 @@ typedef struct drvPriv {
 } drvPriv;
 
 /* Check if the row contains any allocated blocks. */
-static gBool blocks_on_row(GDisplay *g, unsigned by)
+static bool_t blocks_on_row(GDisplay *g, unsigned by)
 {
 	unsigned bx;
 	for (bx = 0; bx < BLOCKS_X; bx++)
 	{
 		if (PRIV(g)->g_blockmap[by][bx] != 0)
 		{
-			return gTrue;
+			return TRUE;
 		}
 	}
-	return gFalse;
+	return FALSE;
 }
 
 /* Write out a block row. */
@@ -432,7 +432,7 @@ static block_t *alloc_buffer(GDisplay *g, unsigned bx, unsigned by)
 /* Driver exported functions.                                                */
 /*===========================================================================*/
 
-LLDSPEC gBool gdisp_lld_init(GDisplay *g) {
+LLDSPEC bool_t gdisp_lld_init(GDisplay *g) {
 	g->priv = gfxAlloc(sizeof(drvPriv));
 
 	init_board(g);
@@ -448,11 +448,11 @@ LLDSPEC gBool gdisp_lld_init(GDisplay *g) {
 	/* Initialise the GDISP structure */
 	g->g.Width = GDISP_SCREEN_WIDTH;
 	g->g.Height = GDISP_SCREEN_HEIGHT;
-	g->g.Orientation = gOrientation0;
-	g->g.Powermode = gPowerOn;
+	g->g.Orientation = GDISP_ROTATE_0;
+	g->g.Powermode = powerOn;
 	g->g.Backlight = 100;
 	g->g.Contrast = 100;
-	return gTrue;
+	return TRUE;
 }
 
 #if GDISP_HARDWARE_FLUSH
@@ -489,25 +489,25 @@ LLDSPEC gBool gdisp_lld_init(GDisplay *g) {
 
 		switch(g->g.Orientation) {
 		default:
-		case gOrientation0:
+		case GDISP_ROTATE_0:
 			bx = g->p.x / EINK_BLOCKWIDTH;
 			dx = g->p.x % EINK_BLOCKWIDTH;
 			by = g->p.y / EINK_BLOCKHEIGHT;
 			dy = g->p.y % EINK_BLOCKHEIGHT;
 			break;
-		case gOrientation90:
+		case GDISP_ROTATE_90:
 			bx = g->p.y / EINK_BLOCKWIDTH;
 			dx = g->p.y % EINK_BLOCKWIDTH;
 			by = (GDISP_SCREEN_HEIGHT-1 - g->p.x) / EINK_BLOCKHEIGHT;
 			dy = (GDISP_SCREEN_HEIGHT-1 - g->p.x) % EINK_BLOCKHEIGHT;
 			break;
-		case gOrientation180:
+		case GDISP_ROTATE_180:
 			bx = (GDISP_SCREEN_WIDTH-1 - g->p.x) / EINK_BLOCKWIDTH;
 			dx = (GDISP_SCREEN_WIDTH-1 - g->p.x) % EINK_BLOCKWIDTH;
 			by = (GDISP_SCREEN_HEIGHT-1 - g->p.y) / EINK_BLOCKHEIGHT;
 			dy = (GDISP_SCREEN_HEIGHT-1 - g->p.y) % EINK_BLOCKHEIGHT;
 			break;
-		case gOrientation270:
+		case GDISP_ROTATE_270:
 			bx = (GDISP_SCREEN_WIDTH-1 - g->p.y) / EINK_BLOCKWIDTH;
 			dx = (GDISP_SCREEN_WIDTH-1 - g->p.y) % EINK_BLOCKWIDTH;
 			by = g->p.x / EINK_BLOCKHEIGHT;
@@ -520,7 +520,7 @@ LLDSPEC gBool gdisp_lld_init(GDisplay *g) {
 		bitpos = (6 - 2 * (dx % EINK_PPB));
 		byte = block->data[dy][dx / EINK_PPB];
 		byte &= ~(PIXELMASK << bitpos);
-		if (gdispColor2Native(g->p.color) != GFX_BLACK)
+		if (gdispColor2Native(g->p.color) != Black)
 			byte |= PIXEL_WHITE << bitpos;
 		else
 			byte |= PIXEL_BLACK << bitpos;
@@ -532,42 +532,42 @@ LLDSPEC gBool gdisp_lld_init(GDisplay *g) {
 	LLDSPEC void gdisp_lld_control(GDisplay *g) {
 		switch(g->p.x) {
 		case GDISP_CONTROL_POWER:
-			if (g->g.Powermode == (gPowermode)g->p.ptr)
+			if (g->g.Powermode == (powermode_t)g->p.ptr)
 				return;
-			switch((gPowermode)g->p.ptr) {
-			case gPowerOff:
-			case gPowerSleep:
-			case gPowerDeepSleep:
+			switch((powermode_t)g->p.ptr) {
+			case powerOff:
+			case powerSleep:
+			case powerDeepSleep:
 				gdisp_lld_flush(g);
 				power_off(g);
 				break;
-			case gPowerOn:
+			case powerOn:
 				power_on(g);
 				break;
 			default:
 				return;
 			}
-			g->g.Powermode = (gPowermode)g->p.ptr;
+			g->g.Powermode = (powermode_t)g->p.ptr;
 			return;
 
 		case GDISP_CONTROL_ORIENTATION:
-			if (g->g.Orientation == (gOrientation)g->p.ptr)
+			if (g->g.Orientation == (orientation_t)g->p.ptr)
 				return;
-			switch((gOrientation)g->p.ptr) {
-			case gOrientation0:
-			case gOrientation180:
+			switch((orientation_t)g->p.ptr) {
+			case GDISP_ROTATE_0:
+			case GDISP_ROTATE_180:
 				g->g.Height = GDISP_SCREEN_HEIGHT;
 				g->g.Width = GDISP_SCREEN_WIDTH;
 				break;
-			case gOrientation90:
-			case gOrientation270:
+			case GDISP_ROTATE_90:
+			case GDISP_ROTATE_270:
 				g->g.Height = GDISP_SCREEN_WIDTH;
 				g->g.Width = GDISP_SCREEN_HEIGHT;
 				break;
 			default:
 				return;
 			}
-			g->g.Orientation = (gOrientation)g->p.ptr;
+			g->g.Orientation = (orientation_t)g->p.ptr;
 			return;
 			
 		default:
@@ -581,7 +581,7 @@ LLDSPEC gBool gdisp_lld_init(GDisplay *g) {
  * =============================== */
 
 #if GDISP_HARDWARE_CLEARS
-	static void subclear(GDisplay *g, gColor color) {
+	static void subclear(GDisplay *g, color_t color) {
 		unsigned x, y;
 		uint8_t byte;
 
@@ -593,12 +593,12 @@ LLDSPEC gBool gdisp_lld_init(GDisplay *g) {
 		}
 		hscan_stop(g);
 
-		setpin_oe(g, gTrue);
+		setpin_oe(g, TRUE);
 		vscan_start(g);
 		for (y = 0; y < GDISP_SCREEN_HEIGHT; y++)
 			vscan_bulkwrite(g);
 		vscan_stop(g);
-		setpin_oe(g, gFalse);
+		setpin_oe(g, FALSE);
 	}
 	
 	void gdisp_lld_clear(GDisplay *g) {

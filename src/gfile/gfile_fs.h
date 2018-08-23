@@ -34,7 +34,7 @@ struct GFILE {
 
 struct gfileList {
 	const struct GFILEVMT *	vmt;
-	gBool					dirs;
+	bool_t					dirs;
 };
 
 typedef struct GFILEVMT {
@@ -46,22 +46,22 @@ typedef struct GFILEVMT {
 		#define GFSFLG_SMALL			0x0020
 		#define GFSFLG_TEXTMODES		0x0040
 	char					prefix;
-	gBool		(*del)		(const char *fname);
-	gBool		(*exists)	(const char *fname);
+	bool_t		(*del)		(const char *fname);
+	bool_t		(*exists)	(const char *fname);
 	long int	(*filesize)	(const char *fname);
-	gBool		(*ren)		(const char *oldname, const char *newname);
-	gBool		(*open)		(GFILE *f, const char *fname);
+	bool_t		(*ren)		(const char *oldname, const char *newname);
+	bool_t		(*open)		(GFILE *f, const char *fname);
 	void		(*close)	(GFILE *f);
 	int			(*read)		(GFILE *f, void *buf, int size);
 	int			(*write)	(GFILE *f, const void *buf, int size);
-	gBool		(*setpos)	(GFILE *f, long int pos);
+	bool_t		(*setpos)	(GFILE *f, long int pos);
 	long int	(*getsize)	(GFILE *f);
-	gBool		(*eof)		(GFILE *f);
-	gBool		(*mount)	(const char *drive);
-	gBool		(*unmount)	(const char *drive);
-	gBool		(*sync)		(GFILE *f);
+	bool_t		(*eof)		(GFILE *f);
+	bool_t		(*mount)	(const char *drive);
+	bool_t		(*unmount)	(const char *drive);
+	bool_t		(*sync)		(GFILE *f);
 	#if GFILE_NEED_FILELISTS
-		gfileList *	(*flopen)	(const char *path, gBool dirs);
+		gfileList *	(*flopen)	(const char *path, bool_t dirs);
 		const char *(*flread)	(gfileList *pfl);
 		void		(*flclose)	(gfileList *pfl);
 	#endif

@@ -28,7 +28,7 @@
 #define JD_WORKSZ 		(JD_SZBUF+2580+8)	/* The extra 8 bytes just for safety */
 
 typedef struct {
-	gCoord left, right, top, bottom;
+	coord_t left, right, top, bottom;
 } JRECT;
 /* Decompressor object structure */
 typedef struct JDEC {
@@ -59,7 +59,7 @@ gdispImageError jd_decomp(JDEC*, unsigned(*)(gdispImage*,void*,JRECT*), uint8_t)
 
 /*---------------------------------------------------------------------------*/
 typedef struct gdispImagePrivate_JPG {
-	gPixel		*frame0cache;
+	pixel_t		*frame0cache;
 	} gdispImagePrivate_JPG;
 
 gdispImageError gdispImageOpen_JPG(gdispImage *img){
@@ -123,7 +123,7 @@ void gdispImageClose_JPG(gdispImage *img){
 	gdispImagePrivate_JPG *priv = (gdispImagePrivate_JPG *)img->priv;
     if(priv){
         if (priv->frame0cache){
-            gdispImageFree(img, (void *)priv->frame0cache, img->width * img->height * sizeof(gPixel));
+            gdispImageFree(img, (void *)priv->frame0cache, img->width * img->height * sizeof(pixel_t));
         }
         gdispImageFree(img, (void*) priv, sizeof(gdispImagePrivate_JPG));
     }
@@ -133,8 +133,8 @@ static unsigned gdispImage_JPG_WriteToCache(gdispImage *img, void *bitmap, JRECT
 {
 	gdispImagePrivate_JPG	*priv;
     uint8_t					*in;
-	gPixel					*out;
-    gCoord					x, y;
+	pixel_t					*out;
+    coord_t					x, y;
 
 	priv = (gdispImagePrivate_JPG *)img->priv;
     in = (unsigned char *)bitmap;
@@ -158,7 +158,7 @@ gdispImageError gdispImageCache_JPG(gdispImage *img) {
 		return GDISP_IMAGE_ERR_OK;
 
     /* Otherwise start a new decode */
-	priv->frame0cache = (gPixel *)gdispImageAlloc(img, img->width * img->height * sizeof(gPixel));
+	priv->frame0cache = (pixel_t *)gdispImageAlloc(img, img->width * img->height * sizeof(pixel_t));
 	if (!priv->frame0cache)
 		return GDISP_IMAGE_ERR_NOMEMORY;
 
@@ -176,7 +176,7 @@ gdispImageError gdispImageCache_JPG(gdispImage *img) {
 	return r;
 }
 
-gdispImageError gdispGImageDraw_JPG(GDisplay *g, gdispImage *img, gCoord x, gCoord y, gCoord cx, gCoord cy, gCoord sx, gCoord sy){
+gdispImageError gdispGImageDraw_JPG(GDisplay *g, gdispImage *img, coord_t x, coord_t y, coord_t cx, coord_t cy, coord_t sx, coord_t sy){
     gdispImagePrivate_JPG *	priv;
 
     priv = (gdispImagePrivate_JPG *)img->priv;
@@ -198,11 +198,11 @@ gdispImageError gdispGImageDraw_JPG(GDisplay *g, gdispImage *img, gCoord x, gCoo
     return GDISP_IMAGE_ERR_OK;
 }
 
-gDelay gdispImageNext_JPG(gdispImage *img) {
+delaytime_t gdispImageNext_JPG(gdispImage *img) {
 	(void) img;
 
 	/* No more frames/pages */
-	return gDelayForever;
+	return TIME_INFINITE;
 }
 
 /*----------------------------------------------------------------------------/

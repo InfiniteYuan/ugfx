@@ -19,14 +19,14 @@
 #if GFX_USE_GWIN
 	// Sub-system rules
 	#if !GFX_USE_GDISP
-		#error "GWIN: GFX_USE_GDISP must be GFXON when using GWIN"
+		#error "GWIN: GFX_USE_GDISP must be TRUE when using GWIN"
 	#endif
 	#if !GDISP_NEED_CLIP
 		#if GFX_DISPLAY_RULE_WARNINGS
 			#if GFX_COMPILER_WARNING_TYPE == GFX_COMPILER_WARNING_DIRECT
-				#warning "GWIN: Drawing can occur outside the defined windows as GDISP_NEED_CLIP is GFXOFF"
+				#warning "GWIN: Drawing can occur outside the defined windows as GDISP_NEED_CLIP is FALSE"
 			#elif GFX_COMPILER_WARNING_TYPE == GFX_COMPILER_WARNING_MACRO
-				COMPILER_WARNING("GWIN: Drawing can occur outside the defined windows as GDISP_NEED_CLIP is GFXOFF")
+				COMPILER_WARNING("GWIN: Drawing can occur outside the defined windows as GDISP_NEED_CLIP is FALSE")
 			#endif
 		#endif
 	#endif
@@ -42,7 +42,7 @@
 				#endif
 			#endif
 			#undef GWIN_NEED_CONTAINERS
-			#define GWIN_NEED_CONTAINERS	GFXON
+			#define GWIN_NEED_CONTAINERS	TRUE
 		#endif
 	#endif
 	#if GWIN_NEED_BUTTON || GWIN_NEED_SLIDER || GWIN_NEED_CHECKBOX || GWIN_NEED_LABEL || GWIN_NEED_RADIO || GWIN_NEED_LIST || \
@@ -56,7 +56,7 @@
 				#endif
 			#endif
 			#undef GWIN_NEED_WIDGET
-			#define GWIN_NEED_WIDGET	GFXON
+			#define GWIN_NEED_WIDGET	TRUE
 		#endif
 	#endif
 
@@ -71,100 +71,100 @@
 				#endif
 			#endif
 			#undef GWIN_NEED_WIDGET
-			#define GWIN_NEED_WIDGET	GFXON
+			#define GWIN_NEED_WIDGET	TRUE
 		#endif
 	#endif
 	#if GWIN_NEED_WIDGET
 		#if !GDISP_NEED_TEXT
-			#error "GWIN: GDISP_NEED_TEXT is required if GWIN_NEED_WIDGET is GFXON."
+			#error "GWIN: GDISP_NEED_TEXT is required if GWIN_NEED_WIDGET is TRUE."
 		#endif
 		#if !GFX_USE_GINPUT
 			// This test also ensures that GFX_USE_GEVENT is set
-			#error "GWIN: GFX_USE_GINPUT is required if GWIN_NEED_WIDGET is GFXON"
+			#error "GWIN: GFX_USE_GINPUT is required if GWIN_NEED_WIDGET is TRUE"
 		#endif
 		#if !GWIN_NEED_WINDOWMANAGER
 			#if GFX_DISPLAY_RULE_WARNINGS
 				#if GFX_COMPILER_WARNING_TYPE == GFX_COMPILER_WARNING_DIRECT
-					#warning "GWIN: GWIN_NEED_WINDOWMANAGER is required if GWIN_NEED_WIDGET is GFXON. It has been turned on for you."
+					#warning "GWIN: GWIN_NEED_WINDOWMANAGER is required if GWIN_NEED_WIDGET is TRUE. It has been turned on for you."
 				#elif GFX_COMPILER_WARNING_TYPE == GFX_COMPILER_WARNING_MACRO
-					COMPILER_WARNING("GWIN: GWIN_NEED_WINDOWMANAGER is required if GWIN_NEED_WIDGET is GFXON. It has been turned on for you.")
+					COMPILER_WARNING("GWIN: GWIN_NEED_WINDOWMANAGER is required if GWIN_NEED_WIDGET is TRUE. It has been turned on for you.")
 				#endif
 			#endif
 			#undef GWIN_NEED_WINDOWMANAGER
-			#define GWIN_NEED_WINDOWMANAGER	GFXON
+			#define GWIN_NEED_WINDOWMANAGER	TRUE
 		#endif
 		#if !GDISP_NEED_MULTITHREAD
 			#if GFX_DISPLAY_RULE_WARNINGS
 				#if GFX_COMPILER_WARNING_TYPE == GFX_COMPILER_WARNING_DIRECT
-					#warning "GWIN: GDISP_NEED_MULTITHREAD is required if GWIN_NEED_WIDGET is GFXON. It has been turned on for you"
+					#warning "GWIN: GDISP_NEED_MULTITHREAD is required if GWIN_NEED_WIDGET is TRUE. It has been turned on for you"
 				#elif GFX_COMPILER_WARNING_TYPE == GFX_COMPILER_WARNING_MACRO
-					COMPILER_WARNING("GWIN: GDISP_NEED_MULTITHREAD is required if GWIN_NEED_WIDGET is GFXON. It has been turned on for you")
+					COMPILER_WARNING("GWIN: GDISP_NEED_MULTITHREAD is required if GWIN_NEED_WIDGET is TRUE. It has been turned on for you")
 				#endif
 			#endif
 			#undef GDISP_NEED_MULTITHREAD
-			#define GDISP_NEED_MULTITHREAD	GFXON
+			#define GDISP_NEED_MULTITHREAD	TRUE
 		#endif
 	#endif
 	#if GWIN_NEED_WINDOWMANAGER
 		#if !GFX_USE_GQUEUE || !GQUEUE_NEED_ASYNC
 			#if GFX_DISPLAY_RULE_WARNINGS
 				#if GFX_COMPILER_WARNING_TYPE == GFX_COMPILER_WARNING_DIRECT
-					#warning "GWIN: GFX_USE_GQUEUE and GQUEUE_NEED_ASYNC is required if GWIN_NEED_WINDOWMANAGER is GFXON. It has been turned on for you."
+					#warning "GWIN: GFX_USE_GQUEUE and GQUEUE_NEED_ASYNC is required if GWIN_NEED_WINDOWMANAGER is TRUE. It has been turned on for you."
 				#elif GFX_COMPILER_WARNING_TYPE == GFX_COMPILER_WARNING_MACRO
-					COMPILER_WARNING("GWIN: GFX_USE_GQUEUE and GQUEUE_NEED_ASYNC is required if GWIN_NEED_WINDOWMANAGER is GFXON. It has been turned on for you.")
+					COMPILER_WARNING("GWIN: GFX_USE_GQUEUE and GQUEUE_NEED_ASYNC is required if GWIN_NEED_WINDOWMANAGER is TRUE. It has been turned on for you.")
 				#endif
 			#endif
 			#undef GFX_USE_GQUEUE
 			#undef GQUEUE_NEED_ASYNC
-			#define GFX_USE_GQUEUE		GFXON
-			#define GQUEUE_NEED_ASYNC	GFXON
+			#define GFX_USE_GQUEUE		TRUE
+			#define GQUEUE_NEED_ASYNC	TRUE
 		#endif
 		#if !GFX_USE_GTIMER
 			#if GFX_DISPLAY_RULE_WARNINGS
 				#if GFX_COMPILER_WARNING_TYPE == GFX_COMPILER_WARNING_DIRECT
-					#warning "GWIN: GFX_USE_GTIMER is required if GWIN_NEED_WINDOWMANAGER is GFXON. It has been turned on for you."
+					#warning "GWIN: GFX_USE_GTIMER is required if GWIN_NEED_WINDOWMANAGER is TRUE. It has been turned on for you."
 				#elif GFX_COMPILER_WARNING_TYPE == GFX_COMPILER_WARNING_MACRO
-					COMPILER_WARNING("GWIN: GFX_USE_GTIMER is required if GWIN_NEED_WINDOWMANAGER is GFXON. It has been turned on for you.")
+					COMPILER_WARNING("GWIN: GFX_USE_GTIMER is required if GWIN_NEED_WINDOWMANAGER is TRUE. It has been turned on for you.")
 				#endif
 			#endif
 			#undef GFX_USE_GTIMER
-			#define GFX_USE_GTIMER		GFXON
+			#define GFX_USE_GTIMER		TRUE
 		#endif
 	#endif
 
 	// Rules for individual objects
 	#if GWIN_NEED_LIST
 		#if !GDISP_NEED_TEXT
-			#error "GWIN: GDISP_NEED_TEXT is required when GWIN_NEED_LIST is GFXON."
+			#error "GWIN: GDISP_NEED_TEXT is required when GWIN_NEED_LIST is TRUE."
 		#endif
 	#endif
 	#if GWIN_NEED_RADIO
 		#if !GDISP_NEED_CIRCLE
 			#if GFX_DISPLAY_RULE_WARNINGS
 				#if GFX_COMPILER_WARNING_TYPE == GFX_COMPILER_WARNING_DIRECT
-					#warning "GWIN: GDISP_NEED_CIRCLE should be set to GFXON for much nicer radio button widgets."
+					#warning "GWIN: GDISP_NEED_CIRCLE should be set to TRUE for much nicer radio button widgets."
 				#elif GFX_COMPILER_WARNING_TYPE == GFX_COMPILER_WARNING_MACRO
-					COMPILER_WARNING("GWIN: GDISP_NEED_CIRCLE should be set to GFXON for much nicer radio button widgets.")
+					COMPILER_WARNING("GWIN: GDISP_NEED_CIRCLE should be set to TRUE for much nicer radio button widgets.")
 				#endif
 			#endif
 		#endif
 	#endif
 	#if GWIN_NEED_IMAGE
 		#if !GDISP_NEED_IMAGE
-			#error "GWIN: GDISP_NEED_IMAGE is required when GWIN_NEED_IMAGE is GFXON."
+			#error "GWIN: GDISP_NEED_IMAGE is required when GWIN_NEED_IMAGE is TRUE."
 		#endif
 	#endif
 	#if GWIN_NEED_CONSOLE
 		#if !GDISP_NEED_TEXT
-			#error "GWIN: GDISP_NEED_TEXT is required if GWIN_NEED_CONSOLE is GFXON."
+			#error "GWIN: GDISP_NEED_TEXT is required if GWIN_NEED_CONSOLE is TRUE."
 		#endif
 	#endif
 	#if GWIN_NEED_TEXTEDIT
 		#if !GDISP_NEED_TEXT
-			#error "GWIN: GDISP_NEED_TEXT is required if GWIN_NEED_TEXTEDIT is GFXON."
+			#error "GWIN: GDISP_NEED_TEXT is required if GWIN_NEED_TEXTEDIT is TRUE."
 		#endif
 		#if !(GINPUT_NEED_KEYBOARD || GWIN_NEED_KEYBOARD)
-			#error "GWIN: GINPUT_NEED_KEYBOARD or GWIN_NEED_KEYBOARD is required if GWIN_NEED_TEXTEDIT is GFXON."
+			#error "GWIN: GINPUT_NEED_KEYBOARD or GWIN_NEED_KEYBOARD is required if GWIN_NEED_TEXTEDIT is TRUE."
 		#endif
 	#endif
 #endif

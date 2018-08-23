@@ -37,10 +37,10 @@
 
 static GConsoleObject			gc;
 static GListener				gl;
-static gFont					font;
-static gCoord					bHeight;
+static font_t					font;
+static coord_t					bHeight;
 static GHandle					ghc;
-static gCoord					swidth, sheight;
+static coord_t					swidth, sheight;
 
 /*------------------------------------------------------------------------*
  * GINPUT Touch Driver Calibrator.                                        *
@@ -60,15 +60,15 @@ int main(void) {
 	// Create our title
 	font = gdispOpenFont("UI2");
 	gwinSetDefaultFont(font);
-	bHeight = gdispGetFontMetric(font, gFontHeight)+4;
-	gdispFillStringBox(0, 0, swidth, bHeight, "Raw Touch Readings", font, GFX_RED, GFX_WHITE, gJustifyCenter);
+	bHeight = gdispGetFontMetric(font, fontHeight)+4;
+	gdispFillStringBox(0, 0, swidth, bHeight, "Raw Touch Readings", font, Red, White, justifyCenter);
 
 	// Create our main display writing window
 	{
 		GWindowInit				wi;
 
 		gwinClearInit(&wi);
-		wi.show = gTrue; wi.x = 0; wi.y = bHeight; wi.width = swidth; wi.height = sheight-bHeight;
+		wi.show = TRUE; wi.x = 0; wi.y = bHeight; wi.width = swidth; wi.height = sheight-bHeight;
 		ghc = gwinConsoleCreate(&gc, &wi);
 	}
 
@@ -101,7 +101,7 @@ int main(void) {
 	geventAttachSource(&gl, gs, GLISTEN_MOUSEDOWNMOVES|GLISTEN_MOUSEUPMOVES|GLISTEN_MOUSEMETA|GLISTEN_MOUSENOFILTER);
 
 	while(1) {
-		pem = (GEventMouse *)geventEventWait(&gl, gDelayForever);
+		pem = (GEventMouse *)geventEventWait(&gl, TIME_INFINITE);
 		gwinPrintf(ghc, "%u, %u z=%u b=0x%04x\n", pem->x, pem->y, pem->z, pem->buttons & ~GINPUT_MISSED_MOUSE_EVENT);
 
 		// Always sleep a bit first to enable other events. We actually don't mind missing events.

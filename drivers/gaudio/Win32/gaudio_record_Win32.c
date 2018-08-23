@@ -15,11 +15,9 @@
 /* Include the driver defines */
 #include "../../../src/gaudio/gaudio_driver_record.h"
 
-#if GFX_COMPAT_V2 && GFX_COMPAT_OLDCOLORS
-	#undef Red
-	#undef Green
-	#undef Blue
-#endif
+#undef Red
+#undef Green
+#undef Blue
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #include <stdio.h>
@@ -31,7 +29,7 @@
 
 static HWAVEIN		ah = 0;
 static volatile int	nQueuedBuffers;
-static gBool		isRunning;
+static bool_t		isRunning;
 static WAVEHDR		WaveHdrs[MAX_WAVE_HEADERS];
 static HANDLE		waveThread;
 static DWORD		threadID;
@@ -46,7 +44,7 @@ static DWORD		threadID;
  * anyway, so instead just use CALLBACK_THREAD here instead.
  *************************************************************************/
 
-static gBool getbuffer(WAVEHDR *pwh) {
+static bool_t getbuffer(WAVEHDR *pwh) {
 	GDataBuffer *paud;
 
 	// Get the next data block to send
@@ -56,7 +54,7 @@ static gBool getbuffer(WAVEHDR *pwh) {
 		gaudioRecordDoneI();
 	gfxSystemUnlock();
 	if (!paud)
-		return gFalse;
+		return FALSE;
 
 	// Prepare the wave header for Windows
 	pwh->dwUser = (DWORD_PTR)paud;
@@ -75,7 +73,7 @@ static gBool getbuffer(WAVEHDR *pwh) {
 	}
 
 	nQueuedBuffers++;
-	return gTrue;
+	return TRUE;
 }
 
 static DWORD WINAPI waveProc(LPVOID arg) {
@@ -124,11 +122,11 @@ static DWORD WINAPI waveProc(LPVOID arg) {
 /* External declarations.                                                    */
 /*===========================================================================*/
 
-gBool gaudio_record_lld_init(uint16_t channel, uint32_t frequency, ArrayDataFormat format) {
+bool_t gaudio_record_lld_init(uint16_t channel, uint32_t frequency, ArrayDataFormat format) {
 	WAVEFORMATEX	wfx;
 
 	if (format != ARRAY_DATA_8BITUNSIGNED && format != ARRAY_DATA_16BITSIGNED)
-		return gFalse;
+		return FALSE;
 
 	if (!waveThread) {
 		if (!(waveThread = CreateThread(0, 0, (LPTHREAD_START_ROUTINE)waveProc, 0, 0, &threadID))) {
@@ -155,7 +153,7 @@ gBool gaudio_record_lld_init(uint16_t channel, uint32_t frequency, ArrayDataForm
 		exit(-1);
 	}
 
-	return gTrue;
+	return TRUE;
 }
 
 void gaudio_record_lld_start(void) {
@@ -173,13 +171,13 @@ void gaudio_record_lld_start(void) {
 			break;
 	}
 	if (!isRunning) {
-		isRunning = gTrue;
+		isRunning = TRUE;
 		waveInStart(ah);
 	}
 }
 
 void gaudio_record_lld_stop(void) {
-	isRunning = gFalse;
+	isRunning = FALSE;
 	waveInReset(ah);
 	while(nQueuedBuffers) Sleep(1);
 }

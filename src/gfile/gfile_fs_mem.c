@@ -19,7 +19,7 @@
 
 static int MEMRead(GFILE *f, void *buf, int size);
 static int MEMWrite(GFILE *f, const void *buf, int size);
-static gBool MEMSetpos(GFILE *f, long int pos);
+static bool_t MEMSetpos(GFILE *f, long int pos);
 
 static const GFILEVMT FsMemVMT = {
 	GFSFLG_SEEKABLE|GFSFLG_WRITEABLE,					// flags
@@ -41,10 +41,10 @@ static int MEMWrite(GFILE *f, const void *buf, int size) {
 	memcpy(((char *)f->obj)+f->pos, buf, size);
 	return size;
 }
-static gBool MEMSetpos(GFILE *f, long int pos) {
+static bool_t MEMSetpos(GFILE *f, long int pos) {
 	(void) f;
 	(void) pos;
-	return gTrue;
+	return TRUE;
 }
 
 GFILE *	gfileOpenMemory(void *memptr, const char *mode) {

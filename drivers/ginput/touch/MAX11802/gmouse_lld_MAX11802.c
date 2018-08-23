@@ -27,7 +27,7 @@
 #define Z_MIN		0
 #define Z_MAX		1
 
-static gBool MouseInit(GMouse* m, unsigned driverinstance)
+static bool_t MouseInit(GMouse* m, unsigned driverinstance)
 {
 	const uint8_t *p;
 
@@ -46,7 +46,7 @@ static gBool MouseInit(GMouse* m, unsigned driverinstance)
 	};
 
 	if (!init_board(m, driverinstance))
-		return gFalse;
+		return FALSE;
 
 	aquire_bus(m);
 	for (p = commandList; p < commandList+sizeof(commandList); p += 2)
@@ -60,15 +60,15 @@ static gBool MouseInit(GMouse* m, unsigned driverinstance)
     aquire_bus(m);
 	if (write_command(m, MAX11802_CMD_MODE_RD, 0) != MAX11802_MODE) {
 		release_bus(m);
-		return gFalse;
+		return FALSE;
 	}
 
 	release_bus(m);
 
-	return gTrue;
+	return TRUE;
 }
 
-static gBool read_xyz(GMouse* m, GMouseReading* pdr)
+static bool_t read_xyz(GMouse* m, GMouseReading* pdr)
 {
 	uint8_t readyCount;
 	uint8_t notReadyCount;
@@ -126,7 +126,7 @@ static gBool read_xyz(GMouse* m, GMouseReading* pdr)
 
 			// Has it been too long? If so give up
 			if (++notReadyCount >= 5) {
-				return gFalse;
+				return FALSE;
 			}
 
 			// Give up the time slice to someone else and then try again
@@ -149,15 +149,15 @@ static gBool read_xyz(GMouse* m, GMouseReading* pdr)
     // Was there a valid touch?
     if (((pdr->x | pdr->y) & 0x03) != 0x0) {
     	pdr->z = Z_MIN;
-    	return gTrue;
+    	return TRUE;
     }
 
-    // Strip the tags (we need to take care because gCoord is signed - and sign bit gets extended on shift!)
+    // Strip the tags (we need to take care because coord_t is signed - and sign bit gets extended on shift!)
     pdr->x = (uint16_t)(pdr->x) >> 4;
     pdr->y = (uint16_t)(pdr->y) >> 4;
    	pdr->z = Z_MAX;
 
-    return gTrue;
+    return TRUE;
 }
 
 const GMouseVMT const GMOUSE_DRIVER_VMT[1] = {{

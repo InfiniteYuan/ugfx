@@ -22,30 +22,30 @@
  */
 	/**
 	 * @brief   Enable Asynchronous Queues
-	 * @details	Defaults to GFXOFF
+	 * @details	Defaults to FALSE
 	 */
 	#ifndef GQUEUE_NEED_ASYNC
-		#define GQUEUE_NEED_ASYNC		GFXOFF
+		#define GQUEUE_NEED_ASYNC		FALSE
 	#endif
 	/**
 	 * @brief   Enable Get-Synchronous Queues
-	 * @details	Defaults to GFXOFF
+	 * @details	Defaults to FALSE
 	 */
 	#ifndef GQUEUE_NEED_GSYNC
-		#define GQUEUE_NEED_GSYNC		GFXOFF
+		#define GQUEUE_NEED_GSYNC		FALSE
 	#endif
 	/**
 	 * @brief   Enable Fully Synchronous Queues
-	 * @details	Defaults to GFXOFF
+	 * @details	Defaults to FALSE
 	 */
 	#ifndef GQUEUE_NEED_FSYNC
-		#define GQUEUE_NEED_FSYNC		GFXOFF
+		#define GQUEUE_NEED_FSYNC		FALSE
 	#endif
 	/**
 	 * @brief	Enable Queue-able Data Buffers
 	 */
 	#ifndef GQUEUE_NEED_BUFFERS
-		#define GQUEUE_NEED_BUFFERS		GFXOFF
+		#define GQUEUE_NEED_BUFFERS		FALSE
 	#endif
 /**
  * @}

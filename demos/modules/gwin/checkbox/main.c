@@ -37,7 +37,7 @@ static void createWidgets(void) {
 
 	// Apply some default values for GWIN
 	gwinWidgetClearInit(&wi);
-	wi.g.show = gTrue;
+	wi.g.show = TRUE;
 
 	// Apply the checkbox parameters
 	wi.g.width = 100;		// includes text
@@ -58,8 +58,8 @@ int main(void) {
 
 	// Set the widget defaults
 	gwinSetDefaultFont(gdispOpenFont("UI2"));
-	gwinSetDefaultStyle(&WhiteWidgetStyle, gFalse);
-	gdispClear(GFX_WHITE);
+	gwinSetDefaultStyle(&WhiteWidgetStyle, FALSE);
+	gdispClear(White);
 
 	// create the widget
 	createWidgets();
@@ -70,7 +70,7 @@ int main(void) {
 
 	while(1) {
 		// Get an Event
-		pe = geventEventWait(&gl, gDelayForever);
+		pe = geventEventWait(&gl, TIME_INFINITE);
 
 		switch(pe->type) {
 			case GEVENT_GWIN_CHECKBOX:

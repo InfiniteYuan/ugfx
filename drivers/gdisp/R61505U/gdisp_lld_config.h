@@ -14,10 +14,10 @@
 /* Driver hardware support.                                                  */
 /*===========================================================================*/
 
-#define GDISP_HARDWARE_STREAM_WRITE		GFXON
-#define GDISP_HARDWARE_STREAM_READ		GFXON
-//#define GDISP_HARDWARE_STREAM_POS		GFXON
-#define GDISP_HARDWARE_CONTROL			GFXON
+#define GDISP_HARDWARE_STREAM_WRITE		TRUE
+#define GDISP_HARDWARE_STREAM_READ		TRUE
+//#define GDISP_HARDWARE_STREAM_POS		TRUE
+#define GDISP_HARDWARE_CONTROL			TRUE
 
 #define GDISP_LLD_PIXELFORMAT			GDISP_PIXELFORMAT_RGB565
 

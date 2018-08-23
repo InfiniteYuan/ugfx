@@ -37,8 +37,6 @@ TLS8204            - Small monochrome LCD
 UC8173             - E-Ink display driver
 UC1601s            - Small (64x132) monochrome LCD
 UC1610             - Small (78x64 or 160x104) 4 level grayscale LCD
-UC8175             - Small E-Ink display
-WS29EPD            - Small E-Ink display by WaveShare
 QImage             - Driver that allows rendering into a QImage object (of the Qt framework)
 uGFXnet            - Remote Network display (in drivers/multiple/uGFXnet directory)
 Win32              - Microsoft Windows (in drivers/multiple/Win32 directory)

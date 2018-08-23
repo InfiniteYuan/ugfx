@@ -12,7 +12,7 @@
 void _gosInit(void)
 {
 	#if !GFX_OS_NO_INIT
-		#error "GOS: Operating System initialization for eCos is not yet implemented in uGFX. Please set GFX_OS_NO_INIT to GFXON in your gfxconf.h"
+		#error "GOS: Operating System initialization for eCos is not yet implemented in uGFX. Please set GFX_OS_NO_INIT to TRUE in your gfxconf.h"
 	#endif
 	#if !GFX_OS_INIT_NO_WARNING
 		#if GFX_COMPILER_WARNING_TYPE == GFX_COMPILER_WARNING_DIRECT
@@ -32,25 +32,25 @@ void _gosDeinit(void)
 	/* ToDo */
 }
 
-void gfxSleepMilliseconds(gDelay ms)
+void gfxSleepMilliseconds(delaytime_t ms)
 {
 	switch(ms) {
-		case gDelayNone:	cyg_thread_yield();								return;
-		case gDelayForever:		cyg_thread_suspend(cyg_thread_self());			return;
+		case TIME_IMMEDIATE:	cyg_thread_yield();								return;
+		case TIME_INFINITE:		cyg_thread_suspend(cyg_thread_self());			return;
 		default:				cyg_thread_delay(gfxMillisecondsToTicks(ms));	return;
 	}
 }
 
-void gfxSleepMicroseconds(gDelay ms)
+void gfxSleepMicroseconds(delaytime_t ms)
 {
 	switch(ms) {
-		case gDelayNone:														return;
-		case gDelayForever:		cyg_thread_suspend(cyg_thread_self());				return;
+		case TIME_IMMEDIATE:														return;
+		case TIME_INFINITE:		cyg_thread_suspend(cyg_thread_self());				return;
 		default:				cyg_thread_delay(gfxMillisecondsToTicks(ms/1000));	return;
 	}
 }
 
-void gfxSemInit(gfxSem *psem, gSemcount val, gSemcount limit)
+void gfxSemInit(gfxSem *psem, semcount_t val, semcount_t limit)
 {
 	if (val > limit)
 		val = limit;
@@ -64,16 +64,16 @@ void gfxSemDestroy(gfxSem *psem)
 	cyg_semaphore_destroy(&psem->sem);
 }
 
-gBool gfxSemWait(gfxSem *psem, gDelay ms)
+bool_t gfxSemWait(gfxSem *psem, delaytime_t ms)
 {
 	switch(ms) {
-	case gDelayNone:	return cyg_semaphore_trywait(&psem->sem);
-	case gDelayForever:		return cyg_semaphore_wait(&psem->sem);
+	case TIME_IMMEDIATE:	return cyg_semaphore_trywait(&psem->sem);
+	case TIME_INFINITE:		return cyg_semaphore_wait(&psem->sem);
 	default:				return cyg_semaphore_timed_wait(&psem->sem, gfxMillisecondsToTicks(ms)+cyg_current_time());
 	}
 }
 
-gBool gfxSemWaitI(gfxSem *psem)
+bool_t gfxSemWaitI(gfxSem *psem)
 {
 	return cyg_semaphore_trywait(&psem->sem);
 }
@@ -96,9 +96,9 @@ void gfxSemSignalI(gfxSem *psem)
 		cyg_semaphore_post(&psem->sem);
 }
 
-gThread gfxThreadCreate(void *stackarea, size_t stacksz, gThreadpriority prio, DECLARE_THREAD_FUNCTION((*fn),p), void *param)
+gfxThreadHandle gfxThreadCreate(void *stackarea, size_t stacksz, threadpriority_t prio, DECLARE_THREAD_FUNCTION((*fn),p), void *param)
 {
-	gThread		th;
+	gfxThreadHandle		th;
 
 	if (!stackarea) {
 		if (!stacksz) stacksz = CYGNUM_HAL_STACK_SIZE_TYPICAL;

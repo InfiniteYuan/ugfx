@@ -41,12 +41,12 @@ static const ADCConversionGroup adcgrpcfg = {
   ADC_SQR3_SQ2_N(ADC_CHANNEL_IN8) | ADC_SQR3_SQ1_N(ADC_CHANNEL_IN9)
 };
 
-static gBool init_board(GMouse *m, unsigned driverinstance) {
+static bool_t init_board(GMouse *m, unsigned driverinstance) {
 	(void)	m;
 
 	// Only one touch interface on this board
 	if (driverinstance)
-		return gFalse;
+		return FALSE;
 
 	adcStart(&ADCD1, 0);
 
@@ -54,10 +54,10 @@ static gBool init_board(GMouse *m, unsigned driverinstance) {
 	palClearPad(GPIOB, GPIOB_DRIVEA);
 	palClearPad(GPIOB, GPIOB_DRIVEB);
     chThdSleepMilliseconds(1);				// Settling time
-	return gTrue;
+	return TRUE;
 }
 
-static gBool read_xyz(GMouse *m, GMouseReading *prd) {
+static bool_t read_xyz(GMouse *m, GMouseReading *prd) {
 	adcsample_t samples[ADC_NUM_CHANNELS * ADC_BUF_DEPTH];
 	(void)		m;
 
@@ -89,7 +89,7 @@ static gBool read_xyz(GMouse *m, GMouseReading *prd) {
 		palClearPad(GPIOB, GPIOB_DRIVEA);
 		palClearPad(GPIOB, GPIOB_DRIVEB);
     }
-    return gTrue;
+    return TRUE;
 }
 
 #endif /* _LLD_GMOUSE_MCU_BOARD_H */

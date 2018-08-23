@@ -16,5 +16,5 @@
 
 SRCFLAGS += -mcpu=cortex-m1 -falign-functions=16
 LDFLAGS  += -mcpu=cortex-m1
-DEFS     += CORTEX_USE_FPU=GFXOFF
+DEFS     += CORTEX_USE_FPU=FALSE
 

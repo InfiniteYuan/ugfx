@@ -16,77 +16,85 @@
  * 		memcpy()						- for heap and threading
  *
  * 	You must also define the following routines in your own code so that timing functions will work...
- * 		gTicks gfxSystemTicks(void);
- *		gTicks gfxMillisecondsToTicks(gDelay ms);
+ * 		systemticks_t gfxSystemTicks(void);
+ *		systemticks_t gfxMillisecondsToTicks(delaytime_t ms);
  */
 #ifndef _GOS_X_THREADS_H
 #define _GOS_X_THREADS_H
 
 #if GOS_NEED_X_THREADS
 
-typedef uint32_t		gDelay;
-typedef uint32_t		gTicks;
-typedef short			gSemcount;
-typedef int				gThreadreturn;
-typedef int				gThreadpriority;
+typedef uint32_t		delaytime_t;
+typedef uint32_t		systemticks_t;
+typedef short			semcount_t;
+typedef int				threadreturn_t;
+typedef int				threadpriority_t;
 
-#define DECLARE_THREAD_FUNCTION(fnName, param)	gThreadreturn fnName(void *param)
+#define DECLARE_THREAD_FUNCTION(fnName, param)	threadreturn_t fnName(void *param)
 #define DECLARE_THREAD_STACK(name, sz)			uint8_t name[(sz) & ~3];
 #define THREAD_RETURN(retval)					return retval
 
-#define gDelayNone					0
-#define gDelayForever				((gDelay)-1)
+#define TIME_IMMEDIATE				0
+#define TIME_INFINITE				((delaytime_t)-1)
 #define MAX_SEMAPHORE_COUNT			0x7FFF
-#define gThreadpriorityLow				0
-#define gThreadpriorityNormal				1
-#define gThreadpriorityHigh				2
+#define LOW_PRIORITY				0
+#define NORMAL_PRIORITY				1
+#define HIGH_PRIORITY				2
 
 typedef struct {
-	gSemcount		cnt;
-	gSemcount		limit;
+	semcount_t		cnt;
+	semcount_t		limit;
 } gfxSem;
 
 typedef uint32_t		gfxMutex;
-typedef void *			gThread;
+typedef void *			gfxThreadHandle;
 
-// Required timing functions - supplied by the user or the operating system
-gTicks gfxSystemTicks(void);
-gTicks gfxMillisecondsToTicks(gDelay ms);
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-// Sleep Functions
-void gfxSleepMilliseconds(gDelay ms);
-void gfxSleepMicroseconds(gDelay ms);
-void gfxYield(void);
+	// Required timing functions - supplied by the user or the operating system
+	systemticks_t gfxSystemTicks(void);
+	systemticks_t gfxMillisecondsToTicks(delaytime_t ms);
 
-// System Locking
-void gfxSystemLock(void);
-void gfxSystemUnlock(void);
+	// Sleep Functions
+	void gfxSleepMilliseconds(delaytime_t ms);
+	void gfxSleepMicroseconds(delaytime_t ms);
+	void gfxYield(void);
 
-// Mutexes
-void gfxMutexInit(gfxMutex *pmutex);
-#define gfxMutexDestroy(pmutex)
-void gfxMutexEnter(gfxMutex *pmutex);
-void gfxMutexExit(gfxMutex *pmutex);
+	// System Locking
+	void gfxSystemLock(void);
+	void gfxSystemUnlock(void);
 
-// Semaphores
-void gfxSemInit(gfxSem *psem, gSemcount val, gSemcount limit);
-#define gfxSemDestroy(psem)
-gBool gfxSemWait(gfxSem *psem, gDelay ms);
-gBool gfxSemWaitI(gfxSem *psem);
-void gfxSemSignal(gfxSem *psem);
-void gfxSemSignalI(gfxSem *psem);
+	// Mutexes
+	void gfxMutexInit(gfxMutex *pmutex);
+	#define gfxMutexDestroy(pmutex)
+	void gfxMutexEnter(gfxMutex *pmutex);
+	void gfxMutexExit(gfxMutex *pmutex);
 
-// Threads
-gThread gfxThreadCreate(void *stackarea, size_t stacksz, gThreadpriority prio, DECLARE_THREAD_FUNCTION((*fn),p), void *param);
-#define gfxThreadClose(thread)
-gThreadreturn gfxThreadWait(gThread thread);
-gThread gfxThreadMe(void);
+	// Semaphores
+	void gfxSemInit(gfxSem *psem, semcount_t val, semcount_t limit);
+	#define gfxSemDestroy(psem)
+	bool_t gfxSemWait(gfxSem *psem, delaytime_t ms);
+	bool_t gfxSemWaitI(gfxSem *psem);
+	void gfxSemSignal(gfxSem *psem);
+	void gfxSemSignalI(gfxSem *psem);
 
-/** The following is not part of the public ugfx API as some operating systems
- * 	simply do not provide this capability.
- * 	For RAW32 we need it anyway so we might as well declare it here.
- */
-void gfxThreadExit(gThreadreturn ret);
+	// Threads
+	gfxThreadHandle gfxThreadCreate(void *stackarea, size_t stacksz, threadpriority_t prio, DECLARE_THREAD_FUNCTION((*fn),p), void *param);
+	#define gfxThreadClose(thread)
+	threadreturn_t gfxThreadWait(gfxThreadHandle thread);
+	gfxThreadHandle gfxThreadMe(void);
+
+	/** The following is not part of the public ugfx API as some operating systems
+	 * 	simply do not provide this capability.
+	 * 	For RAW32 we need it anyway so we might as well declare it here.
+	 */
+	void gfxThreadExit(threadreturn_t ret);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* GOS_NEED_X_THREADS */
 #endif /* _GOS_X_THREADS_H */

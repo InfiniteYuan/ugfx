@@ -17,8 +17,8 @@
  * 		malloc(), realloc and free()	- if GOS_RAW_HEAP_SIZE == 0
  *
  * 	You must also define the following routines in your own code so that timing functions will work...
- * 		gTicks gfxSystemTicks(void);
- *		gTicks gfxMillisecondsToTicks(gDelay ms);
+ * 		systemticks_t gfxSystemTicks(void);
+ *		systemticks_t gfxMillisecondsToTicks(delaytime_t ms);
  */
 #ifndef _GOS_ARDUINO_H
 #define _GOS_ARDUINO_H
@@ -31,15 +31,36 @@
 /* Type definitions                                                          */
 /*===========================================================================*/
 
-void gfxHalt(const char *msg);
-void gfxExit(void);
+typedef unsigned char	bool_t;
+
+#if 0
+	// Already defined by Arduino
+	typedef signed char		int8_t;
+	typedef unsigned char	uint8_t;
+	typedef signed short	int16_t;
+	typedef unsigned short	uint16_t;
+	typedef signed int		int32_t;
+	typedef unsigned int	uint32_t;
+	typedef uint32_t		size_t;
+#endif
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+	void gfxHalt(const char *msg);
+	void gfxExit(void);
+
+#ifdef __cplusplus
+}
+#endif
 
 /*===========================================================================*/
 /* Use the generic thread handling and heap handling                         */
 /*===========================================================================*/
 
-#define GOS_NEED_X_THREADS	GFXON
-#define GOS_NEED_X_HEAP		GFXON
+#define GOS_NEED_X_THREADS	TRUE
+#define GOS_NEED_X_HEAP		TRUE
 
 #include "gos_x_threads.h"
 #include "gos_x_heap.h"

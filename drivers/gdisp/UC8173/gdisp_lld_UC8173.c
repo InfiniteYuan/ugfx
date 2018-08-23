@@ -28,26 +28,26 @@ typedef struct UC8173Lut {
 	uint8_t const *lutVCOM;				// 32 bytes
 	uint8_t const *lutFW;				// 512 bytes
 	uint8_t const *lutFT;				// 128 bytes
-	gBool	regal;
+	bool_t	regal;
 	} UC8173Lut;
 
 #include "board_UC8173.h"
 
 /*------------------ Default UC8173 parameters ------------------*/
 #ifndef UC8173_REVERSEAXIS_Y
-	#define UC8173_REVERSEAXIS_Y	GFXOFF
+	#define UC8173_REVERSEAXIS_Y	FALSE
 #endif
 #ifndef UC8173_REVERSEAXIS_X
-	#define UC8173_REVERSEAXIS_X	GFXOFF
+	#define UC8173_REVERSEAXIS_X	FALSE
 #endif
 #ifndef UC8173_DEFAULT_MODE
 	#define UC8173_DEFAULT_MODE		0
 #endif
 #ifndef UC8173_USE_OTP_LUT
-	#define UC8173_USE_OTP_LUT		GFXOFF
+	#define UC8173_USE_OTP_LUT		FALSE
 #endif
 #ifndef UC8173_CAN_READ
-	#define UC8173_CAN_READ			GFXOFF
+	#define UC8173_CAN_READ			FALSE
 #endif
 #ifdef UC8173_VCOM_VOLTAGE
 	#define UC8173_VCOM_VOLTAGEBYTE	(((UC8173_VCOM_VOLTAGE) + 0.1)/-0.05)
@@ -56,7 +56,7 @@ typedef struct UC8173Lut {
 	#define UC8171_BORDER			0			/* 0 = Hi-Z, 1 = Black, 2 = White */
 #endif
 #ifndef UC8173_INIT_REAL_LUT
-	#define UC8173_INIT_REAL_LUT	GFXON
+	#define UC8173_INIT_REAL_LUT	TRUE
 #endif
 #define UC8173_HEIGHT				240
 #define UC8173_WIDTH				240
@@ -67,7 +67,7 @@ typedef struct UC8173Lut {
 #define FB_WIDTH					UC8173_WIDTH
 #define FB_HEIGHT					UC8173_HEIGHT
 #define FB_PAGES					1
-#define FB_PIXELORDER_MSB			GFXON
+#define FB_PIXELORDER_MSB			TRUE
 
 /*------------------ Include Generic FB Code ------------------*/
 // This FB is for 1,2 or 4 bits per pixel packed along the x-axis
@@ -100,7 +100,7 @@ typedef struct UC8173Lut {
 		}
 
 typedef struct FBpriv {
-	gPoint			fa0, fa1;
+	point_t			fa0, fa1;
 	LLDCOLOR_TYPE	fb[FB_PAGE_TYPES * FB_PAGES];
 	} FBpriv;
 
@@ -125,14 +125,14 @@ typedef struct UC8173_Private {
 	};	
 #endif
 	
-LLDSPEC gBool gdisp_lld_init(GDisplay* g)
+LLDSPEC bool_t gdisp_lld_init(GDisplay* g)
 {
 	UC8173_Private	*priv;
 	
 	// Allocate the private area
 	g->priv = gfxAlloc(sizeof(UC8173_Private));
 	if (!g->priv)
-		return gFalse;
+		return FALSE;
 	priv = (UC8173_Private *)g->priv;
 
 	// Initialize the private area
@@ -142,12 +142,12 @@ LLDSPEC gBool gdisp_lld_init(GDisplay* g)
 
 	// Initialise the board interface
 	if (!init_board(g))
-		return gFalse;
+		return FALSE;
 
 	// Hardware reset
-	setpin_reset(g, gTrue);
+	setpin_reset(g, FALSE);
 	gfxSleepMilliseconds(100);
-	setpin_reset(g, gFalse);
+	setpin_reset(g, TRUE);
 	gfxSleepMilliseconds(300);
 
 	// Acquire the bus
@@ -242,7 +242,7 @@ LLDSPEC gBool gdisp_lld_init(GDisplay* g)
 			write_data(g, vc);
 		}
 	#else
-		#error "UC8173: Either UC8173_VCOM_VOLTAGE or UC8173_VCOM_VOLTAGEBYTE must be defined or UC8173_CAN_READ must be GFXON"
+		#error "UC8173: Either UC8173_VCOM_VOLTAGE or UC8173_VCOM_VOLTAGEBYTE must be defined or UC8173_CAN_READ must be TRUE"
 	#endif
   
 	// Undocumented register	- Values from example code
@@ -298,18 +298,18 @@ LLDSPEC gBool gdisp_lld_init(GDisplay* g)
 	// Initialise the GDISP structure
 	g->g.Width = UC8173_WIDTH;
 	g->g.Height = UC8173_HEIGHT;
-	g->g.Orientation = gOrientation0;
-	g->g.Powermode = gPowerOn;
+	g->g.Orientation = GDISP_ROTATE_0;
+	g->g.Powermode = powerOn;
 	g->g.Backlight = 0;
 	g->g.Contrast = 0;
 
-	return gTrue;
+	return TRUE;
 }
 
 #if GDISP_HARDWARE_FLUSH
 	LLDSPEC void gdisp_lld_flush(GDisplay* g)
 	{
-		gCoord 		cy, cx, dx, dy;
+		coord_t 		cy, cx, dx, dy;
 		LLDCOLOR_TYPE	*fb;
 		UC8173_Private	*priv;
 
@@ -390,7 +390,7 @@ LLDSPEC gBool gdisp_lld_init(GDisplay* g)
 #if GDISP_HARDWARE_DRAWPIXEL
 	LLDSPEC void gdisp_lld_draw_pixel(GDisplay* g)
 	{
-		gCoord			x, y;
+		coord_t			x, y;
 		UC8173_Private	*priv;
 
 		priv = (UC8173_Private *)g->priv;
@@ -399,7 +399,7 @@ LLDSPEC gBool gdisp_lld_init(GDisplay* g)
 		#if GDISP_NEED_CONTROL && GDISP_HARDWARE_CONTROL
 			switch(g->g.Orientation) {
 			default:
-			case gOrientation0:
+			case GDISP_ROTATE_0:
 				#if FB_REVERSEAXIS_X
 					x = FB_WIDTH-1 - g->p.x;
 				#else
@@ -411,7 +411,7 @@ LLDSPEC gBool gdisp_lld_init(GDisplay* g)
 					y = g->p.y;
 				#endif
 				break;
-			case gOrientation90:
+			case GDISP_ROTATE_90:
 				#if FB_REVERSEAXIS_X
 					x = FB_WIDTH-1 - g->p.y;
 				#else
@@ -423,7 +423,7 @@ LLDSPEC gBool gdisp_lld_init(GDisplay* g)
 					y = FB_HEIGHT-1 - g->p.x;
 				#endif
 				break;
-			case gOrientation180:
+			case GDISP_ROTATE_180:
 				#if FB_REVERSEAXIS_X
 					x = g->p.x;
 				#else
@@ -435,7 +435,7 @@ LLDSPEC gBool gdisp_lld_init(GDisplay* g)
 					y = FB_HEIGHT-1 - g->p.y;
 				#endif
 				break;
-			case gOrientation270:
+			case GDISP_ROTATE_270:
 				#if FB_REVERSEAXIS_X
 					x = g->p.y;
 				#else

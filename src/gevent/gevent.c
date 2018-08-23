@@ -68,13 +68,13 @@ void geventListenerInit(GListener *pl) {
 	pl->flags = 0;
 }
 
-gBool geventAttachSource(GListener *pl, GSourceHandle gsh, uint32_t flags) {
+bool_t geventAttachSource(GListener *pl, GSourceHandle gsh, uint32_t flags) {
 	GSourceListener *psl, *pslfree;
 
 	// Safety first
 	if (!pl || !gsh) {
-		GEVENT_ASSERT(gFalse);
-		return gFalse;
+		GEVENT_ASSERT(FALSE);
+		return FALSE;
 	}
 
 	gfxMutexEnter(&geventMutex);
@@ -87,7 +87,7 @@ gBool geventAttachSource(GListener *pl, GSourceHandle gsh, uint32_t flags) {
 			// Just update the flags
 			psl->listenflags = flags;
 			gfxMutexExit(&geventMutex);
-			return gTrue;
+			return TRUE;
 		}
 		if (!pslfree && !psl->pListener)
 			pslfree = psl;
@@ -115,7 +115,7 @@ void geventDetachSource(GListener *pl, GSourceHandle gsh) {
 	}
 }
 
-GEvent *geventEventWait(GListener *pl, gDelay timeout) {
+GEvent *geventEventWait(GListener *pl, delaytime_t timeout) {
 	/* NOTE:
 		We no longer try to protect against two threads trying to listen on the
 		one listener. This was never allowed, it makes little sense to try to do so,

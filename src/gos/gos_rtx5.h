@@ -19,13 +19,13 @@
  * Keil RTX uses the CMSIS RTOS interface. Therefore, just use the CMSIS2 RTOS port
  */
 
-// Disable KEIL to avoid error: "GOS: More than one operation system has been defined as GFXON."
+// Disable KEIL to avoid error: "GOS: More than one operation system has been defined as TRUE."
 #undef GFX_USE_OS_RTX5
-#define GFX_USE_OS_RTX5 GFXOFF
+#define GFX_USE_OS_RTX5 FALSE
 
 // Enable generic CMSIS RTOS implementation
 #undef GFX_USE_OS_CMSIS2
-#define GFX_USE_OS_CMSIS2 GFXON
+#define GFX_USE_OS_CMSIS2 TRUE
 #include "gos_cmsis2.h"
 
 #endif /* GFX_USE_OS_RTX5 */

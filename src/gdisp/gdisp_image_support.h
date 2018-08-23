@@ -120,11 +120,19 @@
 #endif
 
 
-void *gdispImageAlloc(gdispImage *img, size_t sz);
-void gdispImageFree(gdispImage *img, void *ptr, size_t sz);
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-#if GFX_CPU_ENDIAN == GFX_CPU_ENDIAN_UNKNOWN
-	extern const uint8_t gdispImageEndianArray[4];
+	void *gdispImageAlloc(gdispImage *img, size_t sz);
+	void gdispImageFree(gdispImage *img, void *ptr, size_t sz);
+
+	#if GFX_CPU_ENDIAN == GFX_CPU_ENDIAN_UNKNOWN
+		extern const uint8_t gdispImageEndianArray[4];
+	#endif
+
+#ifdef __cplusplus
+}
 #endif
 
 #endif /* _GDISP_IMAGE_SUPPORT_H */

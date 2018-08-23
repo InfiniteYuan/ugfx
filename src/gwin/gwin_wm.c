@@ -34,11 +34,11 @@
 		gfxMutexDestroy(&gmutex);
 	}
 
-	gBool _gwinWMAdd(GHandle gh, const GWindowInit *pInit) {
+	bool_t _gwinWMAdd(GHandle gh, const GWindowInit *pInit) {
 		gh->x = gh->y = gh->width = gh->height = 0;
 		gwinMove(gh, pInit->x, pInit->y);
 		gwinResize(gh, pInit->width, pInit->height);
-		return gTrue;
+		return TRUE;
 	}
 
 	void _gwinFlushRedraws(GRedrawMethod how) {
@@ -83,12 +83,12 @@
 		gh->flags &= ~(GWIN_FLG_NEEDREDRAW|GWIN_FLG_BGREDRAW);
 	}
 
-	gBool _gwinDrawStart(GHandle gh) {
+	bool_t _gwinDrawStart(GHandle gh) {
 		if (!(gh->flags & GWIN_FLG_SYSVISIBLE))
-			return gFalse;
+			return FALSE;
 
 		getLock(gh);
-		return gTrue;
+		return TRUE;
 	}
 
 	void _gwinDrawEnd(GHandle gh) {
@@ -96,7 +96,7 @@
 		exitLock(gh);
 	}
 
-	void gwinSetVisible(GHandle gh, gBool visible) {
+	void gwinSetVisible(GHandle gh, bool_t visible) {
 		if (visible) {
 			if (!(gh->flags & GWIN_FLG_VISIBLE)) {
 				gh->flags |= (GWIN_FLG_VISIBLE|GWIN_FLG_SYSVISIBLE|GWIN_FLG_BGREDRAW);
@@ -111,7 +111,7 @@
 		}
 	}
 
-	void gwinSetEnabled(GHandle gh, gBool enabled) {
+	void gwinSetEnabled(GHandle gh, bool_t enabled) {
 		if (enabled) {
 			if (!(gh->flags & GWIN_FLG_ENABLED)) {
 				gh->flags |= (GWIN_FLG_ENABLED|GWIN_FLG_SYSENABLED);
@@ -125,7 +125,7 @@
 		}
 	}
 
-	void gwinMove(GHandle gh, gCoord x, gCoord y) {
+	void gwinMove(GHandle gh, coord_t x, coord_t y) {
 		gh->x = x; gh->y = y;
 		if (gh->x < 0) gh->x = 0;
 		if (gh->y < 0) gh->y = 0;
@@ -136,7 +136,7 @@
 		_gwinUpdate(gh);
 	}
 
-	void gwinResize(GHandle gh, gCoord width, gCoord height) {
+	void gwinResize(GHandle gh, coord_t width, coord_t height) {
 		gh->width = width; gh->height = height;
 		if (gh->width < MIN_WIN_WIDTH) { gh->width = MIN_WIN_WIDTH; }
 		if (gh->height < MIN_WIN_HEIGHT) { gh->height = MIN_WIN_HEIGHT; }
@@ -161,7 +161,7 @@
 // The default window manager
 extern const GWindowManager	GNullWindowManager;
 GWindowManager *			_GWINwm;
-gBool						_gwinFlashState;
+bool_t						_gwinFlashState;
 static gfxSem				gwinsem;
 static gfxQueueASync		_GWINList;
 #if GWIN_NEED_FLASHING
@@ -190,7 +190,7 @@ void _gwmInit(void)
 	#endif
 	#if !GWIN_REDRAW_IMMEDIATE
 		gtimerInit(&RedrawTimer);
-		gtimerStart(&RedrawTimer, RedrawTimerFn, 0, gTrue, gDelayForever);
+		gtimerStart(&RedrawTimer, RedrawTimerFn, 0, TRUE, TIME_INFINITE);
 	#endif
 	_GWINwm = (GWindowManager *)&GNullWindowManager;
 	_GWINwm->vmt->Init();
@@ -231,8 +231,8 @@ void _gwinFlushRedraws(GRedrawMethod how) {
 
 	// Obtain the drawing lock
 	if (how == REDRAW_WAIT)
-		gfxSemWait(&gwinsem, gDelayForever);
-	else if (how == REDRAW_NOWAIT && !gfxSemWait(&gwinsem, gDelayNone))
+		gfxSemWait(&gwinsem, TIME_INFINITE);
+	else if (how == REDRAW_NOWAIT && !gfxSemWait(&gwinsem, TIME_IMMEDIATE))
 		// Someone is drawing - They will do the redraw when they are finished
 		return;
 
@@ -366,26 +366,26 @@ void _gwinUpdate(GHandle gh) {
 	}
 #endif
 
-gBool _gwinDrawStart(GHandle gh) {
+bool_t _gwinDrawStart(GHandle gh) {
 	// This test should occur inside the lock. We do this
 	//	here as well as an early out (more efficient).
 	if (!(gh->flags & GWIN_FLG_SYSVISIBLE))
-		return gFalse;
+		return FALSE;
 
 	// Obtain the drawing lock
-	gfxSemWait(&gwinsem, gDelayForever);
+	gfxSemWait(&gwinsem, TIME_INFINITE);
 
 	// Re-test visibility as we may have waited a while
 	if (!(gh->flags & GWIN_FLG_SYSVISIBLE)) {
 		_gwinDrawEnd(gh);
-		return gFalse;
+		return FALSE;
 	}
 
 	// OK - we are ready to draw.
 	#if GDISP_NEED_CLIP
 		gdispGSetClip(gh->display, gh->x, gh->y, gh->width, gh->height);
 	#endif
-	return gTrue;
+	return TRUE;
 }
 
 void _gwinDrawEnd(GHandle gh) {
@@ -401,19 +401,19 @@ void _gwinDrawEnd(GHandle gh) {
 	gfxSemSignal(&gwinsem);
 }
 
-gBool _gwinWMAdd(GHandle gh, const GWindowInit *pInit) {
+bool_t _gwinWMAdd(GHandle gh, const GWindowInit *pInit) {
 	#if GWIN_NEED_CONTAINERS
 		// Save the parent
 		gh->parent = pInit->parent;
 
 		// Ensure the display is consistent with any parents
 		if (gh->parent && (!(gh->parent->flags & GWIN_FLG_CONTAINER) || gh->display != gh->parent->display))
-			return gFalse;
+			return FALSE;
 	#endif
 
 	// Add to the window manager
 	if (!_GWINwm->vmt->Add(gh, pInit))
-		return gFalse;
+		return FALSE;
 
 	#if GWIN_NEED_CONTAINERS
 		// Notify the parent it has been added
@@ -421,7 +421,7 @@ gBool _gwinWMAdd(GHandle gh, const GWindowInit *pInit) {
 			((gcontainerVMT *)gh->parent->vmt)->NotifyAdd(gh->parent, gh);
 	#endif
 
-	return gTrue;
+	return TRUE;
 }
 
 void gwinSetWindowManager(struct GWindowManager *gwm) {
@@ -448,7 +448,7 @@ void gwinRedraw(GHandle gh) {
 }
 
 #if GWIN_NEED_CONTAINERS
-	void gwinSetVisible(GHandle gh, gBool visible) {
+	void gwinSetVisible(GHandle gh, bool_t visible) {
 		if (visible) {
 			// Mark us as visible
 			gh->flags |= GWIN_FLG_VISIBLE;
@@ -463,7 +463,7 @@ void gwinRedraw(GHandle gh) {
 			TriggerRedraw();
 	}
 #else
-	void gwinSetVisible(GHandle gh, gBool visible) {
+	void gwinSetVisible(GHandle gh, bool_t visible) {
 		if (visible) {
 			if (!(gh->flags & GWIN_FLG_VISIBLE)) {
 				gh->flags |= (GWIN_FLG_VISIBLE|GWIN_FLG_SYSVISIBLE|GWIN_FLG_NEEDREDRAW|GWIN_FLG_BGREDRAW);
@@ -491,7 +491,7 @@ void gwinRedraw(GHandle gh) {
 
 #if GWIN_NEED_CONTAINERS
 	// These two sub-functions set/clear system enable recursively.
-	void gwinSetEnabled(GHandle gh, gBool enabled) {
+	void gwinSetEnabled(GHandle gh, bool_t enabled) {
 		if (enabled) {
 			// Mark us as enabled
 			gh->flags |= GWIN_FLG_ENABLED;
@@ -530,7 +530,7 @@ void gwinRedraw(GHandle gh) {
 		}
 	}
 #else
-	void gwinSetEnabled(GHandle gh, gBool enabled) {
+	void gwinSetEnabled(GHandle gh, bool_t enabled) {
 		if (enabled) {
 			if (!(gh->flags & GWIN_FLG_ENABLED)) {
 				gh->flags |= (GWIN_FLG_ENABLED|GWIN_FLG_SYSENABLED);
@@ -553,11 +553,11 @@ void gwinRedraw(GHandle gh) {
 	}
 #endif
 
-void gwinMove(GHandle gh, gCoord x, gCoord y) {
+void gwinMove(GHandle gh, coord_t x, coord_t y) {
 	_GWINwm->vmt->Move(gh, x, y);
 }
 
-void gwinResize(GHandle gh, gCoord width, gCoord height) {
+void gwinResize(GHandle gh, coord_t width, coord_t height) {
 	_GWINwm->vmt->Size(gh, width, height);
 }
 
@@ -577,7 +577,7 @@ GWindowMinMax gwinGetMinMax(GHandle gh) {
 	return GWIN_NORMAL;
 }
 
-void gwinRedrawDisplay(GDisplay *g, gBool preserve) {
+void gwinRedrawDisplay(GDisplay *g, bool_t preserve) {
 	GHandle	gh;
 
 	for(gh = gwinGetNextWindow(0); gh; gh = gwinGetNextWindow(gh)) {
@@ -631,7 +631,7 @@ GHandle gwinGetNextWindow(GHandle gh) {
 			gtimerStop(&FlashTimer);
 	}
 
-	void gwinSetFlashing(GHandle gh, gBool flash) {
+	void gwinSetFlashing(GHandle gh, bool_t flash) {
 
 		// Start flashing?
 		if (flash) {
@@ -642,9 +642,9 @@ GHandle gwinGetNextWindow(GHandle gh) {
 				RedrawPending |= DOREDRAW_FLASHRUNNING;
 
 				// Ensure we start the timer with flash bit on
-				_gwinFlashState = gFalse;
+				_gwinFlashState = FALSE;
 				FlashTimerFn(0);														// First flash
-				gtimerStart(&FlashTimer, FlashTimerFn, 0, gTrue, GWIN_FLASHING_PERIOD);	// Subsequent flashes
+				gtimerStart(&FlashTimer, FlashTimerFn, 0, TRUE, GWIN_FLASHING_PERIOD);	// Subsequent flashes
 			}
 
 		// Stop flashing?
@@ -656,7 +656,7 @@ GHandle gwinGetNextWindow(GHandle gh) {
 	}
 
 	#if GWIN_NEED_WIDGET
-		const GColorSet *_gwinGetFlashedColor(GWidgetObject *gw, const GColorSet *pcol, gBool flashOffState) {
+		const GColorSet *_gwinGetFlashedColor(GWidgetObject *gw, const GColorSet *pcol, bool_t flashOffState) {
 			// Does the flashing state affect the current colors?
 			if ((gw->g.flags & GWIN_FLG_FLASHING) && _gwinFlashState) {
 
@@ -688,11 +688,11 @@ GHandle gwinGetNextWindow(GHandle gh) {
 
 static void WM_Init(void);
 static void WM_DeInit(void);
-static gBool WM_Add(GHandle gh, const GWindowInit *pInit);
+static bool_t WM_Add(GHandle gh, const GWindowInit *pInit);
 static void WM_Delete(GHandle gh);
 static void WM_Redraw(GHandle gh);
-static void WM_Size(GHandle gh, gCoord w, gCoord h);
-static void WM_Move(GHandle gh, gCoord x, gCoord y);
+static void WM_Size(GHandle gh, coord_t w, coord_t h);
+static void WM_Move(GHandle gh, coord_t x, coord_t y);
 static void WM_Raise(GHandle gh);
 static void WM_MinMax(GHandle gh, GWindowMinMax minmax);
 
@@ -726,7 +726,7 @@ static void WM_DeInit(void) {
 	// A full window manager would remove any borders etc
 }
 
-static gBool WM_Add(GHandle gh, const GWindowInit *pInit) {
+static bool_t WM_Add(GHandle gh, const GWindowInit *pInit) {
 	// Note the window will not currently be marked as visible
 
 	// Put it on the end of the queue
@@ -737,12 +737,12 @@ static gBool WM_Add(GHandle gh, const GWindowInit *pInit) {
 	gh->x = gh->y = 0;
 	WM_Move(gh, pInit->x, pInit->y);
 	WM_Size(gh, pInit->width, pInit->height);
-	return gTrue;
+	return TRUE;
 }
 
 static void WM_Delete(GHandle gh) {
 	// Remove it from the window list
-	gfxSemWait(&gwinsem, gDelayForever);
+	gfxSemWait(&gwinsem, TIME_INFINITE);
 	gfxQueueASyncRemove(&_GWINList, &gh->wmq);
 	gfxSemSignal(&gwinsem);
 }
@@ -823,8 +823,8 @@ static void WM_Redraw(GHandle gh) {
 	}
 }
 
-static void WM_Size(GHandle gh, gCoord w, gCoord h) {
-	gCoord		v;
+static void WM_Size(GHandle gh, coord_t w, coord_t h) {
+	coord_t		v;
 
 	#if GWIN_NEED_CONTAINERS
 		if (gh->parent) {
@@ -860,7 +860,7 @@ static void WM_Size(GHandle gh, gCoord w, gCoord h) {
 
 		} else {
 			// We need to make this window invisible and ensure that has been drawn
-			gwinSetVisible(gh, gFalse);
+			gwinSetVisible(gh, FALSE);
 			_gwinFlushRedraws(REDRAW_WAIT);
 
 			// Resize
@@ -878,7 +878,7 @@ static void WM_Size(GHandle gh, gCoord w, gCoord h) {
 			#endif
 
 			// Mark it visible again in its new location
-			gwinSetVisible(gh, gTrue);
+			gwinSetVisible(gh, TRUE);
 		}
 	} else {
 		gh->width = w; gh->height = h;
@@ -896,8 +896,8 @@ static void WM_Size(GHandle gh, gCoord w, gCoord h) {
 	}
 }
 
-static void WM_Move(GHandle gh, gCoord x, gCoord y) {
-	gCoord		u, v;
+static void WM_Move(GHandle gh, coord_t x, coord_t y) {
+	coord_t		u, v;
 
 	#if GWIN_NEED_CONTAINERS
 		if (gh->parent) {
@@ -941,7 +941,7 @@ static void WM_Move(GHandle gh, gCoord x, gCoord y) {
 	// Clear the old area and then redraw
 	if ((gh->flags & GWIN_FLG_SYSVISIBLE)) {
 		// We need to make this window invisible and ensure that has been drawn
-		gwinSetVisible(gh, gFalse);
+		gwinSetVisible(gh, FALSE);
 		_gwinFlushRedraws(REDRAW_WAIT);
 
 		// Do the move
@@ -959,7 +959,7 @@ static void WM_Move(GHandle gh, gCoord x, gCoord y) {
 			}
 		#endif
 
-		gwinSetVisible(gh, gTrue);
+		gwinSetVisible(gh, TRUE);
 	} else {
 		u = gh->x; gh->x = x;
 		v = gh->y; gh->y = y;
@@ -986,7 +986,7 @@ static void WM_Raise(GHandle gh) {
 	// Take it off the list and then put it back on top
 	// The order of the list then reflects the z-order.
 
-	gfxSemWait(&gwinsem, gDelayForever);
+	gfxSemWait(&gwinsem, TIME_INFINITE);
 	
 	gfxQueueASyncRemove(&_GWINList, &gh->wmq);
 	gfxQueueASyncPut(&_GWINList, &gh->wmq);
@@ -996,13 +996,13 @@ static void WM_Raise(GHandle gh) {
 		if ((gh->flags & GWIN_FLG_CONTAINER)) {
 			GHandle		gx;
 			GHandle		child;
-			gBool		restart;
+			bool_t		restart;
 
 			// Raise the children too
 			// Note: Children can also have their own children so after each move we have to start again.
 			for (gx = gwinGetNextWindow(0); gx; gx = gwinGetNextWindow(gx)) {
 				if ((gx->flags & GWIN_FLG_CONTAINER)) {
-					restart = gFalse;
+					restart = FALSE;
 					for (child = gwinGetNextWindow(0); child && child != gx; child = gwinGetNextWindow(child)) {
 						if (child->parent == gx) {
 							// Oops - this child is behind its parent. Move it to the front.
@@ -1012,7 +1012,7 @@ static void WM_Raise(GHandle gh) {
 							// Restart at the front of the list for this parent container as we have moved this child
 							// to the end of the list. We also need to restart everything once this container is done.
 							child = 0;
-							restart = gTrue;
+							restart = TRUE;
 						}
 					}
 					if (restart)

@@ -21,7 +21,7 @@
  *			This contrary to the goals of a real-time operating system. So a user-land
  *			(thread based) timer mechanism is also required.
  *
- * @pre		GFX_USE_GTIMER must be set to GFXON in your gfxconf.h
+ * @pre		GFX_USE_GTIMER must be set to TRUE in your gfxconf.h
  *
  * @{
  */
@@ -52,8 +52,8 @@ typedef void (*GTimerFunction)(void *param);
 typedef struct GTimer_t {
 	GTimerFunction		fn;
 	void				*param;
-	gTicks		when;
-	gTicks		period;
+	systemticks_t		when;
+	systemticks_t		period;
 	uint16_t			flags;
 	struct GTimer_t		*next;
 	struct GTimer_t		*prev;
@@ -62,6 +62,10 @@ typedef struct GTimer_t {
 /*===========================================================================*/
 /* External declarations.                                                    */
 /*===========================================================================*/
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /**
  * @brief   Initialise a timer
@@ -87,11 +91,11 @@ void gtimerDeinit(GTimer* pt);
  * @param[in] pt	Pointer to a GTimer structure
  * @param[in] fn		The callback function
  * @param[in] param		The parameter to pass to the callback function
- * @param[in] periodic	Is the timer a periodic timer? gFalse is a once-only timer.
+ * @param[in] periodic	Is the timer a periodic timer? FALSE is a once-only timer.
  * @param[in] millisec	The timer period. The following special values are allowed:
- *							gDelayNone	causes the callback function to be called asap.
+ *							TIME_IMMEDIATE	causes the callback function to be called asap.
  *											A periodic timer with this value will fire once only.
- *							gDelayForever	never timeout (unless triggered by gtimerJab or gtimerJabI)
+ *							TIME_INFINITE	never timeout (unless triggered by gtimerJab or gtimerJabI)
  *
  * @note				If the timer is already active its properties are updated with the new parameters.
  *						The current period will be immediately canceled (without the callback function being
@@ -110,7 +114,7 @@ void gtimerDeinit(GTimer* pt);
  *
  * @api
  */
-void gtimerStart(GTimer *pt, GTimerFunction fn, void *param, gBool periodic, gDelay millisec);
+void gtimerStart(GTimer *pt, GTimerFunction fn, void *param, bool_t periodic, delaytime_t millisec);
 
 /**
  * @brief   Stop a timer (periodic or otherwise)
@@ -128,11 +132,11 @@ void gtimerStop(GTimer *pt);
  *
  * @param[in] pt		Pointer to a GTimer structure
  *
- * @return	gTrue if active, gFalse otherwise
+ * @return	TRUE if active, FALSE otherwise
  *
  * @api
  */
-gBool gtimerIsActive(GTimer *pt);
+bool_t gtimerIsActive(GTimer *pt);
 
 /**
  * @brief   			Jab a timer causing the current period to immediate expire
@@ -164,6 +168,10 @@ void gtimerJab(GTimer *pt);
  * @api
  */
 void gtimerJabI(GTimer *pt);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* GFX_USE_GTIMER */
 

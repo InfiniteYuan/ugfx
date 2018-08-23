@@ -30,7 +30,7 @@
 #include "gfx.h"
 
 int main(void) {
-	gCoord		width, height, r1, r2, cx, cy;
+	coord_t		width, height, r1, r2, cx, cy;
 	uint8_t		sectors;
 
     // Initialize and clear the display
@@ -49,9 +49,9 @@ int main(void) {
 
 	while(1) {
 		// Draw the arc sectors
-		gdispClear(GFX_WHITE);
-		gdispDrawArcSectors(cx, cy, r1, sectors, GFX_BLUE);
-		gdispFillArcSectors(cx, cy, r2, sectors, GFX_RED);
+		gdispClear(White);
+		gdispDrawArcSectors(cx, cy, r1, sectors, Blue);
+		gdispFillArcSectors(cx, cy, r2, sectors, Red);
 
 		// Increase the sectors counter
 		sectors++;

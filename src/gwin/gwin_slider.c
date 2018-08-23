@@ -92,7 +92,7 @@ static void SliderResetDisplayPos(GSliderObject *gsw) {
 
 #if GINPUT_NEED_MOUSE
 	// Set the display position from the mouse position
-	static void SetDisplayPosFromMouse(GSliderObject *gsw, gCoord x, gCoord y) {
+	static void SetDisplayPosFromMouse(GSliderObject *gsw, coord_t x, coord_t y) {
 		if (gsw->w.g.width < gsw->w.g.height)
 			gsw->dpos = y < 0 ? 0 : (y >= gsw->w.g.height ? gsw->w.g.height-1 : y);
 		else
@@ -100,7 +100,7 @@ static void SliderResetDisplayPos(GSliderObject *gsw) {
 	}
 
 	// A mouse up event
-	static void SliderMouseUp(GWidgetObject *gw, gCoord x, gCoord y) {
+	static void SliderMouseUp(GWidgetObject *gw, coord_t x, coord_t y) {
 		#define gsw		((GSliderObject *)gw)
 
 		#if !GWIN_BUTTON_LAZY_RELEASE
@@ -144,7 +144,7 @@ static void SliderResetDisplayPos(GSliderObject *gsw) {
 	}
 
 	// A mouse down event
-	static void SliderMouseDown(GWidgetObject *gw, gCoord x, gCoord y) {
+	static void SliderMouseDown(GWidgetObject *gw, coord_t x, coord_t y) {
 		#define gsw		((GSliderObject *)gw)
 
 		// Determine the display position
@@ -160,7 +160,7 @@ static void SliderResetDisplayPos(GSliderObject *gsw) {
 	}
 
 	// A mouse move event
-	static void SliderMouseMove(GWidgetObject *gw, gCoord x, gCoord y) {
+	static void SliderMouseMove(GWidgetObject *gw, coord_t x, coord_t y) {
 		#define gsw		((GSliderObject *)gw)
 
 		// Determine the display position
@@ -326,7 +326,7 @@ void gwinSliderSetPosition(GHandle gh, int pos) {
 	#undef gsw
 }
 
-void gwinSliderSendExtendedEvents(GHandle gh, gBool enabled) {
+void gwinSliderSendExtendedEvents(GHandle gh, bool_t enabled) {
 	if (gh->vmt != (gwinVMT *)&sliderVMT)
 		return;
 
@@ -381,7 +381,7 @@ void gwinSliderDraw_Std(GWidgetObject *gw, void *param) {
 	}
 
 	// Draw the string
-	gdispGDrawStringBox(gw->g.display, gw->g.x+1, gw->g.y+1, gw->g.width-2, gw->g.height-2, gw->text, gw->g.font, pcol->text, gJustifyCenter);
+	gdispGDrawStringBox(gw->g.display, gw->g.x+1, gw->g.y+1, gw->g.width-2, gw->g.height-2, gw->text, gw->g.font, pcol->text, justifyCenter);
 
 	#undef gsw
 }
@@ -391,7 +391,7 @@ void gwinSliderDraw_Image(GWidgetObject *gw, void *param) {
 	#define gsw			((GSliderObject *)gw)
 	#define gi			((gdispImage *)param)
 	const GColorSet *	pcol;
-	gCoord				z, v;
+	coord_t				z, v;
 
 	if (gw->g.vmt != (gwinVMT *)&sliderVMT)
 		return;
@@ -431,7 +431,7 @@ void gwinSliderDraw_Image(GWidgetObject *gw, void *param) {
 		gdispGDrawBox(gw->g.display, gw->g.x, gw->g.y, gw->g.width, gw->g.height, pcol->edge);								// Edge
 		gdispGDrawLine(gw->g.display, gw->g.x+gsw->dpos, gw->g.y+1, gw->g.x+gsw->dpos, gw->g.y+gw->g.height-2, pcol->edge);	// Thumb
 	}
-	gdispGDrawStringBox(gw->g.display, gw->g.x+1, gw->g.y+1, gw->g.width-2, gw->g.height-2, gw->text, gw->g.font, pcol->text, gJustifyCenter);
+	gdispGDrawStringBox(gw->g.display, gw->g.x+1, gw->g.y+1, gw->g.width-2, gw->g.height-2, gw->text, gw->g.font, pcol->text, justifyCenter);
 
 	#undef gsw
 	#undef gi

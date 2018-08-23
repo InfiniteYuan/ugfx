@@ -97,18 +97,18 @@
 
 /* Color scheme definition */
 typedef struct colScheme {
-	gColor titleBarColor;
-	gColor titleTextColor;
+	color_t titleBarColor;
+	color_t titleTextColor;
 
-	gColor winBgColor;
-	gColor drawingWinBorder;
+	color_t winBgColor;
+	color_t drawingWinBorder;
 
-	gColor toolbarSeparator;
-	gColor toolbarBgUnsel;
-	gColor toolbarBgActive;
-	gColor toolbarBgSel;
+	color_t toolbarSeparator;
+	color_t toolbarBgUnsel;
+	color_t toolbarBgActive;
+	color_t toolbarBgSel;
 
-	gColor statusBarText;
+	color_t statusBarText;
 } NColorScheme;
 
 

@@ -117,16 +117,16 @@
 #define RA6963_TEXT_HOME       (RA6963_GRAPHIC_HOME + RA6963_GRAPHIC_SIZE)
 //#define RA6963_OFFSET_REGISTER   2
 
-#if !RA6963_NEED_READ
-	#define BUFFSZ (RA6963_GRAPHIC_SIZE)
-	#define RAM(g) ((uint8_t *)g->priv)
-	#define POS (((g->p.x) / RA6963_FONT_WIDTH) + ((g->p.y) * RA6963_GRAPHIC_AREA))
+#if (RA6963_NEED_READ == FALSE)
+#define BUFFSZ (RA6963_GRAPHIC_SIZE)
+#define RAM(g) ((uint8_t *)g->priv)
+#define POS (((g->p.x) / RA6963_FONT_WIDTH) + ((g->p.y) * RA6963_GRAPHIC_AREA))
 #endif
 #ifndef GDISP_INITIAL_CONTRAST
-	#define GDISP_INITIAL_CONTRAST	50
+#define GDISP_INITIAL_CONTRAST	50
 #endif
 #ifndef GDISP_INITIAL_BACKLIGHT
-	#define GDISP_INITIAL_BACKLIGHT	100
+#define GDISP_INITIAL_BACKLIGHT	100
 #endif
 
 
@@ -141,20 +141,20 @@
 /* Driver exported functions.                                                */
 /*===========================================================================*/
 
-LLDSPEC gBool gdisp_lld_init(GDisplay *g) {
-#if RA6963_NEED_READ
-  g->priv = 0;
-#else
+LLDSPEC bool_t gdisp_lld_init(GDisplay *g) {
+#if (RA6963_NEED_READ == FALSE)
   // The private area is the display surface.
   g->priv = gfxAlloc(BUFFSZ);
+#else
+  g->priv = 0;
 #endif
   // Initialise the board interface
   init_board(g);
 
 #if RA6963_HAS_RESET  //Make Hardware Reset
-  setpin_reset(g, gTrue);
+  setpin_reset(g, TRUE);
   gfxSleepMilliseconds(100);
-  setpin_reset(g, gFalse);
+  setpin_reset(g, FALSE);
 #endif
   gfxSleepMilliseconds(50);
   //RA6963 needs Data first THEN command!
@@ -202,12 +202,12 @@ LLDSPEC gBool gdisp_lld_init(GDisplay *g) {
   // Initialise the GDISP structure
   g->g.Width = GDISP_SCREEN_WIDTH;
   g->g.Height = GDISP_SCREEN_HEIGHT;
-  g->g.Orientation = gOrientation0;
-  g->g.Powermode = gPowerOn;
+  g->g.Orientation = GDISP_ROTATE_0;
+  g->g.Powermode = powerOn;
   g->g.Backlight = GDISP_INITIAL_BACKLIGHT;
   g->g.Contrast = GDISP_INITIAL_CONTRAST;
 
-  return gTrue;
+  return TRUE;
 }
 
 static void set_viewport(GDisplay *g) {
@@ -228,13 +228,13 @@ static void set_viewport(GDisplay *g) {
 LLDSPEC void gdisp_lld_write_color(GDisplay *g) {
   uint8_t temp;
 
-#if RA6963_NEED_READ
-  temp = read_data(g);
-#else
+#if (RA6963_NEED_READ == FALSE)
   temp = RAM(g)[POS];
+#else
+  temp = read_data(g);
 #endif
 
-  if (g->p.color != GFX_WHITE) {
+  if (g->p.color != White) {
     temp |= (1 << (RA6963_FONT_WIDTH - 1 - ((g->p.x) % RA6963_FONT_WIDTH)));
   }
   else {
@@ -242,7 +242,7 @@ LLDSPEC void gdisp_lld_write_color(GDisplay *g) {
   }
 
   write_data(g, temp);
-#if !RA6963_NEED_READ
+#if (RA6963_NEED_READ == FALSE)
   RAM(g)[POS] = temp;
 #endif
   //write_cmd(g, RA6963_DATA_WRITE_AND_INCREMENT);
@@ -274,7 +274,7 @@ LLDSPEC void gdisp_lld_read_start(GDisplay *g) {
   dummy_read(g);
 }
 
-LLDSPEC gColor gdisp_lld_read_color(GDisplay *g) {
+LLDSPEC color_t gdisp_lld_read_color(GDisplay *g) {
   uint16_t data;
 
   data = read_data(g);
@@ -292,7 +292,7 @@ LLDSPEC void gdisp_lld_fill_area(GDisplay *g) {
   uint8_t data, j;
   set_viewport(g);
 
-  if (g->p.color != GFX_WHITE) {
+  if (g->p.color != White) {
     data = 0xFF;              // set dot
   }
   else {
@@ -311,11 +311,11 @@ LLDSPEC void gdisp_lld_fill_area(GDisplay *g) {
 LLDSPEC void gdisp_lld_control(GDisplay *g) {
   switch(g->p.x) {
     case GDISP_CONTROL_POWER:
-    if (g->g.Powermode == (gPowermode)g->p.ptr)
+    if (g->g.Powermode == (powermode_t)g->p.ptr)
     return;
 
-    switch((gPowermode)g->p.ptr) {
-      case gPowerOff:
+    switch((powermode_t)g->p.ptr) {
+      case powerOff:
       acquire_bus(g);
       write_index(g, 0x28);
       gfxSleepMilliseconds(10);
@@ -323,17 +323,17 @@ LLDSPEC void gdisp_lld_control(GDisplay *g) {
       release_bus(g);
       break;
 
-      case gPowerOn:
+      case powerOn:
       acquire_bus(g);
       write_index(g, 0x11);
       gfxSleepMilliseconds(120);
       write_index(g, 0x29);
       release_bus(g);
-      if (g->g.Powermode != gPowerSleep)
+      if (g->g.Powermode != powerSleep)
       gdisp_lld_init(g);
       break;
 
-      case gPowerSleep:
+      case powerSleep:
       acquire_bus(g);
       write_index(g, 0x28);
       gfxSleepMilliseconds(10);
@@ -345,15 +345,15 @@ LLDSPEC void gdisp_lld_control(GDisplay *g) {
       return;
     }
 
-    g->g.Powermode = (gPowermode)g->p.ptr;
+    g->g.Powermode = (powermode_t)g->p.ptr;
     return;
 
     case GDISP_CONTROL_ORIENTATION:
-    if (g->g.Orientation == (gOrientation)g->p.ptr)
+    if (g->g.Orientation == (orientation_t)g->p.ptr)
     return;
 
-    switch((gOrientation)g->p.ptr) {
-      case gOrientation0:
+    switch((orientation_t)g->p.ptr) {
+      case GDISP_ROTATE_0:
       acquire_bus(g);
 
       write_index(g, 0x36);
@@ -364,7 +364,7 @@ LLDSPEC void gdisp_lld_control(GDisplay *g) {
       g->g.Width = GDISP_SCREEN_WIDTH;
       break;
 
-      case gOrientation90:
+      case GDISP_ROTATE_90:
       acquire_bus(g);
 
       write_index(g, 0x36);
@@ -375,7 +375,7 @@ LLDSPEC void gdisp_lld_control(GDisplay *g) {
       g->g.Width = GDISP_SCREEN_HEIGHT;
       break;
 
-      case gOrientation180:
+      case GDISP_ROTATE_180:
       acquire_bus(g);
 
       write_index(g, 0x36);
@@ -386,7 +386,7 @@ LLDSPEC void gdisp_lld_control(GDisplay *g) {
       g->g.Width = GDISP_SCREEN_WIDTH;
       break;
 
-      case gOrientation270:
+      case GDISP_ROTATE_270:
       acquire_bus(g);
 
       write_index(g, 0x36);
@@ -401,7 +401,7 @@ LLDSPEC void gdisp_lld_control(GDisplay *g) {
       return;
     }
 
-    g->g.Orientation = (gOrientation)g->p.ptr;
+    g->g.Orientation = (orientation_t)g->p.ptr;
     return;
 
     default:

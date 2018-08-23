@@ -93,11 +93,15 @@
 /* External declarations.                                                    */
 /*===========================================================================*/
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #if GAUDIO_NEED_PLAY || defined(__DOXYGEN__)
 	/**
 	 * @brief		Set the audio device to play on the specified channel and with the specified
 	 * 				sample frequency.
-	 * @return		gTrue is successful, gFalse if the driver doesn't accept those parameters.
+	 * @return		TRUE is successful, FALSE if the driver doesn't accept those parameters.
 	 *
 	 * @param[in] channel	The audio output channel to use. Can be set from 0 to GAUDIO_PLAY_NUM_CHANNELS - 1
 	 * @param[in] frequency	The audio sample rate in samples per second
@@ -110,7 +114,7 @@
 	 *
 	 * @api
 	 */
-	gBool gaudioPlayInit(uint16_t channel, uint32_t frequency, ArrayDataFormat format);
+	bool_t gaudioPlayInit(uint16_t channel, uint32_t frequency, ArrayDataFormat format);
 
 	/**
 	 * @brief		Play the specified sample data.
@@ -155,16 +159,16 @@
 
 	/**
 	 * @brief				Set the output volume.
-	 * @return				gTrue if successful.
+	 * @return				TRUE if successful.
 	 *
 	 * @param[in] vol		0->255 (0 = muted)
 	 *
-	 * @note				Some drivers may not support this. They will return gFalse.
+	 * @note				Some drivers may not support this. They will return FALSE.
 	 * @note				For stereo devices, both channels are set to the same volume.
 	 *
 	 * @api
 	 */
-	gBool gaudioPlaySetVolume(uint8_t vol);
+	bool_t gaudioPlaySetVolume(uint8_t vol);
 
 	#if GFX_USE_GEVENT || defined(__DOXYGEN__)
 		/**
@@ -187,19 +191,19 @@
 
 	/**
 	 * @brief		Wait for any currently playing sounds to complete
-	 * @return		gTrue if there is now nothing playing or gFalse if the timeout is exceeded
+	 * @return		TRUE if there is now nothing playing or FALSE if the timeout is exceeded
 	 *
 	 * @param[in] ms	The maximum amount of time in milliseconds to wait for playing to complete.
 	 *
 	 * @api
 	 */
-	gBool gaudioPlayWait(gDelay ms);
+	bool_t gaudioPlayWait(delaytime_t ms);
 #endif
 
 #if GAUDIO_NEED_RECORD || defined(__DOXYGEN__)
 	/**
 	 * @brief		Initialise (but not start) the Audio Recording sub-system.
-	 * @details		Returns gFalse for an invalid channel or other invalid parameter.
+	 * @details		Returns FALSE for an invalid channel or other invalid parameter.
 	 *
 	 * @param[in] channel		The channel to convert. Can be set from 0 to GAUDIO_RECORD_NUM_CHANNELS - 1
 	 * @param[in] frequency		The sample frequency
@@ -221,11 +225,11 @@
 	 * 						Make sure you allocate your buffers large enough. Each channel is then interleaved
 	 * 						into the provided buffer.
 	 *
-	 * @return				gFalse if invalid channel or parameter
+	 * @return				FALSE if invalid channel or parameter
 	 *
 	 * @api
 	 */
-	gBool gaudioRecordInit(uint16_t channel, uint32_t frequency, ArrayDataFormat format);
+	bool_t gaudioRecordInit(uint16_t channel, uint32_t frequency, ArrayDataFormat format);
 
 	/**
 	 * @brief   Start the audio recording.
@@ -260,7 +264,7 @@
 	 *
 	 * @api
 	 */
-	GDataBuffer *gaudioRecordGetData(gDelay ms);
+	GDataBuffer *gaudioRecordGetData(delaytime_t ms);
 
 	#if GFX_USE_GEVENT || defined(__DOXYGEN__)
 		/**
@@ -280,6 +284,10 @@
 		 */
 		GSourceHandle gaudioRecordGetSource(void);
 	#endif
+#endif
+
+#ifdef __cplusplus
+}
 #endif
 
 #endif /* GFX_USE_GAUDIO */

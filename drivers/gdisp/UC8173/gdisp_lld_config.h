@@ -14,11 +14,11 @@
 /* Driver hardware support.                                                  */
 /*===========================================================================*/
 
-#define GDISP_HARDWARE_FLUSH			GFXON
-#define GDISP_HARDWARE_DRAWPIXEL		GFXON
-//#define GDISP_HARDWARE_PIXELREAD		GFXON - not implemented yet
-#define GDISP_HARDWARE_CONTROL      	GFXON
-#define GDISP_HARDWARE_FILLS        	GFXOFF
+#define GDISP_HARDWARE_FLUSH			TRUE
+#define GDISP_HARDWARE_DRAWPIXEL		TRUE
+//#define GDISP_HARDWARE_PIXELREAD		TRUE - not implemented yet
+#define GDISP_HARDWARE_CONTROL      	TRUE
+#define GDISP_HARDWARE_FILLS        	FALSE
 
 #define GDISP_LLD_PIXELFORMAT			GDISP_PIXELFORMAT_MONO
 //#define GDISP_LLD_PIXELFORMAT			GDISP_PIXELFORMAT_GRAY4

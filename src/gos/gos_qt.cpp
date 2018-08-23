@@ -13,12 +13,11 @@
 #include <QThread>
 #include <QElapsedTimer>
 
-extern "C" void _gosPostInit(void);
 
 class Thread : public QThread
 {
 public:
-    typedef gThreadreturn (*fptr)(void* param);
+    typedef threadreturn_t (*fptr)(void* param);
 
     void setFunction(fptr function, void* param)
     {
@@ -26,7 +25,7 @@ public:
         _param = param;
     }
 
-    gThreadreturn returnValue()
+    threadreturn_t returnValue()
     {
         return _returnValue;
     }
@@ -43,7 +42,7 @@ public:
 private:
     fptr _function;
     void* _param;
-    gThreadreturn _returnValue;
+    threadreturn_t _returnValue;
 };
 
 static QElapsedTimer _systickTimer;
@@ -87,12 +86,6 @@ void* gfxAlloc(size_t sz)
     return malloc(sz);
 }
 
-void* gfxRealloc(void* ptr, size_t oldsz, size_t newsz)
-{
-    Q_UNUSED(oldsz)
-    return realloc(ptr, newsz);
-}
-
 void gfxFree(void* ptr)
 {
     free(ptr);
@@ -103,22 +96,22 @@ void gfxYield(void)
     QThread::msleep(0);
 }
 
-void gfxSleepMilliseconds(gDelay ms)
+void gfxSleepMilliseconds(delaytime_t ms)
 {
     QThread::msleep(ms);
 }
 
-void gfxSleepMicroseconds(gDelay us)
+void gfxSleepMicroseconds(delaytime_t us)
 {
     QThread::usleep(us);
 }
 
-gTicks gfxSystemTicks(void)
+systemticks_t gfxSystemTicks(void)
 {
     return _systickTimer.elapsed();
 }
 
-gTicks gfxMillisecondsToTicks(gDelay ms)
+systemticks_t gfxMillisecondsToTicks(delaytime_t ms)
 {
     return ms;
 }
@@ -153,7 +146,7 @@ void gfxMutexExit(gfxMutex *pmutex)
     static_cast<QMutex*>(*pmutex)->unlock();
 }
 
-void gfxSemInit(gfxSem *psem, gSemcount val, gSemcount limit)
+void gfxSemInit(gfxSem *psem, semcount_t val, semcount_t limit)
 {
     *psem = new QSemaphore(limit);
 
@@ -165,12 +158,12 @@ void gfxSemDestroy(gfxSem *psem)
     delete static_cast<QSemaphore*>(*psem);
 }
 
-gBool gfxSemWait(gfxSem *psem, gDelay ms)
+bool_t gfxSemWait(gfxSem *psem, delaytime_t ms)
 {
     return static_cast<QSemaphore*>(*psem)->tryAcquire(1, ms);
 }
 
-gBool gfxSemWaitI(gfxSem *psem)
+bool_t gfxSemWaitI(gfxSem *psem)
 {
     return static_cast<QSemaphore*>(*psem)->tryAcquire(1);
 }
@@ -185,7 +178,7 @@ void gfxSemSignalI(gfxSem *psem)
     static_cast<QSemaphore*>(*psem)->release(1);
 }
 
-gThread gfxThreadCreate(void *stackarea, size_t stacksz, gThreadpriority prio, DECLARE_THREAD_FUNCTION((*fn),p), void *param)
+gfxThreadHandle gfxThreadCreate(void *stackarea, size_t stacksz, threadpriority_t prio, DECLARE_THREAD_FUNCTION((*fn),p), void *param)
 {
     Q_UNUSED(stackarea)
 
@@ -196,26 +189,26 @@ gThread gfxThreadCreate(void *stackarea, size_t stacksz, gThreadpriority prio, D
     }
     thread->start(static_cast<QThread::Priority>(prio));
 
-    return static_cast<gThread>(thread);
+    return static_cast<gfxThreadHandle>(thread);
 }
 
-gThreadreturn gfxThreadWait(gThread thread)
+threadreturn_t gfxThreadWait(gfxThreadHandle thread)
 {
     Thread* t = static_cast<Thread*>(thread);
 
-    gThreadreturn returnValue = t->returnValue();
+    threadreturn_t returnValue = t->returnValue();
     t->wait();
     t->exit();
 
     return returnValue;
 }
 
-gThread gfxThreadMe(void)
+gfxThreadHandle gfxThreadMe(void)
 {
     return static_cast<Thread*>(QThread::currentThread());
 }
 
-void gfxThreadClose(gThread thread)
+void gfxThreadClose(gfxThreadHandle thread)
 {
     static_cast<Thread*>(thread)->exit();
 }

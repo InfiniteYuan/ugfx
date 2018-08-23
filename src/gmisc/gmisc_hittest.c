@@ -18,7 +18,7 @@
  * the function returns 1. If the point c is on the segment, the function
  * returns 0. If they don't intersect, it returns 2.
  */
-static char _pointCrossingSegment(const gPoint *a, const gPoint *b, const gPoint *c) {
+static char _pointCrossingSegment(const point *a, const point *b, const point *c) {
     /* If both points are left from our point, it won't intersect */
     if (a->x < c->x && b->x < c->x) {
         return -1;
@@ -28,7 +28,7 @@ static char _pointCrossingSegment(const gPoint *a, const gPoint *b, const gPoint
      * it won't intersect. 
      */
     if (c->y <= a->y && c->y >= b->y) {
-        gCoord crossProduct;
+        coord_t crossProduct;
         
         /* If the line is parallel */
         if (a->y == b->y) {
@@ -64,7 +64,7 @@ static char _pointCrossingSegment(const gPoint *a, const gPoint *b, const gPoint
     return -1;
 }
 
-gBool gmiscHittestPoly(const gPoint *pntarray, unsigned cnt, const gPoint *p) {
+bool_t gmiscHittestPoly(const point *pntarray, unsigned cnt, const point *p) {
     unsigned i = 0;
     uint8_t nbrIntersection = 0;
     int8_t crossResult;
@@ -80,7 +80,7 @@ gBool gmiscHittestPoly(const gPoint *pntarray, unsigned cnt, const gPoint *p) {
 
         /* Point on the edge of the polygon */
         if (crossResult == 0) {
-            return gTrue;
+            return TRUE;
         }
         /* Point crossing the polygon */
         else if(crossResult == 1) {
@@ -98,18 +98,18 @@ gBool gmiscHittestPoly(const gPoint *pntarray, unsigned cnt, const gPoint *p) {
     }
 
     if (crossResult == 0) {
-        return gTrue;
+        return TRUE;
     } else if(crossResult == 1) {
         nbrIntersection++;
     }
 
     /* If we cross an even pair of segments, we are outside */
     if (nbrIntersection % 2 == 0) {
-        return gFalse;
+        return FALSE;
     }
     
     /* Else we are inside the polygon */
-    return gTrue;
+    return TRUE;
 }
 
 #endif // GMISC_NEED_HITTEST_POLY

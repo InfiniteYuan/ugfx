@@ -17,7 +17,7 @@
 
 #if GFX_USE_GINPUT && GINPUT_NEED_KEYBOARD
 
-#define MICROCODE_DEBUG		GFXOFF
+#define MICROCODE_DEBUG		FALSE
 
 #if MICROCODE_DEBUG
 	#include <stdio.h>
@@ -492,7 +492,7 @@ void _gkeyboardDeinit(void) {
 	gtimerDeinit(&KeyboardTimer);
 }
 
-gBool _gkeyboardInitDriver(GDriver *g, void *param, unsigned driverinstance, unsigned systeminstance) {
+bool_t _gkeyboardInitDriver(GDriver *g, void *param, unsigned driverinstance, unsigned systeminstance) {
 	#define k   ((GKeyboard *)g)
 	(void) param;
 	(void) systeminstance;
@@ -502,13 +502,13 @@ gBool _gkeyboardInitDriver(GDriver *g, void *param, unsigned driverinstance, uns
 
 	// Init the mouse
 	if (!gkvmt(k)->init((GKeyboard *)g, driverinstance))
-		return gFalse;
+		return FALSE;
 
 	// Ensure the Poll timer is started
 	if (!gtimerIsActive(&KeyboardTimer))
-		gtimerStart(&KeyboardTimer, KeyboardPoll, 0, gTrue, GINPUT_KEYBOARD_POLL_PERIOD);
+		gtimerStart(&KeyboardTimer, KeyboardPoll, 0, TRUE, GINPUT_KEYBOARD_POLL_PERIOD);
 
-	return gTrue;
+	return TRUE;
 
 	#undef k
 }
@@ -532,7 +532,7 @@ GSourceHandle ginputGetKeyboard(unsigned instance) {
 	return (GSourceHandle)gdriverGetInstance(GDRIVER_TYPE_KEYBOARD, instance);
 }
 
-gBool ginputGetKeyboardStatus(unsigned instance, GEventKeyboard *pe) {
+bool_t ginputGetKeyboardStatus(unsigned instance, GEventKeyboard *pe) {
 	GKeyboard *k;
 
 	// Win32 threads don't seem to recognise priority and/or pre-emption
@@ -540,26 +540,26 @@ gBool ginputGetKeyboardStatus(unsigned instance, GEventKeyboard *pe) {
 	gfxSleepMilliseconds(1);
 
 	if (!(k = (GKeyboard *)gdriverGetInstance(GDRIVER_TYPE_KEYBOARD, instance)))
-		return gFalse;
+		return FALSE;
 
 	pe->type = GEVENT_KEYBOARD;
 	// TODO
-	return gTrue;
+	return TRUE;
 }
 
 #if !GKEYBOARD_LAYOUT_OFF
-	gBool ginputSetKeyboardLayout(unsigned instance, const void *pLayout) {
+	bool_t ginputSetKeyboardLayout(unsigned instance, const void *pLayout) {
 		GKeyboard *k;
 
 		if (!(k = (GKeyboard *)gdriverGetInstance(GDRIVER_TYPE_KEYBOARD, instance)))
-			return gFalse;
+			return FALSE;
 
 		if (pLayout)
 			k->pLayout = pLayout;
 		else
 			k->pLayout = gkvmt(k)->defLayout;
 
-		return gTrue;
+		return TRUE;
 	}
 #endif
 

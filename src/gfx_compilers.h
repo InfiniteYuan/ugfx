@@ -25,12 +25,12 @@
  */
  	/**
 	 * @brief	Should various inline ugfx functions be non-inline.
-	 * @details	Defaults to GFXOFF
-	 * @note	Generally there is no need to set this to GFXON as it will have huge performance impacts
+	 * @details	Defaults to FALSE
+	 * @note	Generally there is no need to set this to TRUE as it will have huge performance impacts
 	 *			in the driver level.
 	 */
 	#ifndef GFX_NO_INLINE
-		#define GFX_NO_INLINE			GFXOFF
+		#define GFX_NO_INLINE			FALSE
 	#endif
 
 	// Set the no inline value
@@ -42,7 +42,7 @@
 	 * @brief	Show which compiler we detected as a compiler warning message
 	 */
 	#ifndef GFX_SHOW_COMPILER
-		#define GFX_SHOW_COMPILER		GFXOFF
+		#define GFX_SHOW_COMPILER		FALSE
 	#endif
 	
 	/**
@@ -371,7 +371,7 @@
 		#define GFX_COMPILER_VERSION_PATCH			((__CC65__)%0x10)
 	#elif GFX_COMPILER == GFX_COMPILER_CLANG
 		#define GFX_COMPILER_NAME					"CLang (LLVM)"
-		#define GFX_COMPILER_TESTED					GFXON
+		#define GFX_COMPILER_TESTED					TRUE
 		#define GFX_COMPILER_WARNING_TYPE			GFX_COMPILER_WARNING_GCC
 		#define GFX_COMPILER_VERSION_MAJOR			(__clang_major__)
 		#define GFX_COMPILER_VERSION_MINOR			(__clang_minor__)
@@ -411,7 +411,7 @@
 		#define GFX_COMPILER_VERSION_MINOR			(_RELEASE_MINOR)
 	#elif GFX_COMPILER == GFX_COMPILER_CYGWIN
 		#define GFX_COMPILER_NAME					"Cygwin"
-		#define GFX_COMPILER_TESTED					GFXON
+		#define GFX_COMPILER_TESTED					TRUE
 		#define GFX_COMPILER_WARNING_TYPE			GFX_COMPILER_WARNING_GCC
 		#define GFX_COMPILER_VERSION_MAJOR			(__GNUC__)
 		#define GFX_COMPILER_VERSION_MINOR			(__GNUC_MINOR__)
@@ -469,7 +469,7 @@
 			#warning "Compiler: EDG"
 		#endif
 		#define GFX_COMPILER_NAME					"EDG C++"
-		#define GFX_COMPILER_TESTED					GFXON
+		#define GFX_COMPILER_TESTED					TRUE
 		#define GFX_COMPILER_VERSION_MAJOR			((__EDG_VERSION__)/100)
 		#define GFX_COMPILER_VERSION_MINOR			((__EDG_VERSION__)%100)
 		#pragma diag_remark = Pe301
@@ -494,7 +494,7 @@
 		#define GFX_COMPILER_NAME					"Fujitsu C++"
 	#elif GFX_COMPILER == GFX_COMPILER_GCC
 		#define GFX_COMPILER_NAME					"GCC"
-		#define GFX_COMPILER_TESTED					GFXON
+		#define GFX_COMPILER_TESTED					TRUE
 		#define GFX_COMPILER_WARNING_TYPE			GFX_COMPILER_WARNING_GCC
 		#define GFX_COMPILER_VERSION_MAJOR			(__GNUC__)
 		#define GFX_COMPILER_VERSION_MINOR			(__GNUC_MINOR__)
@@ -535,7 +535,7 @@
 			#warning "Compiler: IAR"
 		#endif
 		#define GFX_COMPILER_NAME					"IAR C++"
-		#define GFX_COMPILER_TESTED					GFXON
+		#define GFX_COMPILER_TESTED					TRUE
 		#define GFX_COMPILER_VERSION_MAJOR			((__VER__)/100)
 		#define GFX_COMPILER_VERSION_MINOR			((__VER__)%100)
 		#pragma diag_remark = Pe301
@@ -599,7 +599,7 @@
 			#warning "Compiler: KEIL"
 		#endif
 		#define GFX_COMPILER_NAME					"Keil"
-		#define GFX_COMPILER_TESTED					GFXON
+		#define GFX_COMPILER_TESTED					TRUE
 		#if defined(__ARMCC_VERSION)
 			#define GFX_COMPILER_VERSION_MAJOR		((__ARMCC_VERSION)/1000000)
 			#define GFX_COMPILER_VERSION_MINOR		(((__ARMCC_VERSION)/10000)%100)
@@ -657,7 +657,7 @@
 		#define GFX_COMPILER_NAME					"Microway NDP C"
 	#elif GFX_COMPILER == GFX_COMPILER_MINGW32
 		#define GFX_COMPILER_NAME					"MingW32"
-		#define GFX_COMPILER_TESTED					GFXON
+		#define GFX_COMPILER_TESTED					TRUE
 		#define GFX_COMPILER_WARNING_TYPE			GFX_COMPILER_WARNING_GCC
 		#define GFX_COMPILER_VERSION_MAJOR			(__GNUC__)
 		#define GFX_COMPILER_VERSION_MINOR			(__GNUC_MINOR__)
@@ -848,7 +848,7 @@
 			#warning "Compiler: TINYC"
 		#endif
 		#define GFX_COMPILER_NAME					"Tiny C"
-		#define GFX_COMPILER_TESTED					GFXON
+		#define GFX_COMPILER_TESTED					TRUE
 	#elif GFX_COMPILER == GFX_COMPILER_TURBOC
 		#if GFX_SHOW_COMPILER && GFX_DISPLAY_RULE_WARNINGS
 			#warning "Compiler: TURBOC"
@@ -928,7 +928,7 @@
 	#endif
 
 	#ifndef GFX_COMPILER_TESTED
-		#define GFX_COMPILER_TESTED					GFXOFF
+		#define GFX_COMPILER_TESTED					FALSE
 	#endif
 	#ifndef GFX_COMPILER_WARNING_TYPE
 		#define GFX_COMPILER_WARNING_TYPE				GFX_COMPILER_WARNING_DIRECT
@@ -1071,7 +1071,7 @@
 	/************************************ Start CPU Settings *****************************/
 	#if GFX_CPU == GFX_CPU_X86
 		#undef GFX_CPU_NO_ALIGNMENT_FAULTS
-		#define GFX_CPU_NO_ALIGNMENT_FAULTS		GFXON
+		#define GFX_CPU_NO_ALIGNMENT_FAULTS		TRUE
 		#undef GFX_CPU_ENDIAN
 		#define GFX_CPU_ENDIAN					GFX_CPU_ENDIAN_LITTLE
 	#elif GFX_CPU == GFX_CPU_X64
@@ -1082,16 +1082,16 @@
 
 	/**
 	 * @brief   Does this CPU automatically handle alignment faults
-	 * @details	Defaults to GFXOFF
-	 * @note	Setting this to GFXON can decrease code size and increase speed but
+	 * @details	Defaults to FALSE
+	 * @note	Setting this to TRUE can decrease code size and increase speed but
 	 * 			it should not be turned on with a CPU that can generate
 	 * 			alignment segfaults.
-	 * @note	If you are unsure leave this as GFXOFF as that generates
+	 * @note	If you are unsure leave this as FALSE as that generates
 	 * 			the more conservative code.
 	 * @note	For some CPU's this can be auto-detected.
 	 */
 	#ifndef GFX_CPU_NO_ALIGNMENT_FAULTS
-		#define GFX_CPU_NO_ALIGNMENT_FAULTS		GFXOFF
+		#define GFX_CPU_NO_ALIGNMENT_FAULTS		FALSE
 	#endif
 
 	/**

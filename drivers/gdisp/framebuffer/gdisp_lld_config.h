@@ -14,9 +14,9 @@
 /* Driver hardware support.                                                  */
 /*===========================================================================*/
 
-#define GDISP_HARDWARE_DRAWPIXEL		GFXON
-#define GDISP_HARDWARE_PIXELREAD		GFXON
-#define GDISP_HARDWARE_CONTROL			GFXON
+#define GDISP_HARDWARE_DRAWPIXEL		TRUE
+#define GDISP_HARDWARE_PIXELREAD		TRUE
+#define GDISP_HARDWARE_CONTROL			TRUE
 
 // Any other support comes from the board file
 #include "board_framebuffer.h"

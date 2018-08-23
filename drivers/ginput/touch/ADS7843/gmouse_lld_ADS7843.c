@@ -19,7 +19,7 @@
 #define CMD_Y				0x91
 #define CMD_ENABLE_IRQ		0x80
 
-static gBool MouseXYZ(GMouse* m, GMouseReading* pdr)
+static bool_t MouseXYZ(GMouse* m, GMouseReading* pdr)
 {
 	(void)m;
 
@@ -42,7 +42,7 @@ static gBool MouseXYZ(GMouse* m, GMouseReading* pdr)
 
 		release_bus(m);
 	}
-	return gTrue;
+	return TRUE;
 }
 
 const GMouseVMT const GMOUSE_DRIVER_VMT[1] = {{

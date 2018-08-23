@@ -16,8 +16,8 @@
  *
  * @details		GWIN allows it to easily create a group of checkbox buttons.
  *
- * @pre			GFX_USE_GWIN must be set to GFXON in your gfxconf.h
- * @pre			GWIN_NEED_CHECKBOX must be set to GFXON in your gfxconf.h
+ * @pre			GFX_USE_GWIN must be set to TRUE in your gfxconf.h
+ * @pre			GWIN_NEED_CHECKBOX must be set to TRUE in your gfxconf.h
  * @{
  */
 
@@ -42,7 +42,7 @@ typedef struct GEventGWinCheckbox {
 	#if GWIN_WIDGET_TAGS
 		WidgetTag	tag;			// The checkbox tag
 	#endif
-	gBool			isChecked;		// Is the checkbox currently checked or unchecked?
+	bool_t			isChecked;		// Is the checkbox currently checked or unchecked?
 } GEventGWinCheckbox;
 
 /**
@@ -61,6 +61,10 @@ typedef struct GCheckboxObject {
 	#endif
 } GCheckboxObject;
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
  * @brief				Create a checkbox window.
  * @return				NULL if there is no resultant drawing area, otherwise a window handle.
@@ -70,7 +74,7 @@ typedef struct GCheckboxObject {
  * @param[in] pInit		The initialization parameters to use
  *
  * @note				The drawing color and the background color get set to the current defaults. If you haven't called
- * 						@p gwinSetDefaultColor() or @p gwinSetDefaultBgColor() then these are GFX_WHITE and GFX_BLACK respectively.
+ * 						@p gwinSetDefaultColor() or @p gwinSetDefaultBgColor() then these are White and Black respectively.
  * @note				The font gets set to the current default font. If you haven't called @p gwinSetDefaultFont() then there
  * 						is no default font and text drawing operations will no nothing.
  * @note				A checkbox remembers its normal drawing state. If there is a window manager then it is automatically
@@ -88,21 +92,21 @@ GHandle gwinGCheckboxCreate(GDisplay *g, GCheckboxObject *gb, const GWidgetInit 
  * @brief	Set the state of a checkbox
  *
  * @param[in] gh		The window handle (must be a checkbox window)
- * @param[in] isChecked	gTrue to set the check, gFalse to uncheck.
+ * @param[in] isChecked	TRUE to set the check, FALSE to uncheck.
  *
  * @api
  */
-void gwinCheckboxCheck(GHandle gh, gBool isChecked);
+void gwinCheckboxCheck(GHandle gh, bool_t isChecked);
 
 /**
  * @brief	Get the state of a checkbox
- * @return	gTrue if the checkbox is currently checked
+ * @return	TRUE if the checkbox is currently checked
  *
  * @param[in] gh	The window handle (must be a checkbox window)
  *
  * @api
  */
-gBool gwinCheckboxIsChecked(GHandle gh);
+bool_t gwinCheckboxIsChecked(GHandle gh);
 
 /**
  * @defgroup Renderings_Checkbox Renderings
@@ -151,6 +155,10 @@ void gwinCheckboxDraw_CheckOnRight(GWidgetObject *gw, void *param);
  */
 void gwinCheckboxDraw_Button(GWidgetObject *gw, void *param);
 /** @} */
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* _GWIN_CHECKBOX_H */
 /** @} */
